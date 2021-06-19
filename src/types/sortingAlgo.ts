@@ -1,10 +1,3 @@
-export type sortingAlgoNames =
-  | "bubbleSort"
-  | "insertionSort"
-  | "selectionSort"
-  | "mergeSort"
-  | "quickSort";
-
 export interface sortArrayElement {
   number: number;
   barHeight: number;

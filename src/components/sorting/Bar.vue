@@ -3,11 +3,11 @@
     class="array-bar"
     :style="{
       width: '20px',
-      height: `${el.barHeight}px`,
-      backgroundColor: el.barColor
+      height: `${arrayElement.barHeight}px`,
+      backgroundColor: arrayElement.barColor
     }"
   >
-    {{ el.number }}
+    {{ arrayElement.number }}
   </div>
 </template>
 
@@ -18,7 +18,7 @@ import { sortArrayElement } from "@/types/sortingAlgo";
 export default defineComponent({
   name: "Bar",
   props: {
-    el: {
+    arrayElement: {
       type: Object,
       required: true
     }
