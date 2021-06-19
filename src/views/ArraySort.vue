@@ -14,7 +14,7 @@
         <input
           type="range"
           min="50"
-          max="1500"
+          max="15000"
           step="50"
           class="slider"
           v-model="sortSpeed"
@@ -49,8 +49,10 @@ import { sortArrayElement, swaps } from "@/types/sortingAlgo";
 import { swap } from "@/algos/sorting/swap";
 import {
   baseBarColor,
+  iteratingBarColor,
   sortedBarColor,
-  sortingAlgorithms
+  sortingAlgorithms,
+  swapBarColor
 } from "@/constants/sortingAlgoConstants";
 
 export default defineComponent({
@@ -83,15 +85,19 @@ export default defineComponent({
           );
           break;
 
+        case sortingAlgorithms.SELECTION_SORT:
+          selectionSort(
+            this.array.map(e => e.number),
+            this.selectionSortCallback
+          );
+          break;
+
         default:
           console.log(this.sortAlgorithm, "not implemented yet");
           break;
       }
     },
 
-    /**
-     * @param {i} number to be swapped
-     */
     bubbleSortCallback(swaps: swaps[]) {
       this.currentlySorting = true;
       this.stopSorting = false;
@@ -127,10 +133,52 @@ export default defineComponent({
       }, this.sortSpeed);
     },
 
+    selectionSortCallback(swaps: swaps[]) {
+      this.currentlySorting = true;
+      this.stopSorting = false;
+
+      let index = 0;
+
+      const interval = setInterval(() => {
+        const {
+          swap: [i, j],
+          color
+        } = swaps[index];
+
+        this.array[i].barColor = color;
+        this.array[j].barColor = color;
+
+        swap(this.array, i, j);
+
+        // go from i to the end
+        this.array = this.array.map((el, newIdx) => {
+          const color = newIdx < j ? sortedBarColor : iteratingBarColor;
+          return {
+            ...el,
+            barColor: color
+          };
+        });
+
+        index++;
+
+        if (index === swaps.length || (this.currentlySorting && this.stopSorting)) {
+          if (index === swaps.length) {
+            // array is sorted so turn every bar green
+            this.array = this.array.map(e => ({
+              ...e,
+              barColor: sortedBarColor
+            }));
+          }
+          this.currentlySorting = false;
+          clearInterval(interval);
+        }
+      }, this.sortSpeed);
+    },
+
     generateRandomArray() {
       let max = -Infinity;
 
-      this.array = new Array(10).fill(0).map(() => {
+      this.array = new Array(30).fill(0).map(() => {
         const val = Math.floor(Math.random() * 90) + 10;
 
         if (val > max) max = val;

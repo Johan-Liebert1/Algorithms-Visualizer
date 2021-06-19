@@ -2,7 +2,7 @@ import { sortedBarColor, swapBarColor } from "@/constants/sortingAlgoConstants";
 import { swaps } from "@/types/sortingAlgo";
 import { swap } from "./swap";
 
-const bubbleSort = (list: number[], callback: (a: swaps[]) => void): swaps[] => {
+const bubbleSort = (list: number[], callback: (a: swaps[]) => void): void => {
   const swaps: swaps[] = [];
 
   for (let i = 0; i < list.length; i++) {
@@ -16,8 +16,6 @@ const bubbleSort = (list: number[], callback: (a: swaps[]) => void): swaps[] => 
   }
 
   callback(swaps);
-
-  return swaps;
 };
 
 export default bubbleSort;

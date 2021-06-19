@@ -1,20 +1,21 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
-import Router from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 
 import App from "./App.vue";
 import ArraySort from "@/views/ArraySort.vue";
+import PathFinder from "@/views/PathFinder.vue";
 
-const routes: Array<RouteRecordRaw> = [
-  {
-    path: "/",
-    name: "SortingAlgos",
-    component: App
-  }
-];
-
-const router = createRouter({
-  history: createWebHashHistory(),
-  routes
+export default createRouter({
+  history: createWebHistory(),
+  routes: [
+    {
+      path: "/",
+      name: "SortingAlgos",
+      component: ArraySort
+    },
+    {
+      path: "/path-finding-algos",
+      name: "PathFindingAlgos",
+      component: PathFinder
+    }
+  ]
 });
-
-export default router;

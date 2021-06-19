@@ -1,19 +1,18 @@
 <template>
   <NavBar />
   <div class="container">
-    <ArraySort />
+    <RouterView />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import ArraySort from "@/views/ArraySort.vue";
 import NavBar from "./components/NavBar.vue";
 import "bulmaswatch/flatly/bulmaswatch.min.css";
 
 export default defineComponent({
   name: "App",
-  components: { ArraySort, NavBar }
+  components: { NavBar }
 });
 </script>
 
