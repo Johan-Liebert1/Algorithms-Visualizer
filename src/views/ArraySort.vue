@@ -2,13 +2,7 @@
   <div>
     <p>Array</p>
     <div class="bar-container">
-      <Bar
-        v-for="(number, index) in array"
-        :key="index"
-        :num="number"
-        :barColor="heightAndColor[index].color"
-        :barHeight="heightAndColor[index].height"
-      />
+      <Bar v-for="(element, index) in array" :key="index" :el="element" />
     </div>
     <button @click="sortArray">Sort</button>
     <button @click="randomValueAssign">change a value</button>
@@ -22,7 +16,7 @@ import quickSort from "@/algos/sorting/quickSort";
 import insertionSort from "@/algos/sorting/insertionSort";
 import selectionSort from "@/algos/sorting/selectionSort";
 import Bar from "@/components/sorting/Bar.vue";
-import { sortingAlgoNames, heightAndColor, swaps } from "@/types/sortingAlgo";
+import { sortingAlgoNames, sortArrayElement, swaps } from "@/types/sortingAlgo";
 import { swap } from "@/algos/sorting/swap";
 import {
   baseBarColor,
@@ -35,8 +29,7 @@ export default defineComponent({
   components: { Bar },
   data() {
     return {
-      array: [] as number[],
-      heightAndColor: [] as heightAndColor[],
+      array: [] as sortArrayElement[],
       barHeight: null as null | string,
       maxHeight: 300
     };
@@ -44,12 +37,10 @@ export default defineComponent({
 
   methods: {
     sortArray(sortingAlgo: sortingAlgoNames) {
-      bubbleSort([...this.array], this.bubbleSortCallback);
-    },
-
-    randomValueAssign() {
-      const index: number = Math.floor(Math.random() * this.array.length);
-      this.array[index] = Math.floor(Math.random() * 100);
+      bubbleSort(
+        this.array.map(e => e.number),
+        this.bubbleSortCallback
+      );
     },
 
     /**
@@ -64,21 +55,20 @@ export default defineComponent({
           color
         } = swaps[index];
 
-        this.heightAndColor[i].color = color;
-        this.heightAndColor[j].color = color;
+        this.array[i].barColor = color;
+        this.array[j].barColor = color;
 
         swap(this.array, i, j);
-        swap(this.heightAndColor, i, j);
 
-        this.heightAndColor[i].color = baseBarColor;
+        this.array[i].barColor = baseBarColor;
 
         index++;
 
         if (index === swaps.length) {
           // array is sorted so turn every bar green
-          this.heightAndColor = this.heightAndColor.map(e => ({
+          this.array = this.array.map(e => ({
             ...e,
-            color: sortedBarColor
+            barColor: sortedBarColor
           }));
 
           clearInterval(interval);
@@ -104,17 +94,14 @@ export default defineComponent({
 
       if (val > max) max = val;
 
-      return val;
+      return { number: val, barColor: baseBarColor, barHeight: val };
     });
 
     // map the element in a range between 0px and maxHeight px
-
-    for (let element of this.array) {
-      this.heightAndColor.push({
-        color: baseBarColor,
-        height: Math.floor(this.maxHeight * (element / max))
-      });
-    }
+    this.array = this.array.map(e => ({
+      ...e,
+      barHeight: Math.floor(this.maxHeight * (e.number / max))
+    }));
   }
 });
 </script>

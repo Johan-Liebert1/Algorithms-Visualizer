@@ -1,10 +1,13 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
+import Router from "vue-router";
+
 import App from "./App.vue";
+import ArraySort from "@/views/ArraySort.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
-    name: "Home",
+    name: "SortingAlgos",
     component: App
   }
 ];

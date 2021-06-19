@@ -5,9 +5,10 @@ export type sortingAlgoNames =
   | "mergeSort"
   | "quickSort";
 
-export interface heightAndColor {
-  height: number;
-  color: string;
+export interface sortArrayElement {
+  number: number;
+  barHeight: number;
+  barColor: string;
 }
 
 export interface swaps {

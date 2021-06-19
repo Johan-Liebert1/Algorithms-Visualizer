@@ -1,28 +1,25 @@
 <template>
   <div
     class="array-bar"
-    :style="{ width: '20px', height: `${barHeight}px`, backgroundColor: barColor }"
+    :style="{
+      width: '20px',
+      height: `${el.barHeight}px`,
+      backgroundColor: el.barColor
+    }"
   >
-    {{ num }}
+    {{ el.number }}
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { sortArrayElement } from "@/types/sortingAlgo";
 
 export default defineComponent({
   name: "Bar",
   props: {
-    num: {
-      type: Number,
-      required: true
-    },
-    barHeight: {
-      type: Number,
-      required: true
-    },
-    barColor: {
-      type: String,
+    el: {
+      type: Object,
       required: true
     }
   }
