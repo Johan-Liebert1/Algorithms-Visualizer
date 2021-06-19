@@ -56,8 +56,6 @@ export default defineComponent({
      * @param {i} number to be swapped
      */
     bubbleSortCallback(swaps: swaps[]) {
-      console.log("swaps = ", swaps);
-
       let index = 0;
 
       const interval = setInterval(() => {

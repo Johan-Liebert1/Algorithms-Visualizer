@@ -6,8 +6,8 @@ export type sortingAlgoNames =
   | "quickSort";
 
 export interface heightAndColor {
-  height: Number;
-  color: String;
+  height: number;
+  color: string;
 }
 
 export interface swaps {

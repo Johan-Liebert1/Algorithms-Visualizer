@@ -5,7 +5,6 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import ArraySort from "@/views/ArraySort.vue";
-
 export default defineComponent({
   name: "App",
   components: { ArraySort }
@@ -18,7 +17,6 @@ export default defineComponent({
   padding: 0;
   box-sizing: border-box;
 }
-
 body {
   background-color: #02203a;
   color: rgb(200, 200, 200);
