@@ -1,0 +1,4 @@
+1. Store all elements swaps in an array and return that at the end. Then repeat the process in the component to make state changes and have the viz going
+
+2. Pass a callback function to the sorting function which would be called everytime a swap action occurs. Return a promise from the callback function using setTimeout. This way we can also take care of speeding up or slowing down the viz.
+
