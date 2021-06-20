@@ -40,6 +40,8 @@
             :isStartNode="matrix[index][idx] === startNode"
             :isEndNode="matrix[index][idx] === endNode"
             @clicked="cellClick"
+            @nodeDropped="nodeDropped"
+            @nodeDragStart="nodeDragStart"
             :isMouseDown="mouseDown"
           />
         </div>
@@ -49,7 +51,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 import Cell from "@/components/pathFinders/Cell.vue";
 import AlgoNavBar from "@/components/AlgoNavBar.vue";
 
@@ -67,6 +69,11 @@ import { ButtonsArray } from "@/types/global";
 
 export default defineComponent({
   components: { Cell, AlgoNavBar },
+
+  setup() {
+    const currentlyDraggingCell = ref<CellClass | null>(null);
+    return { currentlyDraggingCell };
+  },
 
   data() {
     return {
@@ -140,8 +147,12 @@ export default defineComponent({
         })
       );
 
-      this.startNode = this.matrix[0][0];
-      this.endNode = this.matrix[15][15];
+      const middleRow = Math.floor(this.rows / 2);
+      const startCol = Math.floor(this.columns / 4);
+      const endCol = Math.floor((this.columns * 3) / 4);
+
+      this.startNode = this.matrix[middleRow][startCol];
+      this.endNode = this.matrix[middleRow][endCol];
 
       this.setCellNeighbors();
     },
@@ -156,11 +167,34 @@ export default defineComponent({
         : defaultCellColor;
     },
 
-    mouseDownEventHandler() {
+    nodeDragStart(cell: CellClass) {
+      console.log("node drag start");
+      this.currentlyDraggingCell = cell;
+    },
+
+    nodeDropped(cell: CellClass) {
+      console.log("node dropped", this.currentlyDraggingCell);
+
+      if (this.currentlyDraggingCell === this.startNode) {
+        this.startNode = this.matrix[cell.row][cell.col];
+      } else if (this.currentlyDraggingCell === this.endNode) {
+        this.endNode = this.matrix[cell.row][cell.col];
+      }
+
+      this.currentlyDraggingCell = null;
+    },
+
+    mouseDownEventHandler(e: Event) {
+      const target = e.target as HTMLDivElement;
+      if (target.tagName !== "DIV") return;
+
       this.mouseDown = true;
     },
 
-    mouseUpEventHandler() {
+    mouseUpEventHandler(e: Event) {
+      const target = e.target as HTMLDivElement;
+      if (target.tagName !== "DIV") return;
+
       this.mouseDown = false;
     }
   },
@@ -173,13 +207,6 @@ export default defineComponent({
     gridRef.addEventListener("mousedown", this.mouseDownEventHandler);
     gridRef.addEventListener("mouseup", this.mouseUpEventHandler);
   }
-
-  // unmounted() {
-  //   const gridRef = this.$refs.gridContainer as HTMLDivElement;
-
-  //   gridRef.removeEventListener("mousedown", this.mouseDownEventHandler);
-  //   gridRef.removeEventListener("mouseup", this.mouseUpEventHandler);
-  // }
 });
 </script>
 
