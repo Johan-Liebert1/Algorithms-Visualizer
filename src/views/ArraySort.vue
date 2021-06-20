@@ -3,9 +3,9 @@
     <div class="action-container">
       <div class="select is-primary">
         <select v-model="sortAlgorithm">
-          <option v-for="algo in sortingAlgos" :key="algo" :value="algo">{{
-            algo
-          }}</option>
+          <option v-for="algo in sortingAlgos" :key="algo" :value="algo">
+            {{ algo }}
+          </option>
         </select>
       </div>
 
@@ -191,12 +191,6 @@ export default defineComponent({
         ...e,
         barHeight: Math.floor(this.maxHeight * (e.number / max))
       }));
-    }
-  },
-
-  watch: {
-    sortSpeed() {
-      console.log(this.sortSpeed);
     }
   },
 
