@@ -32,16 +32,19 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import Bar from "@/components/sorting/Bar.vue";
 
+// types
+import { sortArrayElement, swaps } from "@/types/sortingAlgo";
+import { ButtonsArray } from "@/types/global";
+
+// algorithms
 import bubbleSort from "@/algos/sorting/bubbleSort";
 import quickSort from "@/algos/sorting/quickSort";
 import insertionSort from "@/algos/sorting/insertionSort";
 import selectionSort from "@/algos/sorting/selectionSort";
-
-import { sortArrayElement, swaps } from "@/types/sortingAlgo";
-import { ButtonsArray } from "@/types/global";
 import { swap } from "@/algos/sorting/swap";
+
+// constants
 import {
   baseBarColor,
   iteratingBarColor,
@@ -49,7 +52,10 @@ import {
   sortingAlgorithms,
   swapBarColor
 } from "@/constants/sortingAlgoConstants";
+
+// components
 import AlgoNavBar from "@/components/AlgoNavBar.vue";
+import Bar from "@/components/sorting/Bar.vue";
 
 export default defineComponent({
   name: "ArraySort",

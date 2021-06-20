@@ -5,7 +5,7 @@
       width: `${dimension}px`,
       height: `${dimension}px`,
       backgroundColor: cell.color,
-      color: 'black'
+      transition: 'background-color ease-in-out 300ms'
     }"
     @click="clickHandler"
     @mouseover="mouseOverHandler"
@@ -57,8 +57,8 @@
 </template>
 
 <script lang="ts">
-import { CellClass } from "@/types/pathFinders";
 import { defineComponent } from "vue";
+import { CellClass } from "@/types/pathFinders";
 
 export default defineComponent({
   props: {

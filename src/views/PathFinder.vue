@@ -52,11 +52,15 @@
 
 <script lang="ts">
 import { defineComponent, ref } from "vue";
-import Cell from "@/components/pathFinders/Cell.vue";
-import AlgoNavBar from "@/components/AlgoNavBar.vue";
 
+// types
 import { CellClass } from "@/types/pathFinders";
+import { ButtonsArray } from "@/types/global";
+
+// algorithms
 import aStarAlgo from "@/algos/pathFinders/AStar";
+
+// constants
 import {
   closedCellColor,
   defaultCellColor,
@@ -65,7 +69,10 @@ import {
   pathFindingAlgorithms,
   wallCellColor
 } from "@/constants/pathFindersConstants";
-import { ButtonsArray } from "@/types/global";
+
+// components
+import Cell from "@/components/pathFinders/Cell.vue";
+import AlgoNavBar from "@/components/AlgoNavBar.vue";
 
 export default defineComponent({
   components: { Cell, AlgoNavBar },
@@ -99,6 +106,11 @@ export default defineComponent({
         {
           text: "Clear Board",
           class: "button is-warning",
+          handler: () => this.initGrid(false)
+        },
+        {
+          text: "Reset Board",
+          class: "button is-danger",
           handler: this.initGrid
         }
       ] as ButtonsArray[],
@@ -140,19 +152,42 @@ export default defineComponent({
       }
     },
 
-    initGrid() {
+    clearBoard() {
+      for (let row of this.matrix) {
+        for (let col of row) {
+          if (col.isWall) continue;
+          col.color = defaultCellColor;
+        }
+      }
+    },
+
+    initGrid(reset = true) {
+      const prevStartNode = this.startNode;
+      const prevEndNode = this.endNode;
+
       this.matrix = new Array(this.rows).fill(0).map((t, row) =>
         new Array(this.columns).fill(0).map((v, col) => {
-          return new CellClass(row, col, this.rows, this.columns);
+          return new CellClass(
+            row,
+            col,
+            this.rows,
+            this.columns,
+            reset ? false : this.matrix[row][col].isWall
+          );
         })
       );
 
-      const middleRow = Math.floor(this.rows / 2);
-      const startCol = Math.floor(this.columns / 4);
-      const endCol = Math.floor((this.columns * 3) / 4);
+      if (reset) {
+        const middleRow = Math.floor(this.rows / 2);
+        const startCol = Math.floor(this.columns / 4);
+        const endCol = Math.floor((this.columns * 3) / 4);
 
-      this.startNode = this.matrix[middleRow][startCol];
-      this.endNode = this.matrix[middleRow][endCol];
+        this.startNode = this.matrix[middleRow][startCol];
+        this.endNode = this.matrix[middleRow][endCol];
+      } else {
+        this.startNode = this.matrix[prevStartNode.row][prevStartNode.col];
+        this.endNode = this.matrix[prevEndNode.row][prevEndNode.col];
+      }
 
       this.setCellNeighbors();
     },

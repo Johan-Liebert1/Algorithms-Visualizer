@@ -22,7 +22,7 @@
           Speed <slot />
         </h1>
         <Dropdown v-if="speedDropdownVisible" :dropdownItems="null">
-          <p>Sort Speed: {{ algoSpeed / 1000 }}s</p>
+          <p>Speed: {{ algoSpeed / 1000 }}s</p>
           <input
             type="range"
             min="50"
