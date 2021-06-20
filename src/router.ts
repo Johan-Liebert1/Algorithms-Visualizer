@@ -9,6 +9,11 @@ export default createRouter({
   routes: [
     {
       path: "/",
+      name: "Home",
+      component: App
+    },
+    {
+      path: "/sorting-algos",
       name: "SortingAlgos",
       component: ArraySort
     },

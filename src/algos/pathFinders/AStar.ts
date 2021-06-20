@@ -3,12 +3,12 @@ import { CellClass } from "@/types/pathFinders";
 const heuristic = (start: CellClass, end: CellClass) =>
   Math.sqrt(Math.pow(start.row - end.row, 2) + Math.pow(start.col - end.col, 2));
 
-const aStarAlgo = (
+const aStarAlgo = async (
   startNode: CellClass,
   endNode: CellClass,
-  highlightGrid: (a: CellClass[], b: CellClass[]) => void
-): void => {
-  console.log("start node = ", startNode, "end node = ", endNode);
+  highlightGrid: (a: CellClass[], b: CellClass[]) => Promise<any>,
+  colorFinalPath: () => void
+): Promise<any> => {
   const openSet: CellClass[] = [startNode];
   const closedSet: CellClass[] = [];
 
@@ -51,9 +51,11 @@ const aStarAlgo = (
       neighbor.fScore = neighbor.gScore + neighbor.hScore;
 
       // call the callback here
-      highlightGrid(openSet, closedSet);
+      await highlightGrid(openSet, closedSet);
     }
   }
+
+  colorFinalPath();
 };
 
 export default aStarAlgo;

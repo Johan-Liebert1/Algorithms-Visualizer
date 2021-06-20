@@ -1,8 +1,6 @@
 <template>
-  <NavBar />
-  <div class="container">
-    <RouterView />
-  </div>
+  <NavBar v-if="$route.name === 'Home'" />
+  <RouterView />
 </template>
 
 <script lang="ts">

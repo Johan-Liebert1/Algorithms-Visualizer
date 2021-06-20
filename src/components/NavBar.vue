@@ -1,13 +1,15 @@
 <template>
   <nav>
-    <RouterLink to="/" :class="{ selected: $route.name === 'SortingAlgos' }"
-      >Sorting Algorithms</RouterLink
-    >
+    <RouterLink to="/sorting-algos" :class="{ selected: $route.name === 'SortingAlgos' }">
+      Sorting Algorithms
+    </RouterLink>
+
     <RouterLink
       to="/path-finding-algos"
       :class="{ selected: $route.name === 'PathFindingAlgos' }"
-      >Path Finding Algorithms</RouterLink
     >
+      Path Finding Algorithms
+    </RouterLink>
   </nav>
 </template>
 
