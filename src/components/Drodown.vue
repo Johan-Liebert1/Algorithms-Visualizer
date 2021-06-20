@@ -1,7 +1,12 @@
 <template>
   <div class="dropdown" ref="dropdownList">
     <div v-if="dropdownItems">
-      <div class="dropdown-item" v-for="(item, i) in dropdownItems" :key="i">
+      <div
+        v-for="(item, i) in dropdownItems"
+        :key="i"
+        :class="{ 'dropdown-item': true, selected: item === selectedAlgo }"
+        @click="$emit('selectionChanged', item)"
+      >
         {{ item }}
       </div>
     </div>
@@ -19,7 +24,10 @@ import { defineComponent } from "vue";
 export default defineComponent({
   name: "Dropdown",
   props: {
-    dropdownItems: {}
+    dropdownItems: {},
+    selectedAlgo: {
+      type: String
+    }
   }
 });
 </script>
@@ -59,6 +67,11 @@ export default defineComponent({
 }
 
 .dropdown-item:hover {
+  background-color: #4eb380;
+  color: #32475b;
+}
+
+.selected {
   background-color: #4eb380;
   color: #32475b;
 }

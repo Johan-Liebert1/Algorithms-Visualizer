@@ -1,6 +1,11 @@
 <template>
   <div class="outer-wrapper">
-    <PathFinderNav :algorithmsList="pathFindingAlgorithms" :buttonsList="navbarButtons">
+    <AlgoNavBar
+      :algorithmsList="pathFindingAlgorithms"
+      :buttonsList="navbarButtons"
+      :selectedAlgo="selectedPathFindingAlgorithm"
+      v-model:algoSpeed.sync="algorithmSpeed"
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -13,9 +18,19 @@
           d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
         />
       </svg>
-    </PathFinderNav>
+    </AlgoNavBar>
 
     <div class="wrapper" ref="gridContainer">
+      <label>
+        <input
+          type="checkbox"
+          v-model="diagonalMovementAllowed"
+          @change="setCellNeighbors"
+        />
+        Allow Diagonal Movement
+      </label>
+
+      Algo Speed - {{ algorithmSpeed }}
       <div class="grid-container">
         <div v-for="(row, index) in matrix" :key="index" class="is-flex">
           <Cell
@@ -36,7 +51,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import Cell from "@/components/pathFinders/Cell.vue";
-import PathFinderNav from "@/components/pathFinders/PathFinderNav.vue";
+import AlgoNavBar from "@/components/AlgoNavBar.vue";
 
 import { CellClass } from "@/types/pathFinders";
 import aStarAlgo from "@/algos/pathFinders/AStar";
@@ -48,9 +63,10 @@ import {
   pathFindingAlgorithms,
   wallCellColor
 } from "@/constants/pathFindersConstants";
+import { ButtonsArray } from "@/types/global";
 
 export default defineComponent({
-  components: { Cell, PathFinderNav },
+  components: { Cell, AlgoNavBar },
 
   data() {
     return {
@@ -62,6 +78,8 @@ export default defineComponent({
       algoRunning: false,
       startNode: new CellClass(0, 0, 0, 0),
       endNode: new CellClass(0, 0, 0, 0),
+      selectedPathFindingAlgorithm: pathFindingAlgorithms.A_STAR,
+      algorithmSpeed: 500,
       pathFindingAlgorithms: Object.entries(pathFindingAlgorithms).map(
         ([key, value]) => value
       ),
@@ -76,7 +94,8 @@ export default defineComponent({
           class: "button is-warning",
           handler: this.initGrid
         }
-      ]
+      ] as ButtonsArray[],
+      diagonalMovementAllowed: false
     };
   },
 
@@ -94,7 +113,7 @@ export default defineComponent({
         this.matrix[cell.row][cell.col].color = closedCellColor;
       }
 
-      return new Promise(r => setTimeout(r, 250));
+      return new Promise(r => setTimeout(r, this.algorithmSpeed / 50));
     },
 
     colorFinalPath() {
@@ -103,6 +122,14 @@ export default defineComponent({
       while (currentNode.previous !== null) {
         this.matrix[currentNode.row][currentNode.col].color = finalPathColor;
         currentNode = currentNode.previous;
+      }
+    },
+
+    setCellNeighbors() {
+      for (let row of this.matrix) {
+        for (let cell of row) {
+          cell.addNeighbors(this.matrix, this.diagonalMovementAllowed);
+        }
       }
     },
 
@@ -116,14 +143,13 @@ export default defineComponent({
       this.startNode = this.matrix[0][0];
       this.endNode = this.matrix[15][15];
 
-      for (let row of this.matrix) {
-        for (let cell of row) {
-          cell.addNeighbors(this.matrix, false);
-        }
-      }
+      this.setCellNeighbors();
     },
 
     cellClick(row: number, col: number) {
+      if (this.startNode.row === row && this.startNode.col === col) return;
+      if (this.endNode.row === row && this.endNode.col === col) return;
+
       this.matrix[row][col].isWall = !this.matrix[row][col].isWall;
       this.matrix[row][col].color = this.matrix[row][col].isWall
         ? wallCellColor
@@ -170,6 +196,7 @@ export default defineComponent({
   flex-direction: column;
   justify-content: space-evenly;
   align-items: center;
+  margin-bottom: 3rem;
 }
 
 .action-container {

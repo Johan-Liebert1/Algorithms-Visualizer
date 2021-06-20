@@ -1,37 +1,31 @@
 <template>
-  <div class="array-sort-container">
-    <div class="action-container">
-      <div class="select is-primary">
-        <select v-model="sortAlgorithm">
-          <option v-for="algo in sortingAlgos" :key="algo" :value="algo">
-            {{ algo }}
-          </option>
-        </select>
-      </div>
-
-      <div class="slidecontainer">
-        <p>Sort Speed: {{ sortSpeed }}ms</p>
-        <input
-          type="range"
-          min="50"
-          max="15000"
-          step="50"
-          class="slider"
-          v-model="sortSpeed"
+  <div>
+    <AlgoNavBar
+      :algorithmsList="sortingAlgos"
+      :selectedAlgo="sortAlgorithm"
+      @algorithmChanged="setNewAlgorithm"
+      :buttonsList="navbarButtons"
+      v-model:algoSpeed.sync="sortSpeed"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        class="bi bi-caret-down-fill"
+        viewBox="0 0 16 16"
+      >
+        <path
+          d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
         />
+      </svg>
+    </AlgoNavBar>
+    <div class="array-sort-container">
+      Algo - {{ sortAlgorithm }} <br />
+      Speed - {{ sortSpeed }}
+      <div class="bar-container">
+        <Bar v-for="(element, index) in array" :key="index" :arrayElement="element" />
       </div>
-
-      <button class="button is-success is-outlined" @click="sortArray">Sort</button>
-      <button class="button is-danger is-outlined" @click="stopSorting = true">
-        Stop
-      </button>
-      <button class="button is-info is-outlined" @click="generateRandomArray">
-        Random Array
-      </button>
-    </div>
-
-    <div class="bar-container">
-      <Bar v-for="(element, index) in array" :key="index" :arrayElement="element" />
     </div>
   </div>
 </template>
@@ -46,6 +40,7 @@ import insertionSort from "@/algos/sorting/insertionSort";
 import selectionSort from "@/algos/sorting/selectionSort";
 
 import { sortArrayElement, swaps } from "@/types/sortingAlgo";
+import { ButtonsArray } from "@/types/global";
 import { swap } from "@/algos/sorting/swap";
 import {
   baseBarColor,
@@ -54,26 +49,50 @@ import {
   sortingAlgorithms,
   swapBarColor
 } from "@/constants/sortingAlgoConstants";
+import AlgoNavBar from "@/components/AlgoNavBar.vue";
 
 export default defineComponent({
   name: "ArraySort",
-  components: { Bar },
+  components: { Bar, AlgoNavBar },
   data() {
     return {
       array: [] as sortArrayElement[],
       barHeight: null as null | string,
       maxHeight: 300,
-      sortingAlgos: Object.keys(sortingAlgorithms).map(
-        (key: string, index: number) => Object.values(sortingAlgorithms)[index]
-      ),
+      sortingAlgos: Object.entries(sortingAlgorithms).map(([key, value]) => value),
       sortSpeed: 500,
       currentlySorting: false,
       stopSorting: false,
-      sortAlgorithm: sortingAlgorithms.BUBBLE_SORT
+      sortAlgorithm: sortingAlgorithms.BUBBLE_SORT as string,
+      navbarButtons: [
+        {
+          text: "Sort",
+          class: "button is-success",
+          handler: this.sortArray
+        },
+        {
+          text: "Stop",
+          class: "button is-danger",
+          handler: this.stopArraySort
+        },
+        {
+          text: "Generate Random Array",
+          class: "button is-info",
+          handler: this.generateRandomArray
+        }
+      ] as ButtonsArray[]
     };
   },
 
   methods: {
+    setNewAlgorithm(newAlgo: string) {
+      this.sortAlgorithm = newAlgo;
+    },
+
+    stopArraySort() {
+      this.stopSorting = true;
+    },
+
     sortArray() {
       if (this.currentlySorting) return;
 

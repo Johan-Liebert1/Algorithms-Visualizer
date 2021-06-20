@@ -9,7 +9,12 @@
         <h1 class="is-size-4" @click="algoDropdownVisible = !algoDropdownVisible">
           Algorithms <slot />
         </h1>
-        <Dropdown v-if="algoDropdownVisible" :dropdownItems="algorithmsList" />
+        <Dropdown
+          v-if="algoDropdownVisible"
+          :dropdownItems="algorithmsList"
+          :selectedAlgo="selectedAlgo"
+          @selectionChanged="value => $emit('algorithmChanged', value)"
+        />
       </div>
 
       <div class="dropdown-container">
@@ -17,14 +22,15 @@
           Speed <slot />
         </h1>
         <Dropdown v-if="speedDropdownVisible" :dropdownItems="null">
-          <p>Sort Speed: {{ sortSpeed / 1000 }}s</p>
+          <p>Sort Speed: {{ algoSpeed / 1000 }}s</p>
           <input
             type="range"
             min="50"
             max="2000"
             step="50"
             class="slider"
-            v-model="sortSpeed"
+            :value="algoSpeed"
+            @change="$emit('update:algoSpeed', parseInt($event.target.value))"
           />
         </Dropdown>
       </div>
@@ -34,7 +40,8 @@
           v-for="btn in buttonsList"
           :key="btn.text"
           @click="btn.handler"
-          :class="btn.class"
+          :class="{ [btn.class]: true }"
+          style="margin-right: 0.5rem"
         >
           {{ btn.text }}
         </button>
@@ -48,7 +55,7 @@ import { defineComponent } from "vue";
 import Dropdown from "@/components/Drodown.vue";
 
 export default defineComponent({
-  name: "PathFinderNav",
+  name: "AlgoNavBar",
   components: { Dropdown },
   props: {
     algorithmsList: {
@@ -57,6 +64,14 @@ export default defineComponent({
     },
     buttonsList: {
       type: Array,
+      required: true
+    },
+    algoSpeed: {
+      type: Number,
+      required: false
+    },
+    selectedAlgo: {
+      type: String,
       required: true
     }
   },
@@ -106,7 +121,7 @@ export default defineComponent({
 }
 
 .action-buttons-container {
-  width: 30%;
+  min-width: 30%;
   display: flex;
   justify-content: space-evenly;
 }
