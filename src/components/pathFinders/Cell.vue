@@ -1,10 +1,17 @@
 <template>
   <div
     class="cell"
-    :style="{ width: `${dimension}px`, height: `${dimension}px`, backgroundColor }"
+    :style="{
+      width: `${dimension}px`,
+      height: `${dimension}px`,
+      backgroundColor: cell.color,
+      color: 'black'
+    }"
     @click="clickHandler"
     @mouseover="mouseOverHandler"
-  ></div>
+  >
+    {{ isStartNode ? "S" : isEndNode ? "E" : "" }}
+  </div>
 </template>
 
 <script lang="ts">
@@ -15,6 +22,14 @@ export default defineComponent({
   props: {
     cell: {
       type: CellClass,
+      required: true
+    },
+    isStartNode: {
+      type: Boolean,
+      required: true
+    },
+    isEndNode: {
+      type: Boolean,
       required: true
     },
     isMouseDown: {
@@ -35,12 +50,6 @@ export default defineComponent({
     },
     mouseOverHandler() {
       if (this.isMouseDown) this.$emit("clicked", this.cell.row, this.cell.col);
-    }
-  },
-
-  computed: {
-    backgroundColor(): string {
-      return this.cell.isWall ? "black" : "white";
     }
   }
 });

@@ -47,6 +47,8 @@
           v-for="(col, idx) in row"
           :key="`${index}-${idx}`"
           :cell="matrix[index][idx]"
+          :isStartNode="matrix[index][idx] === startNode"
+          :isEndNode="matrix[index][idx] === endNode"
           @clicked="cellClick"
           :isMouseDown="mouseDown"
         />
@@ -60,9 +62,17 @@ import { defineComponent } from "vue";
 import Cell from "@/components/pathFinders/Cell.vue";
 
 import { CellClass } from "@/types/pathFinders";
+import aStarAlgo from "@/algos/pathFinders/AStar";
+import {
+  closedCellColor,
+  defaultCellColor,
+  openCellColor,
+  wallCellColor
+} from "@/constants/pathFindersConstants";
 
 export default defineComponent({
   components: { Cell },
+
   data() {
     return {
       matrix: [] as CellClass[][],
@@ -70,25 +80,49 @@ export default defineComponent({
       columns: 40,
       mouseDown: false,
       stopAlgo: false,
-      algoRunning: false
+      algoRunning: false,
+      startNode: new CellClass(0, 0, 0, 0),
+      endNode: new CellClass(0, 0, 0, 0)
     };
   },
 
   methods: {
     findShortestPath() {
-      console.log("shorte");
+      aStarAlgo(this.startNode, this.endNode, this.highlightGrid);
+    },
+
+    highlightGrid(openCells: CellClass[], closedCells: CellClass[]) {
+      for (const cell of openCells) {
+        this.matrix[cell.row][cell.col].color = openCellColor;
+      }
+
+      for (const cell of closedCells) {
+        this.matrix[cell.row][cell.col].color = openCellColor;
+      }
     },
 
     initGrid() {
       this.matrix = new Array(this.rows).fill(0).map((t, row) =>
         new Array(this.columns).fill(0).map((v, col) => {
-          return new CellClass(row, col);
+          return new CellClass(row, col, this.rows, this.columns);
         })
       );
+
+      this.startNode = this.matrix[0][0];
+      this.endNode = this.matrix[15][15];
+
+      for (let row of this.matrix) {
+        for (let cell of row) {
+          cell.addNeighbors(this.matrix);
+        }
+      }
     },
 
     cellClick(row: number, col: number) {
       this.matrix[row][col].isWall = !this.matrix[row][col].isWall;
+      this.matrix[row][col].color = this.matrix[row][col].isWall
+        ? wallCellColor
+        : defaultCellColor;
     },
 
     mouseDownEventHandler() {
