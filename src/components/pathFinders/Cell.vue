@@ -5,13 +5,17 @@
       width: `${dimension}px`,
       height: `${dimension}px`,
       backgroundColor: cell.color,
-      transition: 'background-color ease-in-out 300ms'
+      transition: 'background-color ease-in-out 300ms',
+      'border-right': cell.drawBorder ? `solid ${cell.borderColor}` : '',
+      'border-bottom': cell.drawBorder ? `solid ${cell.borderColor}` : '',
+      'border-width': cell.drawBorder ? 'thin' : ''
     }"
     @click="clickHandler"
     @mouseover="mouseOverHandler"
     @drop="dropOverCell"
     @dragenter="e => e.preventDefault()"
     @dragover="e => e.preventDefault()"
+    :id="`cell-${cell.row}-${cell.col}`"
   >
     <div
       v-if="isStartNode"
@@ -101,6 +105,7 @@ export default defineComponent({
 
     dragStarted() {
       this.$emit("nodeDragStart", this.cell);
+      return false;
     },
 
     dropOverCell(event: Event) {
@@ -113,11 +118,11 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.cell {
-  border-right: solid #74b9ff;
-  border-bottom: solid #74b9ff;
+/* .cell {
+  border-right: ;
+  border-bottom: ;
   border-width: thin;
-}
+} */
 
 .target-node {
   width: 100%;

@@ -4,6 +4,7 @@
       :algorithmsList="pathFindingAlgorithms"
       :buttonsList="navbarButtons"
       :selectedAlgo="selectedPathFindingAlgorithm"
+      @algorithmChanged="setNewAlgorithm"
       v-model:algoSpeed.sync="algorithmSpeed"
     >
       <svg
@@ -30,8 +31,8 @@
         Allow Diagonal Movement
       </label>
 
-      Algo Speed - {{ algorithmSpeed }}
-      <div class="grid-container">
+      Algo Speed - {{ algorithmSpeed }} selected = {{ selectedPathFindingAlgorithm }}
+      <div class="grid-container" @dragover="nodeDragOver">
         <div v-for="(row, index) in matrix" :key="index" class="is-flex">
           <Cell
             v-for="(col, idx) in row"
@@ -59,6 +60,8 @@ import { ButtonsArray } from "@/types/global";
 
 // algorithms
 import aStarAlgo from "@/algos/pathFinders/AStar";
+import BreadthFirstSearch from "@/algos/pathFinders/BFS";
+import DepthFirstSearch from "@/algos/pathFinders/DFS";
 
 // constants
 import {
@@ -67,6 +70,7 @@ import {
   finalPathColor,
   openCellColor,
   pathFindingAlgorithms,
+  secondaryCellBorderColor,
   wallCellColor
 } from "@/constants/pathFindersConstants";
 
@@ -104,7 +108,7 @@ export default defineComponent({
           handler: this.findShortestPath
         },
         {
-          text: "Clear Board",
+          text: "Clear Path",
           class: "button is-warning",
           handler: () => this.initGrid(false)
         },
@@ -119,17 +123,54 @@ export default defineComponent({
   },
 
   methods: {
+    setNewAlgorithm(value: string) {
+      this.selectedPathFindingAlgorithm = value;
+    },
+
     findShortestPath() {
-      aStarAlgo(this.startNode, this.endNode, this.highlightGrid, this.colorFinalPath);
+      switch (this.selectedPathFindingAlgorithm) {
+        case pathFindingAlgorithms.A_STAR:
+          aStarAlgo(
+            this.startNode,
+            this.endNode,
+            this.highlightGrid,
+            this.colorFinalPath
+          );
+          break;
+
+        case pathFindingAlgorithms.BREADTH_FIRST_SEARCH:
+          BreadthFirstSearch(
+            this.startNode,
+            this.endNode,
+            this.highlightGrid,
+            this.colorFinalPath
+          );
+          break;
+
+        case pathFindingAlgorithms.DEPTH_FIRST_SEARCH:
+          DepthFirstSearch(
+            this.startNode,
+            this.endNode,
+            this.highlightGrid,
+            this.colorFinalPath
+          );
+          break;
+
+        default:
+          console.log(this.selectedPathFindingAlgorithm, "not yet implemented");
+          break;
+      }
     },
 
     highlightGrid(openCells: CellClass[], closedCells: CellClass[]) {
       for (const cell of openCells) {
         this.matrix[cell.row][cell.col].color = openCellColor;
+        this.matrix[cell.row][cell.col].borderColor = secondaryCellBorderColor;
       }
 
       for (const cell of closedCells) {
         this.matrix[cell.row][cell.col].color = closedCellColor;
+        this.matrix[cell.row][cell.col].borderColor = secondaryCellBorderColor;
       }
 
       return new Promise(r => setTimeout(r, this.algorithmSpeed / 50));
@@ -140,8 +181,12 @@ export default defineComponent({
 
       while (currentNode.previous !== null) {
         this.matrix[currentNode.row][currentNode.col].color = finalPathColor;
+        this.matrix[currentNode.row][currentNode.col].drawBorder = false;
         currentNode = currentNode.previous;
       }
+
+      this.startNode.color = finalPathColor;
+      this.startNode.drawBorder = false;
     },
 
     setCellNeighbors() {
@@ -202,20 +247,33 @@ export default defineComponent({
         : defaultCellColor;
     },
 
+    nodeDragOver(e: Event) {
+      const target = e.target as HTMLDivElement;
+
+      const [cell, row, col] = target.id.split("-");
+
+      if (cell === "cell") {
+        if (this.currentlyDraggingCell === this.startNode) {
+          this.startNode = this.matrix[parseInt(row)][parseInt(col)];
+          this.currentlyDraggingCell = this.startNode;
+        } else if (this.currentlyDraggingCell === this.endNode) {
+          this.endNode = this.matrix[parseInt(row)][parseInt(col)];
+          this.currentlyDraggingCell = this.endNode;
+        }
+      } else {
+        if (this.currentlyDraggingCell === this.startNode) {
+          this.startNode = this.currentlyDraggingCell;
+        } else if (this.currentlyDraggingCell === this.endNode) {
+          this.endNode = this.currentlyDraggingCell;
+        }
+      }
+    },
+
     nodeDragStart(cell: CellClass) {
-      console.log("node drag start");
       this.currentlyDraggingCell = cell;
     },
 
     nodeDropped(cell: CellClass) {
-      console.log("node dropped", this.currentlyDraggingCell);
-
-      if (this.currentlyDraggingCell === this.startNode) {
-        this.startNode = this.matrix[cell.row][cell.col];
-      } else if (this.currentlyDraggingCell === this.endNode) {
-        this.endNode = this.matrix[cell.row][cell.col];
-      }
-
       this.currentlyDraggingCell = null;
     },
 

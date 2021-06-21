@@ -1,4 +1,8 @@
-import { defaultCellColor, wallCellColor } from "@/constants/pathFindersConstants";
+import {
+  cellBorderColor,
+  defaultCellColor,
+  wallCellColor
+} from "@/constants/pathFindersConstants";
 
 export class CellClass {
   isWall: boolean;
@@ -12,6 +16,9 @@ export class CellClass {
   neighbors: CellClass[];
   previous: CellClass | null;
   color: string;
+  isVisited: boolean;
+  drawBorder: boolean;
+  borderColor: string;
 
   constructor(
     row: number,
@@ -31,6 +38,9 @@ export class CellClass {
     this.neighbors = [];
     this.previous = null;
     this.color = isWall ? wallCellColor : defaultCellColor;
+    this.isVisited = false;
+    this.drawBorder = true;
+    this.borderColor = cellBorderColor;
   }
 
   addNeighbors(grid: CellClass[][], diagonalAllowed = true) {
@@ -48,7 +58,11 @@ export class CellClass {
       if (this.row + rAdder >= 0 && this.row + rAdder < this.totalRows) {
         colAdders[rIndex].forEach(cAdder => {
           if (this.col + cAdder >= 0 && this.col + cAdder < this.totalCols) {
-            this.neighbors.push(grid[this.row + rAdder][this.col + cAdder]);
+            const potentialNeighbor = grid[this.row + rAdder][this.col + cAdder];
+
+            if (!potentialNeighbor.isWall) {
+              this.neighbors.push(potentialNeighbor);
+            }
           }
         });
       }
