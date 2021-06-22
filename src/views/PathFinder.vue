@@ -67,6 +67,7 @@ import BreadthFirstSearch from "@/algos/pathFinders/BFS";
 import DepthFirstSearch from "@/algos/pathFinders/DFS";
 import DepthFirstSearchMazeGen from "@/algos/mazeGenerators/DFSMaze";
 import randomMaze from "@/algos/mazeGenerators/randomMaze";
+import recursiveDivisionMaze from "@/algos/mazeGenerators/RecursiveDivision";
 
 // constants
 import {
@@ -157,6 +158,19 @@ export default defineComponent({
           randomMaze(this.startNode, this.endNode, this.matrix, this.makeWall);
           break;
 
+        case mazeGenerationAlgorithms.RECURSIVE_DIVISION:
+          recursiveDivisionMaze(
+            this.matrix,
+            this.columns,
+            this.rows,
+            Math.floor(this.rows / 2),
+            Math.floor(this.columns / 2),
+            this.startNode,
+            this.endNode,
+            this.makeWall
+          );
+          break;
+
         default:
           break;
       }
@@ -201,7 +215,7 @@ export default defineComponent({
       this.matrix[c.row][c.col].isWall = true;
       this.matrix[c.row][c.col].color = wallCellColor;
       this.matrix[c.row][c.col].drawBorder = false;
-      return new Promise(r => setTimeout(r, 10));
+      return new Promise(r => setTimeout(r, 15));
     },
 
     highlightGrid(openCells: CellClass[], closedCells: CellClass[]) {

@@ -3,13 +3,27 @@ import { CellClass } from "@/types/pathFinders";
 const heuristic = (start: CellClass, end: CellClass) =>
   Math.sqrt(Math.pow(start.row - end.row, 2) + Math.pow(start.col - end.col, 2));
 
+const getLowestFScoreNode = (array: CellClass[]): [number, CellClass] => {
+  let minNode: CellClass = array[0];
+  let index = 0;
+
+  for (let i = 0; i < array.length; i++) {
+    if (array[i].fScore < minNode.fScore) {
+      minNode = array[i];
+      index = i;
+    }
+  }
+
+  return [index, minNode];
+};
+
 const aStarAlgo = async (
   startNode: CellClass,
   endNode: CellClass,
   highlightGrid: (a: CellClass[], b: CellClass[]) => Promise<any>,
   colorFinalPath: () => void
 ): Promise<any> => {
-  const openSet: CellClass[] = [startNode];
+  let openSet: CellClass[] = [startNode];
   const closedSet: CellClass[] = [];
 
   // For node n, gScore[n] is the cost of the cheapest path from start to n currently known
@@ -20,13 +34,13 @@ const aStarAlgo = async (
   startNode.fScore = startNode.gScore + heuristic(startNode, endNode);
 
   while (openSet.length > 0) {
-    const currentNode = openSet[0];
+    const [index, currentNode] = getLowestFScoreNode(openSet);
 
     if (currentNode === endNode) {
       break;
     }
 
-    openSet.shift();
+    openSet = openSet.slice(0, index).concat(openSet.slice(index + 1));
     closedSet.push(currentNode);
 
     for (const neighbor of currentNode.neighbors) {
@@ -37,7 +51,7 @@ const aStarAlgo = async (
       if (!openSet.includes(neighbor)) {
         neighbor.gScore = tempG;
         openSet.push(neighbor);
-      } else if (tempG > neighbor.gScore) {
+      } else if (tempG > neighbor.fScore) {
         continue;
       }
 

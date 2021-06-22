@@ -64,7 +64,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import Dropdown from "@/components/Drodown.vue";
+import Dropdown from "@/components/Dropdown.vue";
 
 export default defineComponent({
   name: "AlgoNavBar",
@@ -110,7 +110,7 @@ export default defineComponent({
 .nav-container {
   width: 100vw;
   background-color: white;
-  height: 10vh;
+  height: 7vh;
   display: flex;
   justify-content: space-evenly;
   align-items: center;

@@ -40,10 +40,10 @@ export default defineComponent({
   align-content: center;
   position: absolute;
   top: 100%;
-  left: -50%;
-  min-width: 200%;
+  left: -25%;
+  min-width: 150%;
   background-color: #32475b;
-  border-radius: 10px;
+  border-radius: 5px;
 }
 
 @keyframes grow {
@@ -60,10 +60,10 @@ export default defineComponent({
 .dropdown-slot {
   height: 100%;
   width: 100%;
-  padding: 1rem;
+  padding: 0.5rem 1rem;
   color: #4eb380;
   font-size: 1.1rem;
-  border-radius: 10px;
+  border-radius: 5px;
 }
 
 .dropdown-item:hover {
