@@ -35,6 +35,18 @@
         </Dropdown>
       </div>
 
+      <div class="dropdown-container" v-if="showMazeDropdown">
+        <h1 class="is-size-4" @click="mazeDropdownVisible = !mazeDropdownVisible">
+          Mazes <slot />
+        </h1>
+        <Dropdown
+          v-if="mazeDropdownVisible"
+          :dropdownItems="mazeGenAlgorithmsList"
+          @selectionChanged="value => $emit('mazeGenerationAlgoSelected', value)"
+        >
+        </Dropdown>
+      </div>
+
       <div class="action-buttons-container">
         <button
           v-for="btn in buttonsList"
@@ -73,12 +85,21 @@ export default defineComponent({
     selectedAlgo: {
       type: String,
       required: true
+    },
+    showMazeDropdown: {
+      type: Boolean,
+      default: false
+    },
+    mazeGenAlgorithmsList: {
+      type: Array,
+      required: false
     }
   },
   data() {
     return {
       algoDropdownVisible: false,
       speedDropdownVisible: false,
+      mazeDropdownVisible: false,
       sortSpeed: 10
     };
   }

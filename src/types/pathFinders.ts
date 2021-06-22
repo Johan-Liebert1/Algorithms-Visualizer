@@ -39,19 +39,29 @@ export class CellClass {
     this.previous = null;
     this.color = isWall ? wallCellColor : defaultCellColor;
     this.isVisited = false;
-    this.drawBorder = true;
+    this.drawBorder = !isWall;
     this.borderColor = cellBorderColor;
   }
 
-  addNeighbors(grid: CellClass[][], diagonalAllowed = true) {
-    const rowAdders: number[] = [-1, 0, 1];
+  addNeighbors(
+    grid: CellClass[][],
+    diagonalAllowed = true,
+    neighborDist = 1
+  ): CellClass[] {
+    // if (this.neighbors.length > 0) return this.neighbors;
+
+    const rowAdders: number[] = [-neighborDist, 0, neighborDist];
 
     const colAdders: number[][] = [];
 
     if (diagonalAllowed) {
-      colAdders.push([-1, 0, 1], [-1, 1], [-1, 0, 1]);
+      colAdders.push(
+        [-neighborDist, 0, neighborDist],
+        [-neighborDist, neighborDist],
+        [-neighborDist, 0, neighborDist]
+      );
     } else {
-      colAdders.push([0], [-1, 1], [0]);
+      colAdders.push([0], [-neighborDist, neighborDist], [0]);
     }
 
     rowAdders.forEach((rAdder, rIndex) => {
@@ -67,5 +77,20 @@ export class CellClass {
         });
       }
     });
+
+    return this.neighbors;
+  }
+
+  hasUnvisitedNeighbors(): boolean {
+    let hasUnvisitedNeighbors = false;
+
+    for (const n of this.neighbors) {
+      if (!n.isVisited) {
+        hasUnvisitedNeighbors = true;
+        break;
+      }
+    }
+
+    return hasUnvisitedNeighbors;
   }
 }

@@ -4,8 +4,11 @@
       :algorithmsList="pathFindingAlgorithms"
       :buttonsList="navbarButtons"
       :selectedAlgo="selectedPathFindingAlgorithm"
-      @algorithmChanged="setNewAlgorithm"
+      @algorithmChanged="setNewPathFindingAlgo"
       v-model:algoSpeed.sync="algorithmSpeed"
+      :showMazeDropdown="true"
+      :mazeGenAlgorithmsList="mazeGenerationAlgorithms"
+      @mazeGenerationAlgoSelected="setNewMazeGenAlgo"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -62,6 +65,8 @@ import { ButtonsArray } from "@/types/global";
 import aStarAlgo from "@/algos/pathFinders/AStar";
 import BreadthFirstSearch from "@/algos/pathFinders/BFS";
 import DepthFirstSearch from "@/algos/pathFinders/DFS";
+import DepthFirstSearchMazeGen from "@/algos/mazeGenerators/DFSMaze";
+import randomMaze from "@/algos/mazeGenerators/randomMaze";
 
 // constants
 import {
@@ -73,6 +78,7 @@ import {
   secondaryCellBorderColor,
   wallCellColor
 } from "@/constants/pathFindersConstants";
+import { mazeGenerationAlgorithms } from "@/constants/mazeConstants";
 
 // components
 import Cell from "@/components/pathFinders/Cell.vue";
@@ -101,6 +107,10 @@ export default defineComponent({
       pathFindingAlgorithms: Object.entries(pathFindingAlgorithms).map(
         ([key, value]) => value
       ),
+      mazeGenerationAlgorithms: Object.entries(mazeGenerationAlgorithms).map(
+        ([key, value]) => value
+      ),
+      selectedMazeGenerationAlgorithm: mazeGenerationAlgorithms.RANDOMIZED_DFS,
       navbarButtons: [
         {
           text: "Start",
@@ -123,8 +133,33 @@ export default defineComponent({
   },
 
   methods: {
-    setNewAlgorithm(value: string) {
+    setNewPathFindingAlgo(value: string) {
       this.selectedPathFindingAlgorithm = value;
+    },
+
+    setNewMazeGenAlgo(value: string) {
+      this.selectedMazeGenerationAlgorithm = value;
+      this.generateMaze();
+    },
+
+    generateMaze() {
+      switch (this.selectedMazeGenerationAlgorithm) {
+        case mazeGenerationAlgorithms.RANDOMIZED_DFS:
+          DepthFirstSearchMazeGen(
+            this.startNode,
+            this.endNode,
+            this.matrix,
+            this.makeWall
+          );
+          break;
+
+        case mazeGenerationAlgorithms.RANDOM_MAZE:
+          randomMaze(this.startNode, this.endNode, this.matrix, this.makeWall);
+          break;
+
+        default:
+          break;
+      }
     },
 
     findShortestPath() {
@@ -160,6 +195,13 @@ export default defineComponent({
           console.log(this.selectedPathFindingAlgorithm, "not yet implemented");
           break;
       }
+    },
+
+    makeWall(c: CellClass) {
+      this.matrix[c.row][c.col].isWall = true;
+      this.matrix[c.row][c.col].color = wallCellColor;
+      this.matrix[c.row][c.col].drawBorder = false;
+      return new Promise(r => setTimeout(r, 10));
     },
 
     highlightGrid(openCells: CellClass[], closedCells: CellClass[]) {
@@ -245,6 +287,7 @@ export default defineComponent({
       this.matrix[row][col].color = this.matrix[row][col].isWall
         ? wallCellColor
         : defaultCellColor;
+      this.matrix[row][col].drawBorder = !this.matrix[row][col].isWall;
     },
 
     nodeDragOver(e: Event) {

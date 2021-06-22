@@ -20,6 +20,7 @@ export default defineComponent({
   padding: 0;
   box-sizing: border-box;
 }
+
 body {
   background-color: #02203a;
   color: rgb(200, 200, 200);
