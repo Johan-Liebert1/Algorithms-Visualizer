@@ -63,6 +63,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { CellClass } from "@/types/pathFinders";
+import { CELL_SIZE } from "@/constants/pathFindersConstants";
 
 export default defineComponent({
   props: {
@@ -86,7 +87,7 @@ export default defineComponent({
 
   data() {
     return {
-      dimension: 20
+      dimension: CELL_SIZE
     };
   },
 

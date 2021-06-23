@@ -110,7 +110,7 @@ export default defineComponent({
 .nav-container {
   width: 100vw;
   background-color: white;
-  height: 7vh;
+  min-height: 7vh;
   display: flex;
   justify-content: space-evenly;
   align-items: center;

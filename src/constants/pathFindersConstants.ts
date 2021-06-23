@@ -7,6 +7,8 @@ export const wallCellColor = "#2c3e50";
 export const cellBorderColor = "#74b9ff";
 export const secondaryCellBorderColor = "rgb(200, 200, 200)";
 
+export const CELL_SIZE = 25;
+
 export const pathFindingAlgorithms = Object.freeze({
   A_STAR: "A Star",
   DIJKSTRA: "Dijkstra's Algorithm",

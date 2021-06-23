@@ -40,8 +40,8 @@ export default defineComponent({
   align-content: center;
   position: absolute;
   top: 100%;
-  left: -25%;
-  min-width: 150%;
+  left: -50%;
+  min-width: 200%;
   background-color: #32475b;
   border-radius: 5px;
 }

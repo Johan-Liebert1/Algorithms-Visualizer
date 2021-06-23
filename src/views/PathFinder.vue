@@ -74,6 +74,7 @@ import recursiveDivisionMaze from "@/algos/mazeGenerators/RecursiveDivision";
 
 // constants
 import {
+  CELL_SIZE,
   closedCellColor,
   defaultCellColor,
   finalPathColor,
@@ -99,7 +100,7 @@ export default defineComponent({
   data() {
     return {
       matrix: [] as CellClass[][],
-      rows: 25,
+      rows: 21,
       columns: 40,
       mouseDown: false,
       stopAlgo: false,
@@ -342,7 +343,7 @@ export default defineComponent({
       this.currentlyDraggingCell = cell;
     },
 
-    nodeDropped(cell: CellClass) {
+    nodeDropped() {
       this.currentlyDraggingCell = null;
     },
 
@@ -362,6 +363,8 @@ export default defineComponent({
   },
 
   mounted() {
+    this.columns = Math.floor((window.innerWidth - 20) / CELL_SIZE);
+
     this.initGrid();
 
     const gridRef = this.$refs.gridContainer as HTMLDivElement;
@@ -385,7 +388,11 @@ export default defineComponent({
   flex-direction: column;
   justify-content: space-evenly;
   align-items: center;
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
+}
+
+.grid-container {
+  justify-self: flex-end;
 }
 
 .action-container {
