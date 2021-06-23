@@ -15,10 +15,12 @@ export class CellClass {
   fScore: number;
   neighbors: CellClass[];
   previous: CellClass | null;
+  next: CellClass | null;
   color: string;
   isVisited: boolean;
   drawBorder: boolean;
   borderColor: string;
+  djikstraScore: number;
 
   constructor(
     row: number,
@@ -37,10 +39,12 @@ export class CellClass {
     this.hScore = 0;
     this.neighbors = [];
     this.previous = null;
+    this.next = null;
     this.color = isWall ? wallCellColor : defaultCellColor;
     this.isVisited = false;
     this.drawBorder = !isWall;
     this.borderColor = cellBorderColor;
+    this.djikstraScore = Infinity;
   }
 
   addNeighbors(

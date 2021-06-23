@@ -1,21 +1,6 @@
+import { pathFindingAlgorithms } from "@/constants/pathFindersConstants";
 import { CellClass } from "@/types/pathFinders";
-
-const heuristic = (start: CellClass, end: CellClass) =>
-  Math.sqrt(Math.pow(start.row - end.row, 2) + Math.pow(start.col - end.col, 2));
-
-const getLowestFScoreNode = (array: CellClass[]): [number, CellClass] => {
-  let minNode: CellClass = array[0];
-  let index = 0;
-
-  for (let i = 0; i < array.length; i++) {
-    if (array[i].fScore < minNode.fScore) {
-      minNode = array[i];
-      index = i;
-    }
-  }
-
-  return [index, minNode];
-};
+import { getLowestScoreNode, heuristic } from "./helpers";
 
 const aStarAlgo = async (
   startNode: CellClass,
@@ -23,6 +8,8 @@ const aStarAlgo = async (
   highlightGrid: (a: CellClass[], b: CellClass[]) => Promise<any>,
   colorFinalPath: () => void
 ): Promise<any> => {
+  const algo = pathFindingAlgorithms.A_STAR;
+
   let openSet: CellClass[] = [startNode];
   const closedSet: CellClass[] = [];
 
@@ -31,10 +18,10 @@ const aStarAlgo = async (
 
   // For node n, fScore[n] := gScore[n] + h(n). fScore[n] represents our current best guess as to
   // how short a path from start to finish can be if it goes through n.
-  startNode.fScore = startNode.gScore + heuristic(startNode, endNode);
+  startNode.fScore = startNode.gScore + heuristic(startNode, endNode, algo);
 
   while (openSet.length > 0) {
-    const [index, currentNode] = getLowestFScoreNode(openSet);
+    const [index, currentNode] = getLowestScoreNode(openSet, algo);
 
     if (currentNode === endNode) {
       break;
@@ -46,7 +33,7 @@ const aStarAlgo = async (
     for (const neighbor of currentNode.neighbors) {
       if (closedSet.includes(neighbor) || neighbor.isWall) continue;
 
-      const tempG: number = neighbor.gScore + heuristic(currentNode, neighbor);
+      const tempG: number = neighbor.gScore + heuristic(currentNode, neighbor, algo);
 
       if (!openSet.includes(neighbor)) {
         neighbor.gScore = tempG;
@@ -59,7 +46,7 @@ const aStarAlgo = async (
       neighbor.gScore = tempG;
 
       if (neighbor.hScore === 0) {
-        neighbor.hScore = heuristic(neighbor, endNode);
+        neighbor.hScore = heuristic(neighbor, endNode, algo);
       }
 
       neighbor.fScore = neighbor.gScore + neighbor.hScore;

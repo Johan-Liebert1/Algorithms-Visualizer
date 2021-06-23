@@ -9,7 +9,7 @@ export const secondaryCellBorderColor = "rgb(200, 200, 200)";
 
 export const pathFindingAlgorithms = Object.freeze({
   A_STAR: "A Star",
-  DJIKSTRA: "Djikstra's Algorithm",
+  DIJKSTRA: "Dijkstra's Algorithm",
   BREADTH_FIRST_SEARCH: "Breadth First Search",
   DEPTH_FIRST_SEARCH: "Depth First Search"
 });

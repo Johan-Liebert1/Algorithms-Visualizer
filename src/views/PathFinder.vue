@@ -61,10 +61,13 @@ import { defineComponent, ref } from "vue";
 import { CellClass } from "@/types/pathFinders";
 import { ButtonsArray } from "@/types/global";
 
-// algorithms
+// algorithms - path finders
 import aStarAlgo from "@/algos/pathFinders/AStar";
 import BreadthFirstSearch from "@/algos/pathFinders/BFS";
 import DepthFirstSearch from "@/algos/pathFinders/DFS";
+import dijkstrasAlgorithm from "@/algos/pathFinders/Djikstras";
+
+// algorithms - maze generators
 import DepthFirstSearchMazeGen from "@/algos/mazeGenerators/DFSMaze";
 import randomMaze from "@/algos/mazeGenerators/randomMaze";
 import recursiveDivisionMaze from "@/algos/mazeGenerators/RecursiveDivision";
@@ -198,6 +201,15 @@ export default defineComponent({
 
         case pathFindingAlgorithms.DEPTH_FIRST_SEARCH:
           DepthFirstSearch(
+            this.startNode,
+            this.endNode,
+            this.highlightGrid,
+            this.colorFinalPath
+          );
+          break;
+
+        case pathFindingAlgorithms.DIJKSTRA:
+          dijkstrasAlgorithm(
             this.startNode,
             this.endNode,
             this.highlightGrid,
