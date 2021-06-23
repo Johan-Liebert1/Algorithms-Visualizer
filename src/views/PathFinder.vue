@@ -25,16 +25,87 @@
     </AlgoNavBar>
 
     <div class="wrapper" ref="gridContainer">
-      <label>
-        <input
-          type="checkbox"
-          v-model="diagonalMovementAllowed"
-          @change="setCellNeighbors"
-        />
-        Allow Diagonal Movement
-      </label>
+      <div class="algorithm-info has-text-centered">
+        <div class="is-flex">
+          <div
+            class="cell-info-div checkbox"
+            :style="{ backgroundColor: cellColors.default }"
+            @click="setIsDiagonalMovementAllowed"
+          >
+            <svg
+              v-if="diagonalMovementAllowed"
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="green"
+              class="bi bi-check-lg"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M13.485 1.431a1.473 1.473 0 0 1 2.104 2.062l-7.84 9.801a1.473 1.473 0 0 1-2.12.04L.431 8.138a1.473 1.473 0 0 1 2.084-2.083l4.111 4.112 6.82-8.69a.486.486 0 0 1 .04-.045z"
+              />
+            </svg>
+          </div>
+          Allow Diagonal Movement
+        </div>
 
-      Algo Speed - {{ algorithmSpeed }} selected = {{ selectedPathFindingAlgorithm }}
+        <div>
+          <p class="has-text-weight-bold">Visualizing</p>
+          <p>{{ selectedPathFindingAlgorithm }}</p>
+        </div>
+
+        <div>
+          <p class="has-text-weight-bold">Algo Speed</p>
+          <p>{{ algorithmSpeed }}</p>
+        </div>
+
+        <div>
+          <div class="is-flex">
+            <div
+              class="cell-info-div"
+              :style="{ backgroundColor: cellColors.default }"
+            ></div>
+            Unvisited Node
+          </div>
+
+          <div class="is-flex" style="margin-top: 5px;">
+            <div
+              class="cell-info-div"
+              :style="{ backgroundColor: cellColors.wall }"
+            ></div>
+            Wall Node
+          </div>
+        </div>
+
+        <div>
+          <div class="is-flex">
+            <div
+              class="cell-info-div"
+              :style="{ backgroundColor: cellColors.open }"
+            ></div>
+            Open Node
+          </div>
+
+          <div class="is-flex" style="margin-top: 5px;">
+            <div
+              class="cell-info-div"
+              :style="{ backgroundColor: cellColors.closed }"
+            ></div>
+            Closed Node
+          </div>
+        </div>
+
+        <div>
+          <div class="is-flex">
+            <div
+              class="cell-info-div"
+              :style="{ backgroundColor: cellColors.path }"
+            ></div>
+            Final Path
+          </div>
+        </div>
+      </div>
+
       <div class="grid-container" @dragover="nodeDragOver">
         <div v-for="(row, index) in matrix" :key="index" class="is-flex">
           <Cell
@@ -258,6 +329,11 @@ export default defineComponent({
       this.startNode.drawBorder = false;
     },
 
+    setIsDiagonalMovementAllowed() {
+      this.diagonalMovementAllowed = !this.diagonalMovementAllowed;
+      this.setCellNeighbors();
+    },
+
     setCellNeighbors() {
       for (let row of this.matrix) {
         for (let cell of row) {
@@ -362,6 +438,18 @@ export default defineComponent({
     }
   },
 
+  computed: {
+    cellColors() {
+      return {
+        default: defaultCellColor,
+        wall: wallCellColor,
+        path: finalPathColor,
+        open: openCellColor,
+        closed: closedCellColor
+      };
+    }
+  },
+
   mounted() {
     this.columns = Math.floor((window.innerWidth - 20) / CELL_SIZE);
 
@@ -376,11 +464,28 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.cell-info-div {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+}
+
+.checkbox {
+  border-radius: 2px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.checkbox:hover {
+  opacity: 0.9;
+  cursor: pointer;
+}
+
 .outer-wrapper {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
 .wrapper {
@@ -389,6 +494,14 @@ export default defineComponent({
   justify-content: space-evenly;
   align-items: center;
   margin-bottom: 1.5rem;
+}
+
+.algorithm-info {
+  width: 100%;
+  height: 10vh;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
 }
 
 .grid-container {
