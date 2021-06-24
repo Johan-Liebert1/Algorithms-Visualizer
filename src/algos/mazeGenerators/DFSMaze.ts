@@ -16,23 +16,20 @@ const DepthFirstSearchMaze = async (
 
     console.log("mze going on");
 
-    const allNeighbors: CellClass[] = currentCell.addNeighbors(matrix);
-    let neighbor: CellClass =
-      allNeighbors[Math.floor(Math.random() * allNeighbors.length)];
+    // const allNeighbors: CellClass[] = currentCell.addNeighbors(matrix);
+    // let neighbor: CellClass = allNeighbors[Math.floor(Math.random() * allNeighbors.length)];
 
-    for (;;) {
+    for (const neighbor of currentCell.neighbors) {
       if (neighbor.isVisited || neighbor === startNode || neighbor === endNode) {
-        neighbor = allNeighbors[Math.floor(Math.random() * allNeighbors.length)];
         continue;
       }
+
       openSet.push(neighbor);
-      neighbor.isVisited = true;
       break;
     }
 
     // Math.floor(Math.random() * openSet.length)
     // const toMakeWall = openSet[openSet.length - 1];
-
     await makeWall(currentCell);
   }
 };

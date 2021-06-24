@@ -1,16 +1,18 @@
 <template>
-  <NavBar v-if="$route.name === 'Home'" />
-  <RouterView />
+  <div>
+    <Navigation v-if="$route.name === 'Home'" />
+    <RouterView :key="$router.fullPath" v-if="$route.name !== 'Home'" />
+  </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import NavBar from "./components/NavBar.vue";
+import Navigation from "./components/Navigation.vue";
 import "bulmaswatch/flatly/bulmaswatch.min.css";
 
 export default defineComponent({
   name: "App",
-  components: { NavBar }
+  components: { Navigation }
 });
 </script>
 
