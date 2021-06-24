@@ -26,7 +26,7 @@ export default defineComponent({
         // get gifs of the algos working and use them as image sources
         {
           name: "Sorting",
-          imageSrc: "https://bulma.io/images/placeholders/1280x960.png",
+          imageSrc: "/images/sortingSS.png",
           routePath: "/sorting-algos"
         },
         {

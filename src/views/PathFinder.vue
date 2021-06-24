@@ -464,12 +464,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.cell-info-div {
-  width: 20px;
-  height: 20px;
-  margin-right: 5px;
-}
-
 .checkbox {
   border-radius: 2px;
   display: flex;
@@ -496,14 +490,6 @@ export default defineComponent({
   margin-bottom: 1.5rem;
 }
 
-.algorithm-info {
-  width: 100%;
-  height: 10vh;
-  display: flex;
-  align-items: center;
-  justify-content: space-evenly;
-}
-
 .grid-container {
   justify-self: flex-end;
 }
@@ -513,5 +499,21 @@ export default defineComponent({
   width: 70%;
   justify-content: space-around;
   align-items: center;
+}
+</style>
+
+<style>
+.cell-info-div {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+}
+
+.algorithm-info {
+  width: 100%;
+  height: 10vh;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
 }
 </style>

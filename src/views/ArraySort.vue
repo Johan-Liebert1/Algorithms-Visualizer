@@ -21,8 +21,54 @@
       </svg>
     </AlgoNavBar>
     <div class="array-sort-container">
-      Algo - {{ sortAlgorithm }} <br />
-      Speed - {{ sortSpeed }}
+      <div class="algorithm-info has-text-centered">
+        <div>
+          <p class="has-text-weight-bold">Visualizing</p>
+          <p>{{ sortAlgorithm }}</p>
+        </div>
+
+        <div>
+          <p class="has-text-weight-bold">Algo Speed</p>
+          <p>{{ sortSpeed }}</p>
+        </div>
+
+        <div>
+          <div class="is-flex">
+            <div
+              class="cell-info-div"
+              :style="{ backgroundColor: arrayColors.base }"
+            ></div>
+            Initial Element
+          </div>
+
+          <div class="is-flex" style="margin-top: 5px;">
+            <div
+              class="cell-info-div"
+              :style="{ backgroundColor: arrayColors.sorted }"
+            ></div>
+            Sorted Element
+          </div>
+        </div>
+
+        <div>
+          <div class="is-flex">
+            <div
+              class="cell-info-div"
+              :style="{ backgroundColor: arrayColors.swap }"
+            ></div>
+            Swap
+          </div>
+
+          <div class="is-flex" style="margin-top: 5px;">
+            <div
+              class="cell-info-div"
+              :style="{ backgroundColor: arrayColors.iterating }"
+            ></div>
+            Iterating
+          </div>
+        </div>
+      </div>
+
       <div class="bar-container">
         <Bar v-for="(element, index) in array" :key="index" :arrayElement="element" />
       </div>
@@ -216,6 +262,17 @@ export default defineComponent({
         ...e,
         barHeight: Math.floor(this.maxHeight * (e.number / max))
       }));
+    }
+  },
+
+  computed: {
+    arrayColors() {
+      return {
+        base: baseBarColor,
+        swap: swapBarColor,
+        sorted: sortedBarColor,
+        iterating: iteratingBarColor
+      };
     }
   },
 
