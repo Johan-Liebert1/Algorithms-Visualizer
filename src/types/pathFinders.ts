@@ -21,6 +21,7 @@ export class CellClass {
   drawBorder: boolean;
   borderColor: string;
   djikstraScore: number;
+  ellersSet: string;
 
   constructor(
     row: number,
@@ -45,6 +46,9 @@ export class CellClass {
     this.drawBorder = !isWall;
     this.borderColor = cellBorderColor;
     this.djikstraScore = Infinity;
+    this.ellersSet = Math.random()
+      .toString(36)
+      .substring(2);
   }
 
   addNeighbors(
@@ -96,5 +100,23 @@ export class CellClass {
     }
 
     return hasUnvisitedNeighbors;
+  }
+
+  /**
+   * @param anotherCell
+   * @returns a cell between the currentCell and anotherCell if it exists, else null
+   */
+  getCellInBetween(matrix: CellClass[][], anotherCell: CellClass): CellClass | null {
+    if (this.row === anotherCell.row) {
+      if (this.col < anotherCell.col) return matrix[this.row][this.col + 1];
+      else return matrix[this.row][this.col - 1];
+    }
+
+    if (this.col === anotherCell.col) {
+      if (this.row < anotherCell.row) return matrix[this.row + 1][this.col];
+      else return matrix[this.row - 1][this.col];
+    }
+
+    return null;
   }
 }

@@ -121,6 +121,8 @@
           />
         </div>
       </div>
+
+      <!-- <input type="text" /> -->
     </div>
   </div>
 </template>
@@ -142,6 +144,7 @@ import dijkstrasAlgorithm from "@/algos/pathFinders/Djikstras";
 import DepthFirstSearchMazeGen from "@/algos/mazeGenerators/DFSMaze";
 import randomMaze from "@/algos/mazeGenerators/randomMaze";
 import recursiveDivisionMaze from "@/algos/mazeGenerators/RecursiveDivision";
+import ellersMaze from "@/algos/mazeGenerators/EllersAlgo";
 
 // constants
 import {
@@ -159,6 +162,7 @@ import { mazeGenerationAlgorithms } from "@/constants/mazeConstants";
 // components
 import Cell from "@/components/pathFinders/Cell.vue";
 import AlgoNavBar from "@/components/AlgoNavBar.vue";
+import primsMazeGenerator from "@/algos/mazeGenerators/PrimsAlgo";
 
 export default defineComponent({
   components: { Cell, AlgoNavBar },
@@ -234,15 +238,36 @@ export default defineComponent({
           break;
 
         case mazeGenerationAlgorithms.RECURSIVE_DIVISION:
+          console.log(this.columns, this.rows);
           recursiveDivisionMaze(
             this.matrix,
             this.columns,
             this.rows,
-            Math.floor(this.rows / 2),
-            Math.floor(this.columns / 2),
+            0,
+            0,
             this.startNode,
             this.endNode,
             this.makeWall
+          );
+          break;
+
+        case mazeGenerationAlgorithms.PRIMS_ALGORITHM:
+          primsMazeGenerator(
+            this.matrix,
+            this.startNode,
+            this.endNode,
+            this.makeWall,
+            this.clearWall
+          );
+          break;
+
+        case mazeGenerationAlgorithms.ELLERS_ALGORITHM:
+          ellersMaze(
+            this.matrix,
+            this.startNode,
+            this.endNode,
+            this.makeWall,
+            this.clearWall
           );
           break;
 
@@ -300,6 +325,13 @@ export default defineComponent({
       this.matrix[c.row][c.col].color = wallCellColor;
       this.matrix[c.row][c.col].drawBorder = false;
       return new Promise(r => setTimeout(r, 15));
+    },
+
+    clearWall(c: CellClass) {
+      this.matrix[c.row][c.col].isWall = false;
+      this.matrix[c.row][c.col].color = defaultCellColor;
+      this.matrix[c.row][c.col].drawBorder = true;
+      return new Promise(r => setTimeout(r, 150));
     },
 
     highlightGrid(openCells: CellClass[], closedCells: CellClass[]) {
@@ -451,7 +483,9 @@ export default defineComponent({
   },
 
   mounted() {
-    this.columns = Math.floor((window.innerWidth - 20) / CELL_SIZE);
+    const randCols = Math.floor((window.innerWidth - 20) / CELL_SIZE);
+
+    this.columns = randCols % 2 === 0 ? randCols - 1 : randCols;
 
     this.initGrid();
 

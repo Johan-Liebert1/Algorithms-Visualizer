@@ -5,12 +5,22 @@ enum Direction {
   horizontal
 }
 
+const chooseOrientation = (width: number, height: number): Direction => {
+  if (width > height) {
+    return Direction.vertical;
+  } else if (height > width) {
+    return Direction.horizontal;
+  }
+
+  return Math.random() > 0.5 ? Direction.vertical : Direction.horizontal;
+};
+
 /**
  * @param matrix The grid matrix
  * @param width Number of columns in the matrix
  * @param height Number of rows in the matrix
- * @param row The row where to draw a horizontal wall
- * @param col The col where to draw a vertical wall
+ * @param x The col where to draw a horizontal wall
+ * @param y The row where to draw a vertical wall
  * @param startNode The start node, so that we don't draw a wall over it
  * @param endNode The target node, so that we don't draw a wall over it
  * @param makeWall Callback function to display the maze
@@ -19,78 +29,81 @@ const recursiveDivisionMaze = async (
   matrix: CellClass[][],
   width: number,
   height: number,
-  row: number,
-  col: number,
+  x: number,
+  y: number,
   startNode: CellClass,
   endNode: CellClass,
   makeWall: (cell: CellClass) => Promise<any>
 ) => {
-  console.log("width = ", width, "height = ", height);
-  if (width < 1 || height < 1 || row < 0 || col < 0) return;
+  if (width <= 3 || height <= 3 || y >= matrix.length || x >= matrix[0].length) return;
 
-  const direction =
-    Math.floor(Math.random() * (width + height)) < width
-      ? Direction.horizontal
-      : Direction.vertical;
+  const horizontal = chooseOrientation(width, height) === Direction.horizontal;
 
-  if (direction === Direction.vertical) {
-    // draw a wall from top to bottom starting from the row and ending at height
-    for (let i = row; i < height; i++) {
-      if (
-        matrix[i][col] !== startNode &&
-        matrix[i][col] !== endNode &&
-        Math.random() < 0.95
-      ) {
-        await makeWall(matrix[i][col]);
-      }
+  // where will the wall be drawn from?
+  // x - col, y - row
+  let wallX = x + (horizontal ? 0 : Math.floor(Math.random() * (width / 2)));
+  let wallY = y + (horizontal ? Math.floor(Math.random() * (height / 2)) : 0);
+
+  // where will the passage through the wall exist?
+  // if wall is horizontal, then we need passag on X
+  // if wall is not horizontal, then we need passage on Y
+  const passageX = wallX + (horizontal ? Math.floor(Math.random() * (width - 2)) : 0);
+  const passageY = wallY + (horizontal ? 0 : Math.floor(Math.random() * (height - 2)));
+
+  // how long will the wall be
+  const wallLength: number = horizontal ? width : height;
+
+  // move along the X axis, if horizontal wall, else move along the Y axis
+  const dx = horizontal ? 1 : 0;
+  const dy = horizontal ? 0 : 1;
+
+  for (let i = 0; i < wallLength; i++) {
+    if (!matrix[wallY][wallX]) console.log(wallY, wallX);
+
+    const cell = matrix[wallY][wallX];
+
+    if (
+      cell !== startNode &&
+      cell !== endNode &&
+      (wallX !== passageX || wallY !== passageY)
+    ) {
+      await makeWall(cell);
     }
-  } else if (direction === Direction.horizontal) {
-    // draw a wall from right to left starting from the col and ending at width
-    for (let j = col; j < width; j++) {
-      if (
-        matrix[row][j] !== startNode &&
-        matrix[row][j] !== endNode &&
-        Math.random() < 0.95
-      ) {
-        await makeWall(matrix[row][j]);
-      }
-    }
+
+    wallX += dx;
+    wallY += dy;
   }
 
-  const newWidth = Math.floor(width / 2);
-  const newHeight = Math.floor(height / 2);
+  let [newX, newY] = horizontal ? [x, wallY + 1] : [wallX + 1, y];
 
-  const rowAdders = [newHeight, newHeight, -newHeight, -newHeight];
-  const colAdders = [-newWidth, newWidth, -newWidth, newWidth];
+  const [newWidth, newHeight] = horizontal
+    ? [width, wallY - y + 1]
+    : [wallX - x + 1, height];
 
-  for (let a = 0; a < 4; a++) {
-    recursiveDivisionMaze(
-      matrix,
-      newWidth,
-      newHeight,
-      row + rowAdders[a],
-      col + colAdders[a],
-      startNode,
-      endNode,
-      makeWall
-    );
-  }
+  recursiveDivisionMaze(
+    matrix,
+    newWidth,
+    newHeight,
+    newX,
+    newY,
+    startNode,
+    endNode,
+    makeWall
+  );
+
+  newX = x;
+  newY = y;
+
+  recursiveDivisionMaze(
+    matrix,
+    newWidth,
+    newHeight,
+    newX,
+    newY,
+    startNode,
+    endNode,
+    makeWall
+  );
 };
 
 export default recursiveDivisionMaze;
-
-/*  
-This is a fast algorithm that differs from other maze generating routines in that it builds walls, rather than breaking through them.
-
-Choose an area to be divided (highlighted in blue). Initially, the only available area will be the entire board.
-
-Divide the chosen area by constructing a wall though it. The placement of the wall, as well as its direction, is random. However, in this particular implementation of the algorithm, the decision to build a vertical or horizontal wall is weighted based on the shape of the area being divided. In particular, if the area has width w and height h, a random integer from 0 to w+h is chosen. If the value is less than w, the division is vertical. This ensures that a wider area is more likely to be divided by a vertical wall, and a narrow area is more likely to be cut horizontally. This is purely for aesthetics.
-
-Choose a random location in the wall to build a single gap. This ensures the maze will be fully connected.
-
-If the divided portions of the area are large enough (width and height greater than 1 cell), they are both added to the stack of eligible areas to divide.
-
-The process ends when no areas remain with width and height greater than 1.
-
-This algorithm can be easily modified to change the overall appearance or size of the maze.
-*/
