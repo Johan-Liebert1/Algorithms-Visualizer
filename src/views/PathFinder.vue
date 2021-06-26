@@ -49,60 +49,78 @@
           Allow Diagonal Movement
         </div>
 
-        <div>
+        <Tooltip :tooltipMessage="'The algorithm to visualize'">
           <p class="has-text-weight-bold">Visualizing</p>
           <p>{{ selectedPathFindingAlgorithm }}</p>
-        </div>
+        </Tooltip>
 
-        <div>
+        <Tooltip :tooltipMessage="'Speed of the animation in milliseconds'">
           <p class="has-text-weight-bold">Algo Speed</p>
           <p>{{ algorithmSpeed }}</p>
+        </Tooltip>
+
+        <div>
+          <Tooltip :tooltipMessage="'Nodes that have not been visited by the algorithm'">
+            <div class="is-flex">
+              <div
+                class="cell-info-div"
+                :style="{ backgroundColor: cellColors.default }"
+              ></div>
+              Unvisited Node
+            </div>
+          </Tooltip>
+
+          <Tooltip :tooltipMessage="'Nodes that are walls and cannot be passed through'">
+            <div class="is-flex" style="margin-top: 5px;">
+              <div
+                class="cell-info-div"
+                :style="{ backgroundColor: cellColors.wall }"
+              ></div>
+              Wall Node
+            </div>
+          </Tooltip>
         </div>
 
         <div>
-          <div class="is-flex">
-            <div
-              class="cell-info-div"
-              :style="{ backgroundColor: cellColors.default }"
-            ></div>
-            Unvisited Node
-          </div>
+          <Tooltip :tooltipMessage="'Nodes that can still be expanded'">
+            <div class="is-flex">
+              <div
+                class="cell-info-div"
+                :style="{ backgroundColor: cellColors.open }"
+              ></div>
+              Open Node
+            </div>
+          </Tooltip>
 
-          <div class="is-flex" style="margin-top: 5px;">
-            <div
-              class="cell-info-div"
-              :style="{ backgroundColor: cellColors.wall }"
-            ></div>
-            Wall Node
-          </div>
+          <Tooltip
+            :tooltipMessage="
+              'Nodes that are unfit for further expansion and have been marked as closed by the algorithm'
+            "
+          >
+            <div class="is-flex" style="margin-top: 5px;">
+              <div
+                class="cell-info-div"
+                :style="{ backgroundColor: cellColors.closed }"
+              ></div>
+              Closed Node
+            </div>
+          </Tooltip>
         </div>
 
         <div>
-          <div class="is-flex">
-            <div
-              class="cell-info-div"
-              :style="{ backgroundColor: cellColors.open }"
-            ></div>
-            Open Node
-          </div>
-
-          <div class="is-flex" style="margin-top: 5px;">
-            <div
-              class="cell-info-div"
-              :style="{ backgroundColor: cellColors.closed }"
-            ></div>
-            Closed Node
-          </div>
-        </div>
-
-        <div>
-          <div class="is-flex">
-            <div
-              class="cell-info-div"
-              :style="{ backgroundColor: cellColors.path }"
-            ></div>
-            Final Path
-          </div>
+          <Tooltip
+            :tooltipMessage="
+              'Nodes that are part of the final path chosen by the algorithm'
+            "
+          >
+            <div class="is-flex">
+              <div
+                class="cell-info-div"
+                :style="{ backgroundColor: cellColors.path }"
+              ></div>
+              Final Path
+            </div>
+          </Tooltip>
         </div>
       </div>
 
@@ -145,6 +163,7 @@ import DepthFirstSearchMazeGen from "@/algos/mazeGenerators/DFSMaze";
 import randomMaze from "@/algos/mazeGenerators/randomMaze";
 import recursiveDivisionMaze from "@/algos/mazeGenerators/RecursiveDivision";
 import ellersMaze from "@/algos/mazeGenerators/EllersAlgo";
+import primsMazeGenerator from "@/algos/mazeGenerators/PrimsAlgo";
 
 // constants
 import {
@@ -162,10 +181,10 @@ import { mazeGenerationAlgorithms } from "@/constants/mazeConstants";
 // components
 import Cell from "@/components/pathFinders/Cell.vue";
 import AlgoNavBar from "@/components/AlgoNavBar.vue";
-import primsMazeGenerator from "@/algos/mazeGenerators/PrimsAlgo";
+import Tooltip from "@/components/Tooltip.vue";
 
 export default defineComponent({
-  components: { Cell, AlgoNavBar },
+  components: { Cell, AlgoNavBar, Tooltip },
 
   setup() {
     const currentlyDraggingCell = ref<CellClass | null>(null);

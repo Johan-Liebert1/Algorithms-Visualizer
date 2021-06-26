@@ -44,15 +44,17 @@ export default defineComponent({
   min-width: 200%;
   background-color: #32475b;
   border-radius: 5px;
+  z-index: 10;
+  animation: grow 200ms linear;
 }
 
 @keyframes grow {
   0% {
-    transform: scale(0, 0);
+    transform: translateY(-100%);
   }
 
   100% {
-    transform: scale(1, 1);
+    transform: translateY(0);
   }
 }
 
