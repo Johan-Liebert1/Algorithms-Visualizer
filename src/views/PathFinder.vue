@@ -257,13 +257,13 @@ export default defineComponent({
           break;
 
         case mazeGenerationAlgorithms.RECURSIVE_DIVISION:
-          console.log(this.columns, this.rows);
+          console.log(this.rows, this.columns);
           recursiveDivisionMaze(
             this.matrix,
-            this.columns,
-            this.rows,
             0,
             0,
+            this.columns - 1,
+            this.rows - 1,
             this.startNode,
             this.endNode,
             this.makeWall

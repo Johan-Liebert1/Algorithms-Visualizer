@@ -5,46 +5,58 @@
     </div>
 
     <div class="options-container">
-      <div class="dropdown-container">
-        <h1 class="is-size-4" @click="algoDropdownVisible = !algoDropdownVisible">
-          Algorithms <slot />
-        </h1>
-        <Dropdown
-          v-if="algoDropdownVisible"
-          :dropdownItems="algorithmsList"
-          :selectedAlgo="selectedAlgo"
-          @selectionChanged="value => $emit('algorithmChanged', value)"
-        />
-      </div>
-
-      <div class="dropdown-container">
-        <h1 class="is-size-4" @click="speedDropdownVisible = !speedDropdownVisible">
-          Speed <slot />
-        </h1>
-        <Dropdown v-if="speedDropdownVisible" :dropdownItems="null">
-          <p>Speed: {{ algoSpeed / 1000 }}s</p>
-          <input
-            type="range"
-            min="50"
-            max="2000"
-            step="50"
-            class="slider"
-            :value="algoSpeed"
-            @change="$emit('update:algoSpeed', parseInt($event.target.value))"
-          />
-        </Dropdown>
-      </div>
-
-      <div class="dropdown-container" v-if="showMazeDropdown">
-        <h1 class="is-size-4" @click="mazeDropdownVisible = !mazeDropdownVisible">
-          Mazes <slot />
-        </h1>
-        <Dropdown
-          v-if="mazeDropdownVisible"
-          :dropdownItems="mazeGenAlgorithmsList"
-          @selectionChanged="value => $emit('mazeGenerationAlgoSelected', value)"
+      <div class="dropdown-container-container">
+        <div
+          class="dropdown-container"
+          :style="algoDropdownVisible ? dropdownStyle : normalStyle"
         >
-        </Dropdown>
+          <h1 class="is-size-4" @click="algoDropdownVisible = !algoDropdownVisible">
+            Algorithms <slot />
+          </h1>
+          <Dropdown
+            v-if="algoDropdownVisible"
+            :dropdownItems="algorithmsList"
+            :selectedAlgo="selectedAlgo"
+            @selectionChanged="algorithmChanged"
+          />
+        </div>
+
+        <div
+          class="dropdown-container"
+          :style="speedDropdownVisible ? dropdownStyle : normalStyle"
+        >
+          <h1 class="is-size-4" @click="speedDropdownVisible = !speedDropdownVisible">
+            Speed <slot />
+          </h1>
+          <Dropdown v-if="speedDropdownVisible" :dropdownItems="null">
+            <p>Speed: {{ algoSpeed / 1000 }}s</p>
+            <input
+              type="range"
+              min="50"
+              max="2000"
+              step="50"
+              class="slider"
+              :value="algoSpeed"
+              @change="$emit('update:algoSpeed', parseInt($event.target.value))"
+            />
+          </Dropdown>
+        </div>
+
+        <div
+          class="dropdown-container"
+          v-if="showMazeDropdown"
+          :style="mazeDropdownVisible ? dropdownStyle : normalStyle"
+        >
+          <h1 class="is-size-4" @click="mazeDropdownVisible = !mazeDropdownVisible">
+            Mazes <slot />
+          </h1>
+          <Dropdown
+            v-if="mazeDropdownVisible"
+            :dropdownItems="mazeGenAlgorithmsList"
+            @selectionChanged="mazeGenerationAlgoSelected"
+          >
+          </Dropdown>
+        </div>
       </div>
 
       <div class="action-buttons-container">
@@ -100,8 +112,24 @@ export default defineComponent({
       algoDropdownVisible: false,
       speedDropdownVisible: false,
       mazeDropdownVisible: false,
-      sortSpeed: 10
+      sortSpeed: 10,
+      normalStyle: {
+        color: "#ddd"
+      },
+      dropdownStyle: {
+        color: "#34ace0"
+      }
     };
+  },
+  methods: {
+    algorithmChanged(value: string) {
+      this.$emit("algorithmChanged", value);
+      this.algoDropdownVisible = false;
+    },
+    mazeGenerationAlgoSelected(value: string) {
+      this.$emit("mazeGenerationAlgoSelected", value);
+      this.mazeDropdownVisible = false;
+    }
   }
 });
 </script>
@@ -109,7 +137,7 @@ export default defineComponent({
 <style scoped>
 .nav-container {
   width: 100vw;
-  background-color: white;
+  background-color: #2c3e50;
   min-height: 7vh;
   display: flex;
   justify-content: space-evenly;
@@ -123,17 +151,25 @@ export default defineComponent({
 
 .options-container {
   width: 90%;
-  height: 100%;
+  height: 7vh;
   display: flex;
   justify-content: space-evenly;
   align-items: center;
-  color: cornflowerblue;
+}
+
+.dropdown-container-container {
+  width: 70%;
+  height: 100%;
+  display: flex;
+  justify-content: space-evenly;
 }
 
 .dropdown-container {
   height: 100%;
+  width: 25%;
   display: flex;
   align-items: center;
+  justify-content: center;
   position: relative;
 }
 
@@ -144,6 +180,6 @@ export default defineComponent({
 .action-buttons-container {
   min-width: 30%;
   display: flex;
-  justify-content: space-evenly;
+  justify-content: center;
 }
 </style>

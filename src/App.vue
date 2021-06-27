@@ -34,4 +34,26 @@ body {
   width: 90%;
   margin: 0 auto;
 }
+
+input[type="range"] {
+  -webkit-appearance: none;
+  height: 1px;
+  background-color: white;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  background: #4eb380; /* Green background */
+  width: 10px; /* Set a specific slider handle width */
+  height: 10px; /* Slider handle height */
+  border-radius: 50%;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 10px; /* Set a specific slider handle width */
+  height: 10px; /* Slider handle height */
+  background: #4eb380; /* Green background */
+  border-radius: 50%;
+}
 </style>

@@ -1,5 +1,5 @@
 export const finalPathColor = "#f1c40f"; //"#1abc9c";
-export const closedCellColor = "#fd79a8";
+export const closedCellColor = "#fd79a8"; // "#ed4546"
 export const openCellColor = "#55efc4";
 export const defaultCellColor = "#dff9fb";
 export const wallCellColor = "#2c3e50";

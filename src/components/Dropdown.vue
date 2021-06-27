@@ -5,7 +5,7 @@
         v-for="(item, i) in dropdownItems"
         :key="i"
         :class="{ 'dropdown-item': true, selected: item === selectedAlgo }"
-        @click="$emit('selectionChanged', item)"
+        @click="emitAndHide(item)"
       >
         {{ item }}
       </div>
@@ -28,6 +28,11 @@ export default defineComponent({
     selectedAlgo: {
       type: String
     }
+  },
+  methods: {
+    emitAndHide(item: string) {
+      this.$emit("selectionChanged", item);
+    }
   }
 });
 </script>
@@ -39,9 +44,9 @@ export default defineComponent({
   justify-content: center;
   align-content: center;
   position: absolute;
-  top: 100%;
-  left: -50%;
-  min-width: 200%;
+  top: 120%;
+  left: 0;
+  min-width: 100%;
   background-color: #32475b;
   border-radius: 5px;
   z-index: 10;
@@ -50,11 +55,15 @@ export default defineComponent({
 
 @keyframes grow {
   0% {
-    transform: translateY(-100%);
+    transform: translateY(-50%);
+    opacity: 0;
+    pointer-events: none;
   }
 
   100% {
     transform: translateY(0);
+    opacity: 1;
+    pointer-events: all;
   }
 }
 
