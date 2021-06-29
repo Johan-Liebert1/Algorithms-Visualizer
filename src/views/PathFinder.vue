@@ -262,8 +262,8 @@ export default defineComponent({
             this.matrix,
             0,
             0,
-            this.columns - 1,
             this.rows - 1,
+            this.columns - 1,
             this.startNode,
             this.endNode,
             this.makeWall

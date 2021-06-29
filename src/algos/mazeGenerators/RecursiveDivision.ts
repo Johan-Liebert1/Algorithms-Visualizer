@@ -11,13 +11,20 @@ interface Passage {
 
 const csv = (r: number, c: number) => `${r},${c}`;
 
-const anyNeighborPathCell = (cell: CellClass, passages: Passage): boolean => {
+const anyNeighborPathCell = (
+  cell: CellClass,
+  passages: Passage,
+  isHorizontal: boolean
+): boolean => {
   const [row, col] = [cell.row, cell.col];
 
-  if (csv(row + 1, col) in passages) return true;
-  else if (csv(row - 1, col) in passages) return true;
-  else if (csv(row, col + 1) in passages) return true;
-  else if (csv(row, col - 1) in passages) return true;
+  if (!isHorizontal) {
+    if (csv(row + 1, col) in passages) return true;
+    else if (csv(row - 1, col) in passages) return true;
+  } else {
+    if (csv(row, col + 1) in passages) return true;
+    else if (csv(row, col - 1) in passages) return true;
+  }
 
   return false;
 };
@@ -59,7 +66,7 @@ const recursiveDivisionMaze = async (
   makeWall: (cell: CellClass) => Promise<any>,
   pathCells: Passage = {}
 ) => {
-  if (startRow < endRow || startCol < endCol) return;
+  if (startRow > endRow || startCol > endCol) return;
 
   // console.log("widht = ", width, "height = ", height);
 
@@ -79,7 +86,7 @@ const recursiveDivisionMaze = async (
   const colsArray: number[] = [];
 
   if (isHorizontal) {
-    for (let i = 0; i <= endRow; i += 2) {
+    for (let i = startRow; i <= endRow; i += 2) {
       rowsArray.push(i);
     }
     drawAtRow = rowsArray[Math.floor(Math.random() * rowsArray.length)];
@@ -107,11 +114,7 @@ const recursiveDivisionMaze = async (
     pathCell = matrix[randNum(startRow, endRow)][drawAtCol];
   }
 
-  // console.log(pathCell.row, pathCell.col)
-
   pathCells[csv(pathCell.row, pathCell.col)] = true;
-
-  console.log(pathCells);
 
   let row = drawAtRow;
   let col = drawAtCol;
@@ -127,8 +130,8 @@ const recursiveDivisionMaze = async (
     if (
       cell !== startNode &&
       cell !== endNode &&
-      cell !== pathCell &&
-      !anyNeighborPathCell(cell, pathCells)
+      cell !== pathCell
+      // !anyNeighborPathCell(cell, pathCells, isHorizontal)
     ) {
       await makeWall(cell);
     }
@@ -137,14 +140,14 @@ const recursiveDivisionMaze = async (
     col += colAdder;
   }
 
-  /*if (isHorizontal) {
+  if (isHorizontal) {
     // top area of the horizontal wall
     recursiveDivisionMaze(
       matrix,
-      width,
-      Math.abs(drawAtRow - startRow),
-      startRow + 1,
+      startRow,
       startCol,
+      drawAtRow - 1,
+      endCol,
       startNode,
       endNode,
       makeWall,
@@ -154,10 +157,10 @@ const recursiveDivisionMaze = async (
     // bottom area of the horizontal wall
     recursiveDivisionMaze(
       matrix,
-      width,
-      Math.abs(height + startRow - drawAtRow),
-      drawAtRow + 1,
+      drawAtRow + 2,
       startCol,
+      endRow,
+      endCol,
       startNode,
       endNode,
       makeWall,
@@ -167,10 +170,10 @@ const recursiveDivisionMaze = async (
     // left area of the vertical wall
     recursiveDivisionMaze(
       matrix,
-      Math.abs(drawAtCol - startCol),
-      height,
       startRow,
       startCol,
+      endRow,
+      drawAtCol - 1,
       startNode,
       endNode,
       makeWall,
@@ -180,16 +183,16 @@ const recursiveDivisionMaze = async (
     // right area of the vertical wall
     recursiveDivisionMaze(
       matrix,
-      Math.abs(width + startCol - drawAtCol), // cannot do this
-      height,
       startRow,
-      drawAtCol + 1,
+      drawAtCol + 2,
+      endRow,
+      endCol,
       startNode,
       endNode,
       makeWall,
       pathCells
     );
-  }*/
+  }
 };
 
 export default recursiveDivisionMaze;

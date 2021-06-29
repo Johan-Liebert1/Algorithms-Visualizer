@@ -88,6 +88,7 @@ import bubbleSort from "@/algos/sorting/bubbleSort";
 import quickSort from "@/algos/sorting/quickSort";
 import insertionSort from "@/algos/sorting/insertionSort";
 import selectionSort from "@/algos/sorting/selectionSort";
+import mergeSort from "@/algos/sorting/mergeSort";
 import { swap } from "@/algos/sorting/swap";
 
 // constants
@@ -160,6 +161,26 @@ export default defineComponent({
           selectionSort(
             this.array.map(e => e.number),
             this.selectionSortCallback
+          );
+          break;
+
+        case sortingAlgorithms.QUICK_SORT:
+          console.log(
+            quickSort(
+              this.array.map(e => e.number),
+              0,
+              this.array.length
+            )
+          );
+          break;
+
+        case sortingAlgorithms.MERGE_SORT:
+          console.log(
+            mergeSort(
+              this.array.map(e => e.number),
+              0,
+              this.array.length - 1
+            )
           );
           break;
 

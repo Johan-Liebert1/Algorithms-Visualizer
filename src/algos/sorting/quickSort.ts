@@ -15,8 +15,8 @@ const quickSort = (list: number[], low: number, high: number): number[] | undefi
 
   swap(list, i + 1, high);
 
-  quickSort(list, low, i - 1);
-  quickSort(list, i + 1, high);
+  quickSort(list, low, i);
+  quickSort(list, i + 2, high);
 
   return list;
 };
