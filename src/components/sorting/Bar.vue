@@ -31,5 +31,6 @@ export default defineComponent({
   text-align: center;
   color: white;
   margin: 0 0.1rem;
+  pointer-events: none;
 }
 </style>

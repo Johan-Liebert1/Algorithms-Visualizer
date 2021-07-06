@@ -11,24 +11,6 @@ interface Passage {
 
 const csv = (r: number, c: number) => `${r},${c}`;
 
-const anyNeighborPathCell = (
-  cell: CellClass,
-  passages: Passage,
-  isHorizontal: boolean
-): boolean => {
-  const [row, col] = [cell.row, cell.col];
-
-  if (!isHorizontal) {
-    if (csv(row + 1, col) in passages) return true;
-    else if (csv(row - 1, col) in passages) return true;
-  } else {
-    if (csv(row, col + 1) in passages) return true;
-    else if (csv(row, col - 1) in passages) return true;
-  }
-
-  return false;
-};
-
 const chooseOrientation = (width: number, height: number): Direction => {
   if (width > height) {
     return Direction.vertical;
@@ -45,12 +27,28 @@ const chooseOrientation = (width: number, height: number): Direction => {
 const randNum = (min: number, max: number): number =>
   min + Math.floor(Math.random() * (max - min + 1));
 
+export const drawBorderWalls = (
+  matrix: CellClass[][],
+  makeWall: (cell: CellClass) => Promise<any>
+) => {
+  const rows = [0, matrix.length - 1];
+  const cols = [0, matrix[0].length - 1];
+
+  rows.forEach(row => {
+    for (let i = cols[0]; i <= cols[1]; i++) makeWall(matrix[row][i]);
+  });
+
+  cols.forEach(col => {
+    for (let i = rows[0]; i <= rows[1]; i++) makeWall(matrix[i][col]);
+  });
+};
+
 /**
  * @param matrix The grid matrix
- * @param width Number of columns in the matrix
- * @param height Number of rows in the matrix
- * @param startRow The row where to draw a horizontal wall
- * @param startCol The column where to draw a vertical wall
+ * @param startRow The first row where we can draw a horizontal wall
+ * @param startCol The first column where we can draw a vertical wall
+ * @param endRow The last row where we can draw a horizontal wall
+ * @param endCol The lst column where we can draw a vertical wall
  * @param startNode The start node, so that we don't draw a wall over it
  * @param endNode The target node, so that we don't draw a wall over it
  * @param makeWall Callback function to display the maze
@@ -68,8 +66,6 @@ const recursiveDivisionMaze = async (
 ) => {
   if (startRow > endRow || startCol > endCol) return;
 
-  // console.log("widht = ", width, "height = ", height);
-
   // whether we're drawing a horizontal wall or a vertical wall
   const isHorizontal =
     chooseOrientation(endCol - startCol, endRow - startRow) === Direction.horizontal;
@@ -85,16 +81,18 @@ const recursiveDivisionMaze = async (
   let drawAtCol: number = startCol;
   const colsArray: number[] = [];
 
+  for (let i = startRow; i <= endRow; i += 2) {
+    rowsArray.push(i);
+  }
+
+  for (let i = startCol; i <= endCol; i += 2) {
+    colsArray.push(i);
+  }
+
   if (isHorizontal) {
-    for (let i = startRow; i <= endRow; i += 2) {
-      rowsArray.push(i);
-    }
-    drawAtRow = rowsArray[Math.floor(Math.random() * rowsArray.length)];
+    drawAtRow = rowsArray[randNum(0, rowsArray.length - 1)];
   } else {
-    for (let i = startCol; i <= endCol; i += 2) {
-      colsArray.push(i);
-    }
-    drawAtCol = colsArray[Math.floor(Math.random() * colsArray.length)];
+    drawAtCol = colsArray[randNum(0, colsArray.length - 1)];
   }
 
   // going left to right if horizontal, i.e. add to columns, and rows remain constant
@@ -107,11 +105,13 @@ const recursiveDivisionMaze = async (
   let pathCell: CellClass;
 
   if (isHorizontal) {
+    const c = colsArray[randNum(0, colsArray.length - 1)];
     // the path cell will be at matrix[drawAtRow][randomColumn]
-    pathCell = matrix[drawAtRow][randNum(startCol, endCol)];
+    pathCell = matrix[drawAtRow][c];
   } else {
+    const r = rowsArray[randNum(0, rowsArray.length - 1)];
     // the path cell will be at matrix[randomRow][drawAtCol]
-    pathCell = matrix[randNum(startRow, endRow)][drawAtCol];
+    pathCell = matrix[r][drawAtCol];
   }
 
   pathCells[csv(pathCell.row, pathCell.col)] = true;

@@ -102,6 +102,16 @@ export class CellClass {
     return hasUnvisitedNeighbors;
   }
 
+  getUnvisitedNeighbors(): CellClass[] {
+    const unvisitedNeighbors: CellClass[] = [];
+
+    for (const n of this.neighbors) {
+      if (!n.isVisited) unvisitedNeighbors.push(n);
+    }
+
+    return unvisitedNeighbors;
+  }
+
   /**
    * @param anotherCell
    * @returns a cell between the currentCell and anotherCell if it exists, else null
@@ -118,5 +128,19 @@ export class CellClass {
     }
 
     return null;
+  }
+
+  removeWalls(neighborCell: CellClass, matrix: CellClass[][]): CellClass {
+    if (this.row === neighborCell.row) {
+      if (this.col < neighborCell.col) return matrix[this.row][this.col + 1];
+      else return matrix[this.row][this.col - 1];
+    }
+
+    if (this.col === neighborCell.col) {
+      if (this.row < neighborCell.row) return matrix[this.row + 1][this.col];
+      else return matrix[this.row - 1][this.col];
+    }
+
+    return this;
   }
 }

@@ -68,7 +68,9 @@
           </div>
         </div>
       </div>
-
+      <p>
+        {{ sortAlgorithm === allSortingAlgorithms.QUICK_SORT ? quickSort.pivot : "" }}
+      </p>
       <div class="bar-container">
         <Bar v-for="(element, index) in array" :key="index" :arrayElement="element" />
       </div>
@@ -80,7 +82,7 @@
 import { defineComponent } from "vue";
 
 // types
-import { sortArrayElement, swaps } from "@/types/sortingAlgo";
+import { sortArrayElement } from "@/types/sortingAlgo";
 import { ButtonsArray } from "@/types/global";
 
 // algorithms
@@ -96,7 +98,7 @@ import {
   baseBarColor,
   iteratingBarColor,
   sortedBarColor,
-  sortingAlgorithms,
+  sortingAlgorithms as allSortingAlgorithms,
   swapBarColor
 } from "@/constants/sortingAlgoConstants";
 
@@ -112,11 +114,12 @@ export default defineComponent({
       array: [] as sortArrayElement[],
       barHeight: null as null | string,
       maxHeight: 300,
-      sortingAlgos: Object.entries(sortingAlgorithms).map(([key, value]) => value),
+      sortingAlgos: Object.values(allSortingAlgorithms),
       sortSpeed: 500,
       currentlySorting: false,
       stopSorting: false,
-      sortAlgorithm: sortingAlgorithms.BUBBLE_SORT as string,
+      sortAlgorithm: allSortingAlgorithms.BUBBLE_SORT as string,
+      allSortingAlgorithms,
       navbarButtons: [
         {
           text: "Sort",
@@ -133,7 +136,10 @@ export default defineComponent({
           class: "button is-info",
           handler: this.generateRandomArray
         }
-      ] as ButtonsArray[]
+      ] as ButtonsArray[],
+      quickSort: {
+        pivot: 0
+      }
     };
   },
 
@@ -150,37 +156,37 @@ export default defineComponent({
       if (this.currentlySorting) return;
 
       switch (this.sortAlgorithm) {
-        case sortingAlgorithms.BUBBLE_SORT:
+        case allSortingAlgorithms.BUBBLE_SORT:
           bubbleSort(
             this.array.map(e => e.number),
-            this.bubbleSortCallback
+            this.swapElements,
+            this.colorElement
           );
           break;
 
-        case sortingAlgorithms.SELECTION_SORT:
-          selectionSort(
+        case allSortingAlgorithms.SELECTION_SORT:
+          // selectionSort(
+          //   this.array.map(e => e.number),
+          //   this.selectionSortCallback
+          // );
+          break;
+
+        case allSortingAlgorithms.QUICK_SORT:
+          quickSort(
             this.array.map(e => e.number),
-            this.selectionSortCallback
+            0,
+            this.array.length - 1,
+            this.iteratingOverElements,
+            this.swapElements,
+            this.colorElement
           );
           break;
 
-        case sortingAlgorithms.QUICK_SORT:
-          console.log(
-            quickSort(
-              this.array.map(e => e.number),
-              0,
-              this.array.length
-            )
-          );
-          break;
-
-        case sortingAlgorithms.MERGE_SORT:
-          console.log(
-            mergeSort(
-              this.array.map(e => e.number),
-              0,
-              this.array.length - 1
-            )
+        case allSortingAlgorithms.MERGE_SORT:
+          mergeSort(
+            this.array.map(e => e.number),
+            0,
+            this.array.length - 1
           );
           break;
 
@@ -190,96 +196,74 @@ export default defineComponent({
       }
     },
 
-    bubbleSortCallback(swaps: swaps[]) {
-      this.currentlySorting = true;
-      this.stopSorting = false;
+    /**
+     * Will be called from the sorting function to animate the element swaps
+     */
+    swapElements(index1: number, index2: number, pivotIndex = -1): Promise<void> {
+      if (pivotIndex !== index1) this.array[index1].barColor = swapBarColor;
 
-      let index = 0;
+      if (pivotIndex !== index2) this.array[index2].barColor = swapBarColor;
 
-      const interval = setInterval(() => {
-        const {
-          swap: [i, j],
-          color
-        } = swaps[index];
+      swap(this.array, index1, index2);
 
-        this.array[i].barColor = color;
-        this.array[j].barColor = color;
-
-        swap(this.array, i, j);
-
-        this.array[i].barColor = baseBarColor;
-
-        index++;
-
-        if (index === swaps.length || (this.currentlySorting && this.stopSorting)) {
-          if (index === swaps.length) {
-            // array is sorted so turn every bar green
-            this.array = this.array.map(e => ({
-              ...e,
-              barColor: sortedBarColor
-            }));
-          }
-          this.currentlySorting = false;
-          clearInterval(interval);
-        }
-      }, this.sortSpeed);
+      return new Promise(r =>
+        setTimeout(() => {
+          if (pivotIndex !== index1) this.array[index1].barColor = baseBarColor;
+          if (pivotIndex !== index2) this.array[index2].barColor = baseBarColor;
+          r();
+        }, this.sortSpeed)
+      );
     },
 
-    selectionSortCallback(swaps: swaps[]) {
-      this.currentlySorting = true;
-      this.stopSorting = false;
+    /**
+     * Called when an element has reached it's final sorted position
+     */
+    colorElement(index: number, color: string = sortedBarColor) {
+      if (!this.array[index])
+        console.log("undefined = ", this.array[index], index, this.array.length, color);
 
-      let index = 0;
+      this.array[index].barColor = color;
+    },
+
+    /**
+     * Visualize the itertion over elements between index1 and index2 (both inclusive)
+     */
+    iteratingOverElements(
+      index1: number,
+      index2: number,
+      color: string = iteratingBarColor
+    ) {
+      let i = index1;
 
       const interval = setInterval(() => {
-        const {
-          swap: [i, j],
-          color
-        } = swaps[index];
+        if (i === index2) clearInterval(interval);
 
-        this.array[i].barColor = color;
-        this.array[j].barColor = color;
-
-        swap(this.array, i, j);
-
-        // go from i to the end
-        this.array = this.array.map((el, newIdx) => {
-          const color = newIdx < j ? sortedBarColor : iteratingBarColor;
-          return {
-            ...el,
-            barColor: color
-          };
-        });
-
-        index++;
-
-        if (index === swaps.length || (this.currentlySorting && this.stopSorting)) {
-          if (index === swaps.length) {
-            // array is sorted so turn every bar green
-            this.array = this.array.map(e => ({
-              ...e,
-              barColor: sortedBarColor
-            }));
-          }
-          this.currentlySorting = false;
-          clearInterval(interval);
+        if (this.array[i].barColor !== sortedBarColor) {
+          this.array[i].barColor = color;
         }
-      }, this.sortSpeed);
+        i++;
+      }, 100);
     },
 
     generateRandomArray() {
       let max = -Infinity;
 
-      this.array = new Array(30).fill(0).map(() => {
+      const tempArr: sortArrayElement[] = [];
+      let i = 0;
+      for (; i < 30; ) {
         const val = Math.floor(Math.random() * 90) + 10;
 
-        if (val > max) max = val;
+        const element = { number: val, barColor: baseBarColor, barHeight: val };
 
-        return { number: val, barColor: baseBarColor, barHeight: val };
-      });
+        if (!tempArr.includes(element)) {
+          if (val > max) max = val;
+          tempArr.push(element);
+          i++;
+        }
+      }
 
-      // map the element in a range between 0px and maxHeight px
-      this.array = this.array.map(e => ({
+      // map the element's height in a range between 0px and maxHeight px
+      this.array = tempArr.map(e => ({
         ...e,
         barHeight: Math.floor(this.maxHeight * (e.number / max))
       }));

@@ -1,21 +1,19 @@
-import { sortedBarColor, swapBarColor } from "@/constants/sortingAlgoConstants";
-import { swaps } from "@/types/sortingAlgo";
 import { swap } from "./swap";
 
-const bubbleSort = (list: number[], callback: (a: swaps[]) => void): void => {
-  const swaps: swaps[] = [];
-
+const bubbleSort = async (
+  list: number[],
+  animateSwap: (a: number, b: number) => Promise<void>,
+  elementSorted: (index: number) => void
+) => {
   for (let i = 0; i < list.length; i++) {
     for (let j = 0; j < list.length - 1; j++) {
       if (list[j] > list[j + 1]) {
-        swaps.push({ swap: [j, j + 1], color: swapBarColor });
         swap(list, j, j + 1);
+        await animateSwap(j, j + 1);
       }
     }
-    swaps[swaps.length - 1].color = sortedBarColor;
+    elementSorted(list.length - 1 - i);
   }
-
-  callback(swaps);
 };
 
 export default bubbleSort;

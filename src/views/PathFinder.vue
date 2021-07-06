@@ -161,7 +161,9 @@ import dijkstrasAlgorithm from "@/algos/pathFinders/Djikstras";
 // algorithms - maze generators
 import DepthFirstSearchMazeGen from "@/algos/mazeGenerators/DFSMaze";
 import randomMaze from "@/algos/mazeGenerators/randomMaze";
-import recursiveDivisionMaze from "@/algos/mazeGenerators/RecursiveDivision";
+import recursiveDivisionMaze, {
+  drawBorderWalls
+} from "@/algos/mazeGenerators/RecursiveDivision";
 import ellersMaze from "@/algos/mazeGenerators/EllersAlgo";
 import primsMazeGenerator from "@/algos/mazeGenerators/PrimsAlgo";
 
@@ -245,10 +247,11 @@ export default defineComponent({
       switch (this.selectedMazeGenerationAlgorithm) {
         case mazeGenerationAlgorithms.RANDOMIZED_DFS:
           DepthFirstSearchMazeGen(
+            this.matrix,
             this.startNode,
             this.endNode,
-            this.matrix,
-            this.makeWall
+            this.makeWall,
+            this.clearWall
           );
           break;
 
@@ -258,6 +261,7 @@ export default defineComponent({
 
         case mazeGenerationAlgorithms.RECURSIVE_DIVISION:
           console.log(this.rows, this.columns);
+          // drawBorderWalls(this.matrix, this.makeWall);
           recursiveDivisionMaze(
             this.matrix,
             0,
@@ -350,7 +354,7 @@ export default defineComponent({
       this.matrix[c.row][c.col].isWall = false;
       this.matrix[c.row][c.col].color = defaultCellColor;
       this.matrix[c.row][c.col].drawBorder = true;
-      return new Promise(r => setTimeout(r, 150));
+      return new Promise(r => setTimeout(r, 15));
     },
 
     highlightGrid(openCells: CellClass[], closedCells: CellClass[]) {

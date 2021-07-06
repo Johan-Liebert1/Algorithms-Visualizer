@@ -34,8 +34,8 @@ const merge = (list: number[], low: number, middle: number, high: number): numbe
   return sorted;
 };
 
-const mergeSort = (list: number[], low: number, high: number): number[] => {
-  if (high <= low) return [list[high]];
+const mergeSort = (list: number[], low: number, high: number): void | number[] => {
+  if (high < low) return;
 
   const middle = Math.floor((high - low) / 2);
 
