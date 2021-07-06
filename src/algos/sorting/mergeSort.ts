@@ -1,52 +1,116 @@
-const merge = (list: number[], low: number, middle: number, high: number): number[] => {
-  const sorted: number[] = [];
+import { sortArrayElement } from "@/types/sortingAlgo";
+import { swap } from "./swap";
 
-  const list1 = list.slice(low, middle + 1);
-  const list2 = list.slice(middle);
+class MergeSort {
+  iteratingOver: (idx1: number, idx2: number, color?: string) => Promise<void>;
+  swapElements: (idx1: number, idx2: number, pivotIndex?: number) => Promise<void>;
+  colorElement: (idx: number, color?: string) => void;
+  getArrayElement: (idx: number) => sortArrayElement;
+  setArrayElement: (
+    idx1: number,
+    idx2: number,
+    element?: sortArrayElement
+  ) => Promise<void>;
 
-  let first = 0;
-  let second = 0;
-
-  for (;;) {
-    if (first === list1.length && second < list2.length) {
-      sorted.push(...list2.slice(second));
-      break;
-    }
-
-    if (second === list2.length && first < list1.length) {
-      sorted.push(...list1.slice(first));
-      break;
-    }
-
-    if (list1[first] < list2[second]) {
-      sorted.push(list1[first]);
-      first++;
-    } else if (list2[second] < list1[first]) {
-      sorted.push(list2[second]);
-      second++;
-    } else {
-      sorted.push(list1[first], list2[second]);
-      first++;
-      second++;
-    }
+  constructor(
+    iteratingOver: (idx1: number, idx2: number, color?: string) => Promise<void>,
+    swapElements: (idx1: number, idx2: number, pivotIndex?: number) => Promise<void>,
+    colorElement: (idx: number, color?: string) => void,
+    getArrayElement: (idx: number) => sortArrayElement,
+    setArrayElement: (
+      idx1: number,
+      idx2: number,
+      element?: sortArrayElement
+    ) => Promise<void>
+  ) {
+    this.iteratingOver = iteratingOver;
+    this.swapElements = swapElements;
+    this.colorElement = colorElement;
+    this.getArrayElement = getArrayElement;
+    this.setArrayElement = setArrayElement;
   }
 
-  return sorted;
-};
+  putElementAtCorrectPosition = (list: number[], low: number, high: number) => {
+    let i = low;
+    while (i <= high) {
+      console.log("i <= high");
+      if (list[i] > list[i + 1]) {
+        swap(list, i, i + 1);
+      }
+      i++;
+    }
+  };
 
-const mergeSort = (list: number[], low: number, high: number): void | number[] => {
-  if (high < low) return;
+  mergeInPlace = async (list: number[], low: number, mid: number, high: number) => {
+    // considerint list[low:mid] <=> X[] and list[mid+1:high] <=> Y[]
 
-  const middle = Math.floor((high - low) / 2);
+    /*  
+      1. Traverse through both arrays
+      2. If the element of the first array is smaller than that of the second one, do nothing. Increment first 
+      3. If the element of the first array is larger than that of second one, swap the two, then put the element in the second array at it's correct position using some insertion sort like algo. Increment first.
+    */
 
-  mergeSort(list, low, middle);
-  mergeSort(list, middle + 1, high);
+    for (let i = low; i <= mid; i++) {
+      // compare the current element of `X[]` with the first element of `Y[]`
+      if (list[i] > list[mid + 1]) {
+        swap(list, i, mid + 1);
+        await this.swapElements(i, mid + 1);
 
-  list = merge(list, low, middle, high);
+        const first = list[mid + 1];
+        const tempElement = this.getArrayElement(mid + 1);
+
+        // move `Y[0]` to its correct position to maintain the sorted
+        // order of `Y[]`. Note: `Y[1…n-1]` is already sorted
+        let k: number;
+        for (k = mid + 2; k <= high && list[k] < first; k++) {
+          const kElement = this.getArrayElement(k);
+          this.setArrayElement(k, -1, { number: first, barHeight: 0, barColor: "" });
+
+          list[k - 1] = list[k];
+          await this.setArrayElement(k - 1, 0, kElement);
+        }
+
+        list[k - 1] = first;
+        await this.setArrayElement(k - 1, -1, tempElement);
+      }
+    }
+  };
+
+  mergeSort = async (list: number[], low: number, high: number) => {
+    if (low >= high) return;
+
+    const middle = Math.floor((high + low) / 2);
+
+    await this.mergeSort(list, low, middle);
+    await this.mergeSort(list, middle + 1, high);
+
+    await this.mergeInPlace(list, low, middle, high);
+  };
+}
+
+const mergeSortCaller = async (
+  list: number[],
+  iteratingOver: (idx1: number, idx2: number, color?: string) => Promise<void>,
+  swapElements: (idx1: number, idx2: number, pivotIndex?: number) => Promise<void>,
+  colorElement: (idx: number, color?: string) => void,
+  getArrayElement: (idx: number) => sortArrayElement,
+  setArrayElement: (
+    idx1: number,
+    idx2: number,
+    element?: sortArrayElement
+  ) => Promise<void>
+) => {
+  const sorter = new MergeSort(
+    iteratingOver,
+    swapElements,
+    colorElement,
+    getArrayElement,
+    setArrayElement
+  );
+
+  await sorter.mergeSort(list, 0, list.length - 1);
 
   console.log(list);
-
-  return list;
 };
 
-export default mergeSort;
+export default mergeSortCaller;

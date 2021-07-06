@@ -31,7 +31,7 @@ const insertionSort = async (
 
       // shift greater elements to the right
       list[j + 1] = list[j];
-      await setArrayElement(j + 1, 0, jElement);
+      await setArrayElement(j + 1, -1, jElement);
 
       j--;
     }

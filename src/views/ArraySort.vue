@@ -159,7 +159,7 @@ export default defineComponent({
       sortSpeed: 500,
       currentlySorting: false,
       stopSorting: false,
-      sortAlgorithm: allSortingAlgorithms.QUICK_SORT as string,
+      sortAlgorithm: allSortingAlgorithms.MERGE_SORT as string,
       navbarButtons: [
         {
           text: "Sort",
@@ -245,8 +245,11 @@ export default defineComponent({
         case allSortingAlgorithms.MERGE_SORT:
           mergeSort(
             this.array.map(e => e.number),
-            0,
-            this.array.length - 1
+            this.iteratingOverElements,
+            this.swapElements,
+            this.colorElement,
+            this.getArrayElement,
+            this.setArrayElement
           );
           break;
 
