@@ -1,7 +1,7 @@
 <template>
   <div>
     <Navigation v-if="$route.name === 'Home'" />
-    <RouterView :key="$router.fullPath" v-if="$route.name !== 'Home'" />
+    <RouterView :key="$route.fullPath" v-if="$route.name !== 'Home'" />
   </div>
 </template>
 

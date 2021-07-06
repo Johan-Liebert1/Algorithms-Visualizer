@@ -130,7 +130,6 @@ const heapSort = (
   colorElement: (idx: number, color?: string) => void
 ) => {
   const heap = new Heap(list, maxHeap, swapElements, colorElement);
-  // heap.heapify();
   heap.heapSort();
 };
 

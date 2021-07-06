@@ -1,7 +1,7 @@
 <template>
   <div>
     <AlgoNavBar
-      :algorithmsList="sortingAlgos"
+      :algorithmsList="ALL_SORTING_ALGORITHM_NAMES"
       :selectedAlgo="sortAlgorithm"
       @algorithmChanged="setNewAlgorithm"
       :buttonsList="navbarButtons"
@@ -81,7 +81,7 @@
       <p>
         {{
           sortAlgorithm === allSortingAlgorithms.QUICK_SORT
-            ? array[quickSort.pivotIdx]
+            ? "Current Pivot - " + array[quickSort.pivotIdx].number
             : ""
         }}
       </p>
@@ -139,22 +139,27 @@ export default defineComponent({
   name: "ArraySort",
   components: { Bar, AlgoNavBar },
 
-  setup() {
-    const ARRAY_SIZE = 35;
-    return { ARRAY_SIZE };
-  },
+  // setup() {
+  //   // non-reactive properties
+  //   console.log("setup");
+  //   const ARRAY_SIZE = 40;
+  //   const ALL_SORTING_ALGORITHM_NAMES = Object.values(allSortingAlgorithms);
+  //   const MAX_HEIGHT = 350;
+
+  //   return { ARRAY_SIZE, ALL_SORTING_ALGORITHM_NAMES, MAX_HEIGHT, allSortingAlgorithms };
+  // },
 
   data() {
     return {
+      ARRAY_SIZE: 40,
+      ALL_SORTING_ALGORITHM_NAMES: Object.values(allSortingAlgorithms),
+      MAX_HEIGHT: 350,
+      allSortingAlgorithms,
       array: [] as sortArrayElement[],
-      barHeight: null as null | string,
-      maxHeight: 300,
-      sortingAlgos: Object.values(allSortingAlgorithms),
       sortSpeed: 500,
       currentlySorting: false,
       stopSorting: false,
-      sortAlgorithm: allSortingAlgorithms.HEAP_SORT as string,
-      allSortingAlgorithms,
+      sortAlgorithm: allSortingAlgorithms.QUICK_SORT as string,
       navbarButtons: [
         {
           text: "Sort",
@@ -230,8 +235,6 @@ export default defineComponent({
         case allSortingAlgorithms.QUICK_SORT:
           quickSort(
             this.array.map(e => e.number),
-            0,
-            this.array.length - 1,
             this.iteratingOverElements,
             this.swapElements,
             this.colorElement,
@@ -293,16 +296,22 @@ export default defineComponent({
      * Will be called from the sorting function to animate the element swaps
      */
     swapElements(index1: number, index2: number, dontColorIdx = -1): Promise<void> {
-      if (dontColorIdx !== index1) this.array[index1].barColor = swapBarColor;
+      if (dontColorIdx !== index1 && this.array[index1].barColor !== sortedBarColor)
+        this.array[index1].barColor = swapBarColor;
 
-      if (dontColorIdx !== index2) this.array[index2].barColor = swapBarColor;
+      if (dontColorIdx !== index2 && this.array[index2].barColor !== sortedBarColor)
+        this.array[index2].barColor = swapBarColor;
 
       swap(this.array, index1, index2);
 
       return new Promise(r =>
         setTimeout(() => {
-          if (dontColorIdx !== index1) this.array[index1].barColor = baseBarColor;
-          if (dontColorIdx !== index2) this.array[index2].barColor = baseBarColor;
+          if (dontColorIdx !== index1 && this.array[index1].barColor !== sortedBarColor)
+            this.array[index1].barColor = baseBarColor;
+
+          if (dontColorIdx !== index2 && this.array[index2].barColor !== sortedBarColor)
+            this.array[index2].barColor = baseBarColor;
+
           r();
         }, this.sortSpeed)
       );
@@ -315,7 +324,8 @@ export default defineComponent({
       if (!this.array[index])
         console.log("undefined = ", this.array[index], index, this.array.length, color);
 
-      this.array[index].barColor = color;
+      if (this.array[index].barColor !== sortedBarColor)
+        this.array[index].barColor = color;
     },
 
     /**
@@ -324,7 +334,8 @@ export default defineComponent({
     iteratingOverElements(
       index1: number,
       index2: number,
-      color: string = iteratingBarColor
+      color: string = iteratingBarColor,
+      dontColor: number[] = []
     ): Promise<void> {
       let i = index1;
       const interval = 10;
@@ -358,10 +369,10 @@ export default defineComponent({
         }
       }
 
-      // map the element's height in a range between 0px and maxHeight px
+      // map the element's height in a range between 0px and MAX_HEIGHT px
       this.array = tempArr.map(e => ({
         ...e,
-        barHeight: Math.floor(this.maxHeight * (e.number / max))
+        barHeight: Math.floor(this.MAX_HEIGHT * (e.number / max))
       }));
     }
   },
@@ -394,6 +405,12 @@ export default defineComponent({
   },
 
   mounted() {
+    console.log("mounted");
+    this.generateRandomArray();
+  },
+
+  created() {
+    console.log("created");
     this.generateRandomArray();
   }
 });
