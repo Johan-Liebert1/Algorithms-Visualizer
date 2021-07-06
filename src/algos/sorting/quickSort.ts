@@ -1,19 +1,24 @@
-import { baseBarColor, sortedBarColor } from "@/constants/sortingAlgoConstants";
+import {
+  baseBarColor,
+  pivotBarColor,
+  sortedBarColor
+} from "@/constants/sortingAlgoConstants";
 import { swap } from "./swap";
 
 const partition = async (
   list: number[],
   low: number,
   high: number,
-  iteratingOver: (idx1: number, idx2: number) => void,
+  iteratingOver: (idx1: number, idx2: number) => Promise<void>,
   swapElements: (idx1: number, idx2: number, pivotIndex?: number) => Promise<void>,
-  colorElement: (idx: number, color?: string) => void
+  colorElement: (idx: number, color?: string) => void,
+  setPivot: (idx: number) => void
 ) => {
   const pivot = list[low];
   let left = low + 1;
   let right = high;
 
-  colorElement(low, "#000");
+  setPivot(low);
 
   while (left <= right) {
     while (list[left] <= pivot) left++;
@@ -28,7 +33,7 @@ const partition = async (
   swap(list, low, right);
   await swapElements(low, right, low);
 
-  colorElement(right, "#000");
+  setPivot(right);
 
   return right;
 };
@@ -37,13 +42,14 @@ const quickSort = async (
   list: number[],
   low: number,
   high: number,
-  iteratingOver: (idx1: number, idx2: number, color?: string) => void,
+  iteratingOver: (idx1: number, idx2: number, color?: string) => Promise<void>,
   swapElements: (idx1: number, idx2: number, pivotIndex?: number) => Promise<void>,
-  colorElement: (idx: number, color?: string) => void
+  colorElement: (idx: number, color?: string) => void,
+  setPivot: (idx: number) => void
 ) => {
   if (low > high) return;
 
-  // iteratingOver(0, list.length - 1);
+  // await iteratingOver(low, high);
 
   const pIndex = await partition(
     list,
@@ -51,11 +57,14 @@ const quickSort = async (
     high,
     iteratingOver,
     swapElements,
-    colorElement
+    colorElement,
+    setPivot
   );
 
-  quickSort(list, low, pIndex - 1, iteratingOver, swapElements, colorElement);
-  quickSort(list, pIndex + 1, high, iteratingOver, swapElements, colorElement);
+  quickSort(list, low, pIndex - 1, iteratingOver, swapElements, colorElement, setPivot);
+  quickSort(list, pIndex + 1, high, iteratingOver, swapElements, colorElement, setPivot);
+
+  // await iteratingOver(low, high, sortedBarColor);
 
   return list;
 };

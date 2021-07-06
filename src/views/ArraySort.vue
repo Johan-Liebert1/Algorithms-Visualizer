@@ -67,9 +67,23 @@
             Iterating
           </div>
         </div>
+
+        <div v-if="yellowBarLegend.show">
+          <div class="is-flex">
+            <div
+              class="cell-info-div"
+              :style="{ backgroundColor: arrayColors.pivot }"
+            ></div>
+            {{ yellowBarLegend.text }}
+          </div>
+        </div>
       </div>
       <p>
-        {{ sortAlgorithm === allSortingAlgorithms.QUICK_SORT ? quickSort.pivot : "" }}
+        {{
+          sortAlgorithm === allSortingAlgorithms.QUICK_SORT
+            ? array[quickSort.pivotIdx]
+            : ""
+        }}
       </p>
       <div class="bar-container">
         <Bar v-for="(element, index) in array" :key="index" :arrayElement="element" />
@@ -79,7 +93,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 
 // types
 import { sortArrayElement } from "@/types/sortingAlgo";
@@ -97,6 +111,7 @@ import { swap } from "@/algos/sorting/swap";
 import {
   baseBarColor,
   iteratingBarColor,
+  pivotBarColor,
   sortedBarColor,
   sortingAlgorithms as allSortingAlgorithms,
   swapBarColor
@@ -109,6 +124,12 @@ import Bar from "@/components/sorting/Bar.vue";
 export default defineComponent({
   name: "ArraySort",
   components: { Bar, AlgoNavBar },
+
+  setup() {
+    const ARRAY_SIZE = 35;
+    return { ARRAY_SIZE };
+  },
+
   data() {
     return {
       array: [] as sortArrayElement[],
@@ -118,7 +139,7 @@ export default defineComponent({
       sortSpeed: 500,
       currentlySorting: false,
       stopSorting: false,
-      sortAlgorithm: allSortingAlgorithms.BUBBLE_SORT as string,
+      sortAlgorithm: allSortingAlgorithms.INSERTION_SORT as string,
       allSortingAlgorithms,
       navbarButtons: [
         {
@@ -138,7 +159,7 @@ export default defineComponent({
         }
       ] as ButtonsArray[],
       quickSort: {
-        pivot: 0
+        pivotIdx: 0
       }
     };
   },
@@ -165,10 +186,22 @@ export default defineComponent({
           break;
 
         case allSortingAlgorithms.SELECTION_SORT:
-          // selectionSort(
-          //   this.array.map(e => e.number),
-          //   this.selectionSortCallback
-          // );
+          selectionSort(
+            this.array.map(e => e.number),
+            this.sortSpeed,
+            this.iteratingOverElements,
+            this.swapElements,
+            this.colorElement
+          );
+          break;
+
+        case allSortingAlgorithms.INSERTION_SORT:
+          insertionSort(
+            this.array.map(e => e.number),
+            this.getArrayElement,
+            this.setArrayElement,
+            this.iteratingOverElements
+          );
           break;
 
         case allSortingAlgorithms.QUICK_SORT:
@@ -178,7 +211,8 @@ export default defineComponent({
             this.array.length - 1,
             this.iteratingOverElements,
             this.swapElements,
-            this.colorElement
+            this.colorElement,
+            this.setPivot
           );
           break;
 
@@ -196,27 +230,54 @@ export default defineComponent({
       }
     },
 
-    /**
-     * Will be called from the sorting function to animate the element swaps
-     */
-    swapElements(index1: number, index2: number, pivotIndex = -1): Promise<void> {
-      if (pivotIndex !== index1) this.array[index1].barColor = swapBarColor;
+    setPivot(index: number) {
+      this.colorElement(this.quickSort.pivotIdx, baseBarColor);
+      this.quickSort.pivotIdx = index;
+      this.colorElement(index, pivotBarColor);
+    },
 
-      if (pivotIndex !== index2) this.array[index2].barColor = swapBarColor;
+    getArrayElement(index: number): sortArrayElement {
+      return this.array[index];
+    },
 
-      swap(this.array, index1, index2);
-
+    setArrayElement(
+      index: number,
+      index2: number,
+      element?: sortArrayElement
+    ): Promise<void> {
       return new Promise(r =>
         setTimeout(() => {
-          if (pivotIndex !== index1) this.array[index1].barColor = baseBarColor;
-          if (pivotIndex !== index2) this.array[index2].barColor = baseBarColor;
+          if (!element) {
+            this.array[index] = this.array[index2];
+          } else {
+            this.array[index] = element;
+          }
           r();
         }, this.sortSpeed)
       );
     },
 
     /**
-     * Called when an element has reached it's final sorted position
+     * Will be called from the sorting function to animate the element swaps
+     */
+    swapElements(index1: number, index2: number, dontColorIdx = -1): Promise<void> {
+      if (dontColorIdx !== index1) this.array[index1].barColor = swapBarColor;
+
+      if (dontColorIdx !== index2) this.array[index2].barColor = swapBarColor;
+
+      swap(this.array, index1, index2);
+
+      return new Promise(r =>
+        setTimeout(() => {
+          if (dontColorIdx !== index1) this.array[index1].barColor = baseBarColor;
+          if (dontColorIdx !== index2) this.array[index2].barColor = baseBarColor;
+          r();
+        }, this.sortSpeed)
+      );
+    },
+
+    /**
+     * Sets the color of a bar
      */
     colorElement(index: number, color: string = sortedBarColor) {
       if (!this.array[index])
@@ -232,17 +293,20 @@ export default defineComponent({
       index1: number,
       index2: number,
       color: string = iteratingBarColor
-    ) {
+    ): Promise<void> {
       let i = index1;
+      const interval = 10;
 
-      const interval = setInterval(() => {
-        if (i === index2) clearInterval(interval);
+      const int = setInterval(() => {
+        if (i === index2) clearInterval(int);
 
         if (this.array[i].barColor !== sortedBarColor) {
           this.array[i].barColor = color;
         }
         i++;
-      }, 100);
+      }, interval);
+
+      return new Promise(r => setTimeout(r, Math.abs(index2 - index1) * interval));
     },
 
     generateRandomArray() {
@@ -250,7 +314,7 @@ export default defineComponent({
 
       const tempArr: sortArrayElement[] = [];
       let i = 0;
-      for (; i < 30; ) {
+      for (; i < this.ARRAY_SIZE; ) {
         const val = Math.floor(Math.random() * 90) + 10;
 
         const element = { number: val, barColor: baseBarColor, barHeight: val };
@@ -276,8 +340,24 @@ export default defineComponent({
         base: baseBarColor,
         swap: swapBarColor,
         sorted: sortedBarColor,
-        iterating: iteratingBarColor
+        iterating: iteratingBarColor,
+        pivot: pivotBarColor
       };
+    },
+
+    yellowBarLegend(): { show: boolean; text?: string } {
+      switch (this.sortAlgorithm) {
+        case allSortingAlgorithms.QUICK_SORT:
+          return { show: true, text: "Pivot" };
+
+        case allSortingAlgorithms.SELECTION_SORT:
+          return { show: true, text: "Min Element" };
+
+        default:
+          break;
+      }
+
+      return { show: false };
     }
   },
 
