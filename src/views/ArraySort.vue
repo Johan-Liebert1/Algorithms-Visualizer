@@ -85,6 +85,19 @@
             : ""
         }}
       </p>
+
+      <!-- radio button for min-max heap -->
+      <div class="control" v-if="sortAlgorithm === allSortingAlgorithms.HEAP_SORT">
+        <label class="radio">
+          <input type="radio" name="min-max-heap" checked @change="setMinMaxHeap" />
+          Use Max Heap
+        </label>
+        <label class="radio">
+          <input type="radio" name="min-max-heap" @change="setMinMaxHeap" />
+          Use Min Heap
+        </label>
+      </div>
+
       <div class="bar-container">
         <Bar v-for="(element, index) in array" :key="index" :arrayElement="element" />
       </div>
@@ -93,7 +106,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { defineComponent } from "vue";
 
 // types
 import { sortArrayElement } from "@/types/sortingAlgo";
@@ -120,6 +133,7 @@ import {
 // components
 import AlgoNavBar from "@/components/AlgoNavBar.vue";
 import Bar from "@/components/sorting/Bar.vue";
+import heapSort from "@/algos/sorting/heapSort";
 
 export default defineComponent({
   name: "ArraySort",
@@ -139,7 +153,7 @@ export default defineComponent({
       sortSpeed: 500,
       currentlySorting: false,
       stopSorting: false,
-      sortAlgorithm: allSortingAlgorithms.INSERTION_SORT as string,
+      sortAlgorithm: allSortingAlgorithms.HEAP_SORT as string,
       allSortingAlgorithms,
       navbarButtons: [
         {
@@ -158,13 +172,22 @@ export default defineComponent({
           handler: this.generateRandomArray
         }
       ] as ButtonsArray[],
+
       quickSort: {
         pivotIdx: 0
+      },
+
+      heapSort: {
+        useMaxHeap: true
       }
     };
   },
 
   methods: {
+    setMinMaxHeap() {
+      this.heapSort.useMaxHeap = !this.heapSort.useMaxHeap;
+    },
+
     setNewAlgorithm(newAlgo: string) {
       this.sortAlgorithm = newAlgo;
     },
@@ -221,6 +244,15 @@ export default defineComponent({
             this.array.map(e => e.number),
             0,
             this.array.length - 1
+          );
+          break;
+
+        case allSortingAlgorithms.HEAP_SORT:
+          heapSort(
+            this.array.map(e => e.number),
+            this.heapSort.useMaxHeap,
+            this.swapElements,
+            this.colorElement
           );
           break;
 
@@ -388,5 +420,9 @@ export default defineComponent({
   width: 70%;
   justify-content: space-around;
   align-items: center;
+}
+
+.radio:hover {
+  color: inherit !important;
 }
 </style>

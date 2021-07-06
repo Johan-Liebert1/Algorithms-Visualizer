@@ -9,5 +9,6 @@ export const sortingAlgorithms = Object.freeze({
   INSERTION_SORT: "Insertion Sort",
   SELECTION_SORT: "Selection Sort",
   MERGE_SORT: "Merge Sort",
-  QUICK_SORT: "Quick Sort"
+  QUICK_SORT: "Quick Sort",
+  HEAP_SORT: "Heap Sort"
 });
