@@ -10,7 +10,7 @@ const insertionSort = async (
     element?: sortArrayElement
   ) => Promise<void>,
   iteratingOverElements: (index1: number, index2: number, color?: string) => Promise<void>
-) => {
+): Promise<void> => {
   /*
     1. First element is sorted
     2. Iterate through the unsorted array, then 

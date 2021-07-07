@@ -139,22 +139,18 @@ export default defineComponent({
   name: "ArraySort",
   components: { Bar, AlgoNavBar },
 
-  // setup() {
-  //   // non-reactive properties
-  //   console.log("setup");
-  //   const ARRAY_SIZE = 40;
-  //   const ALL_SORTING_ALGORITHM_NAMES = Object.values(allSortingAlgorithms);
-  //   const MAX_HEIGHT = 350;
+  setup() {
+    // non-reactive properties
+    console.log("setup");
+    const ARRAY_SIZE = 40;
+    const ALL_SORTING_ALGORITHM_NAMES = Object.values(allSortingAlgorithms);
+    const MAX_HEIGHT = 350;
 
-  //   return { ARRAY_SIZE, ALL_SORTING_ALGORITHM_NAMES, MAX_HEIGHT, allSortingAlgorithms };
-  // },
+    return { ARRAY_SIZE, ALL_SORTING_ALGORITHM_NAMES, MAX_HEIGHT, allSortingAlgorithms };
+  },
 
   data() {
     return {
-      ARRAY_SIZE: 40,
-      ALL_SORTING_ALGORITHM_NAMES: Object.values(allSortingAlgorithms),
-      MAX_HEIGHT: 350,
-      allSortingAlgorithms,
       array: [] as sortArrayElement[],
       sortSpeed: 500,
       currentlySorting: false,
@@ -258,7 +254,8 @@ export default defineComponent({
             this.array.map(e => e.number),
             this.heapSort.useMaxHeap,
             this.swapElements,
-            this.colorElement
+            this.colorElement,
+            this.iteratingOverElements
           );
           break;
 
@@ -337,8 +334,7 @@ export default defineComponent({
     iteratingOverElements(
       index1: number,
       index2: number,
-      color: string = iteratingBarColor,
-      dontColor: number[] = []
+      color: string = iteratingBarColor
     ): Promise<void> {
       let i = index1;
       const interval = 10;

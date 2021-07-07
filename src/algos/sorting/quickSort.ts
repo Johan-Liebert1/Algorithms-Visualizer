@@ -1,4 +1,4 @@
-import { baseBarColor, sortedBarColor } from "@/constants/sortingAlgoConstants";
+import { sortedBarColor } from "@/constants/sortingAlgoConstants";
 import { sleep } from "@/helpers/helper";
 import { swap } from "./swap";
 
@@ -65,13 +65,13 @@ class QuickSort {
   };
 }
 
-const quickSort = async (
+const quickSort = (
   list: number[],
   iteratingOver: (idx1: number, idx2: number) => Promise<void>,
   swapElements: (idx1: number, idx2: number, pivotIndex?: number) => Promise<void>,
   colorElement: (idx: number, color?: string) => void,
   setPivot: (idx: number) => void
-) => {
+): void => {
   const sorter = new QuickSort(iteratingOver, swapElements, colorElement, setPivot);
 
   sorter.quickSort(list, 0, list.length - 1);

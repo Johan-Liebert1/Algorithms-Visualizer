@@ -1,4 +1,4 @@
-import { sleep } from "@/helpers/helper";
+import { sortedBarColor } from "@/constants/sortingAlgoConstants";
 import { swap } from "./swap";
 
 class Heap {
@@ -123,14 +123,17 @@ class Heap {
   };
 }
 
-const heapSort = (
+const heapSort = async (
   list: number[],
   maxHeap: boolean,
   swapElements: (idx1: number, idx2: number) => Promise<void>,
-  colorElement: (idx: number, color?: string) => void
-) => {
+  colorElement: (idx: number, color?: string) => void,
+  iteratingOver: (idx1: number, idx2: number, color?: string) => Promise<void>
+): Promise<void> => {
   const heap = new Heap(list, maxHeap, swapElements, colorElement);
-  heap.heapSort();
+  await heap.heapSort();
+
+  iteratingOver(0, list.length - 1, sortedBarColor);
 };
 
 export default heapSort;

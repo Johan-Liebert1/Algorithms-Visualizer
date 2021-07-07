@@ -1,3 +1,4 @@
+import { sortedBarColor } from "@/constants/sortingAlgoConstants";
 import { sortArrayElement } from "@/types/sortingAlgo";
 import { swap } from "./swap";
 
@@ -30,19 +31,8 @@ class MergeSort {
     this.setArrayElement = setArrayElement;
   }
 
-  putElementAtCorrectPosition = (list: number[], low: number, high: number) => {
-    let i = low;
-    while (i <= high) {
-      console.log("i <= high");
-      if (list[i] > list[i + 1]) {
-        swap(list, i, i + 1);
-      }
-      i++;
-    }
-  };
-
   mergeInPlace = async (list: number[], low: number, mid: number, high: number) => {
-    // considerint list[low:mid] <=> X[] and list[mid+1:high] <=> Y[]
+    // considering list[low : mid] <=> X[] and list[mid + 1 : high] <=> Y[]
 
     /*  
       1. Traverse through both arrays
@@ -51,7 +41,7 @@ class MergeSort {
     */
 
     for (let i = low; i <= mid; i++) {
-      // compare the current element of `X[]` with the first element of `Y[]`
+      // compare the current element of X[] with the first element of Y[]
       if (list[i] > list[mid + 1]) {
         swap(list, i, mid + 1);
         await this.swapElements(i, mid + 1);
@@ -59,8 +49,8 @@ class MergeSort {
         const first = list[mid + 1];
         const tempElement = this.getArrayElement(mid + 1);
 
-        // move `Y[0]` to its correct position to maintain the sorted
-        // order of `Y[]`. Note: `Y[1…n-1]` is already sorted
+        // move Y[0] to its correct position to maintain the sorted
+        // order of Y[]. Y[1…n-1] is already sorted
         let k: number;
         for (k = mid + 2; k <= high && list[k] < first; k++) {
           const kElement = this.getArrayElement(k);
@@ -99,7 +89,7 @@ const mergeSortCaller = async (
     idx2: number,
     element?: sortArrayElement
   ) => Promise<void>
-) => {
+): Promise<void> => {
   const sorter = new MergeSort(
     iteratingOver,
     swapElements,
@@ -110,7 +100,7 @@ const mergeSortCaller = async (
 
   await sorter.mergeSort(list, 0, list.length - 1);
 
-  console.log(list);
+  iteratingOver(0, list.length - 1, sortedBarColor);
 };
 
 export default mergeSortCaller;
