@@ -6,6 +6,7 @@
       :selectedAlgo="selectedPathFindingAlgorithm"
       @algorithmChanged="setNewPathFindingAlgo"
       v-model:algoSpeed.sync="algorithmSpeed"
+      v-model:cellSize.sync="CELL_SIZE"
       :showMazeDropdown="true"
       :mazeGenAlgorithmsList="mazeGenerationAlgorithms"
       @mazeGenerationAlgoSelected="setNewMazeGenAlgo"
@@ -490,6 +491,14 @@ export default defineComponent({
       if (target.tagName !== "DIV") return;
 
       this.mouseDown = false;
+    },
+
+    initGridWrtCellSize() {
+      const randCols = Math.floor((window.innerWidth - 20) / this.CELL_SIZE);
+      this.columns = randCols % 2 === 0 ? randCols - 1 : randCols;
+      this.rows = Math.floor((window.innerHeight * 0.8) / this.CELL_SIZE);
+
+      this.initGrid();
     }
   },
 
@@ -505,15 +514,14 @@ export default defineComponent({
     }
   },
 
+  watch: {
+    CELL_SIZE() {
+      this.initGridWrtCellSize();
+    }
+  },
+
   mounted() {
-    const randCols = Math.floor((window.innerWidth - 20) / this.CELL_SIZE);
-    this.columns = randCols % 2 === 0 ? randCols - 1 : randCols;
-    this.rows = Math.floor((window.innerHeight * 0.8) / this.CELL_SIZE);
-
-    // this.columns = 20;
-    // this.rows = 10;
-
-    this.initGrid();
+    this.initGridWrtCellSize();
 
     const gridRef = this.$refs.gridContainer as HTMLDivElement;
 

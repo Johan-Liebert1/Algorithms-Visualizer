@@ -1,3 +1,4 @@
+import { sleep } from "@/helpers/helper";
 import { CellClass } from "@/types/pathFinders";
 import { turnAlternateCellsToWalls } from "./mazeHelpers";
 
@@ -10,6 +11,8 @@ const DepthFirstSearchMaze = async (
 ): Promise<void> => {
   turnAlternateCellsToWalls(matrix, startNode, endNode, makeWall);
 
+  await sleep(1000);
+
   const openSet: CellClass[] = [];
   let currentCell: CellClass = matrix[0][0];
 
@@ -20,7 +23,7 @@ const DepthFirstSearchMaze = async (
     const neighbor: CellClass =
       allNeighbors[Math.floor(Math.random() * allNeighbors.length)];
 
-    if (currentCell.hasUnvisitedNeighbors() || neighbor.isVisited) {
+    if (currentCell.hasUnvisitedNeighbors() || !neighbor.isVisited) {
       console.log("hasUnvisitedNeighbors");
 
       neighbor.isVisited = true;

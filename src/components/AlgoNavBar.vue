@@ -1,7 +1,25 @@
 <template>
   <div class="nav-container">
     <div class="home">
-      <RouterLink to="/"> <h1 class="is-size-2">Home</h1> </RouterLink>
+      <RouterLink to="/">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="28"
+          height="28"
+          fill="currentColor"
+          class="bi bi-house-fill"
+          viewBox="0 0 16 16"
+        >
+          <path
+            fill-rule="evenodd"
+            d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293l6-6zm5-.793V6l-2-2V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5z"
+          />
+          <path
+            fill-rule="evenodd"
+            d="M7.293 1.5a1 1 0 0 1 1.414 0l6.647 6.646a.5.5 0 0 1-.708.708L8 2.207 1.354 8.854a.5.5 0 1 1-.708-.708L7.293 1.5z"
+          />
+        </svg>
+      </RouterLink>
     </div>
 
     <div class="options-container">
@@ -38,6 +56,30 @@
               class="slider"
               :value="algoSpeed"
               @change="$emit('update:algoSpeed', parseInt($event.target.value))"
+            />
+          </Dropdown>
+        </div>
+
+        <div
+          class="dropdown-container"
+          :style="cellSizeDropdownVisible ? dropdownStyle : normalStyle"
+        >
+          <h1
+            class="is-size-4"
+            @click="cellSizeDropdownVisible = !cellSizeDropdownVisible"
+          >
+            Cell Size <slot />
+          </h1>
+          <Dropdown v-if="cellSizeDropdownVisible" :dropdownItems="null">
+            <p>Size: {{ cellSize }}</p>
+            <input
+              type="range"
+              min="10"
+              max="30"
+              step="5"
+              class="slider"
+              :value="cellSize"
+              @change="$emit('update:cellSize', parseInt($event.target.value))"
             />
           </Dropdown>
         </div>
@@ -94,6 +136,10 @@ export default defineComponent({
       type: Number,
       required: false
     },
+    cellSize: {
+      type: Number,
+      required: false
+    },
     selectedAlgo: {
       type: String,
       required: true
@@ -112,7 +158,7 @@ export default defineComponent({
       algoDropdownVisible: false,
       speedDropdownVisible: false,
       mazeDropdownVisible: false,
-      sortSpeed: 10,
+      cellSizeDropdownVisible: false,
       normalStyle: {
         color: "#ddd"
       },
@@ -145,12 +191,12 @@ export default defineComponent({
 }
 
 .home {
-  width: 10%;
-  text-align: right;
+  width: 3%;
+  text-align: center;
 }
 
 .options-container {
-  width: 90%;
+  width: 95%;
   height: 7vh;
   display: flex;
   justify-content: space-evenly;
@@ -158,7 +204,7 @@ export default defineComponent({
 }
 
 .dropdown-container-container {
-  width: 70%;
+  width: 60%;
   height: 100%;
   display: flex;
   justify-content: space-evenly;
@@ -178,7 +224,7 @@ export default defineComponent({
 }
 
 .action-buttons-container {
-  min-width: 30%;
+  min-width: 40%;
   display: flex;
   justify-content: center;
 }

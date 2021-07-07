@@ -87,6 +87,7 @@ const ellersMaze = async (
     row += 2;
   }
 
+  // remove all walls from the last row
   for (let col = 0; col < matrix[0].length; col++) {
     clearWall(matrix[matrix.length - 1][col]);
   }
