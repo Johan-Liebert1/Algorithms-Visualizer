@@ -3,3 +3,5 @@ export interface ButtonsArray {
   class: string;
   handler: () => void;
 }
+
+export type numStr = number | string;

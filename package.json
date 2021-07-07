@@ -10,6 +10,7 @@
   "dependencies": {
     "bulmaswatch": "^0.8.1",
     "core-js": "^3.6.5",
+    "paper": "^0.12.15",
     "vue": "^3.0.0",
     "vue-router": "^4.0.9"
   },

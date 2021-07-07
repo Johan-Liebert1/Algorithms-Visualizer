@@ -33,6 +33,11 @@ export default defineComponent({
           name: "Path Finders and Maze Generators",
           imageSrc: "/images/pathFindingSS.png",
           routePath: "/path-finding-algos"
+        },
+        {
+          name: "Some ds algo",
+          imageSrc: "",
+          routePath: "/common-ds-algo"
         }
       ]
     };

@@ -10,20 +10,7 @@
       :showMazeDropdown="true"
       :mazeGenAlgorithmsList="mazeGenerationAlgorithms"
       @mazeGenerationAlgoSelected="setNewMazeGenAlgo"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        fill="currentColor"
-        class="bi bi-caret-down-fill"
-        viewBox="0 0 16 16"
-      >
-        <path
-          d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
-        />
-      </svg>
-    </AlgoNavBar>
+    />
 
     <div class="wrapper" ref="gridContainer">
       <div class="algorithm-info has-text-centered">
@@ -33,19 +20,7 @@
             :style="{ backgroundColor: cellColors.default }"
             @click="setIsDiagonalMovementAllowed"
           >
-            <svg
-              v-if="diagonalMovementAllowed"
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="green"
-              class="bi bi-check-lg"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M13.485 1.431a1.473 1.473 0 0 1 2.104 2.062l-7.84 9.801a1.473 1.473 0 0 1-2.12.04L.431 8.138a1.473 1.473 0 0 1 2.084-2.083l4.111 4.112 6.82-8.69a.486.486 0 0 1 .04-.045z"
-              />
-            </svg>
+            <SVG v-if="diagonalMovementAllowed" :name="svgNames.checkbox" />
           </div>
           <p>
             Diagonal Movement
@@ -173,18 +148,20 @@ import {
   TOOLTIPS
 } from "@/constants/pathFindersConstants";
 import { mazeGenerationAlgorithms } from "@/constants/mazeConstants";
+import { svgNames } from "@/constants/globalConstants";
 
 // components
 import Cell from "@/components/pathFinders/Cell.vue";
 import AlgoNavBar from "@/components/AlgoNavBar.vue";
 import Tooltip from "@/components/Tooltip.vue";
+import SVG from "@/components/Svg.vue";
 
 export default defineComponent({
-  components: { Cell, AlgoNavBar, Tooltip },
+  components: { Cell, AlgoNavBar, Tooltip, SVG },
 
   setup() {
     const currentlyDraggingCell = ref<CellClass | null>(null);
-    return { currentlyDraggingCell, TOOLTIPS };
+    return { currentlyDraggingCell, TOOLTIPS, svgNames };
   },
 
   data() {
