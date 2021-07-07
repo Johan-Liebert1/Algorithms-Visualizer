@@ -64,7 +64,7 @@ const recursiveDivisionMaze = async (
   makeWall: (cell: CellClass) => Promise<any>,
   pathCells: Passage = {}
 ) => {
-  if (startRow > endRow || startCol > endCol) return;
+  if (startRow >= endRow || startCol >= endCol) return;
 
   // whether we're drawing a horizontal wall or a vertical wall
   const isHorizontal =
@@ -75,24 +75,30 @@ const recursiveDivisionMaze = async (
 
   // get random row to fill with walls if horizontal
   let drawAtRow: number = startRow;
-  const rowsArray: number[] = [];
+  const rowsArray: number[] = []; // draw walls on even rows/cols
+  const rowsPassageArray: number[] = []; // make passages on odd rows/cols
 
   // get random column to fill with walls if vertical
   let drawAtCol: number = startCol;
-  const colsArray: number[] = [];
+  const colsArray: number[] = []; // draw walls on even rows/cols
+  const colsPassageArray: number[] = []; // make passages on odd rows/cols
 
-  for (let i = startRow; i <= endRow; i += 2) {
-    rowsArray.push(i);
+  for (let i = startRow; i <= endRow; ) {
+    rowsPassageArray.push(i);
+    i += 2;
+    rowsArray.push(i - 1);
   }
 
-  for (let i = startCol; i <= endCol; i += 2) {
-    colsArray.push(i);
+  for (let i = startCol; i <= endCol; ) {
+    colsPassageArray.push(i);
+    i += 2;
+    colsArray.push(i - 1);
   }
 
   if (isHorizontal) {
-    drawAtRow = rowsArray[randNum(0, rowsArray.length - 1)];
+    drawAtRow = rowsArray[randNum(0, rowsArray.length - 2)];
   } else {
-    drawAtCol = colsArray[randNum(0, colsArray.length - 1)];
+    drawAtCol = colsArray[randNum(0, colsArray.length - 2)];
   }
 
   // going left to right if horizontal, i.e. add to columns, and rows remain constant
@@ -105,11 +111,11 @@ const recursiveDivisionMaze = async (
   let pathCell: CellClass;
 
   if (isHorizontal) {
-    const c = colsArray[randNum(0, colsArray.length - 1)];
+    const c = colsPassageArray[randNum(0, colsPassageArray.length - 1)];
     // the path cell will be at matrix[drawAtRow][randomColumn]
     pathCell = matrix[drawAtRow][c];
   } else {
-    const r = rowsArray[randNum(0, rowsArray.length - 1)];
+    const r = rowsPassageArray[randNum(0, rowsPassageArray.length - 1)];
     // the path cell will be at matrix[randomRow][drawAtCol]
     pathCell = matrix[r][drawAtCol];
   }
@@ -157,7 +163,7 @@ const recursiveDivisionMaze = async (
     // bottom area of the horizontal wall
     recursiveDivisionMaze(
       matrix,
-      drawAtRow + 2,
+      drawAtRow + 1,
       startCol,
       endRow,
       endCol,
@@ -184,7 +190,7 @@ const recursiveDivisionMaze = async (
     recursiveDivisionMaze(
       matrix,
       startRow,
-      drawAtCol + 2,
+      drawAtCol + 1,
       endRow,
       endCol,
       startNode,
