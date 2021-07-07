@@ -26,7 +26,7 @@
 
     <div class="wrapper" ref="gridContainer">
       <div class="algorithm-info has-text-centered">
-        <div class="is-flex">
+        <div class="is-flex" style="flex-direction: column; align-items: center">
           <div
             class="cell-info-div checkbox"
             :style="{ backgroundColor: cellColors.default }"
@@ -46,7 +46,9 @@
               />
             </svg>
           </div>
-          Allow Diagonal Movement
+          <p>
+            Diagonal Movement
+          </p>
         </div>
 
         <Tooltip :tooltipMessage="'The algorithm to visualize'">
@@ -116,7 +118,7 @@
         </div>
       </div>
 
-      <div class="grid-container" @dragover="nodeDragOver">
+      <div class="grid-container" id="grid-container" @dragover="nodeDragOver">
         <div v-for="(row, index) in matrix" :key="index" class="is-flex">
           <Cell
             v-for="(col, idx) in row"
@@ -124,6 +126,7 @@
             :cell="matrix[index][idx]"
             :isStartNode="matrix[index][idx] === startNode"
             :isEndNode="matrix[index][idx] === endNode"
+            :cellSize="CELL_SIZE"
             @clicked="cellClick"
             @nodeDropped="nodeDropped"
             @nodeDragStart="nodeDragStart"
@@ -153,15 +156,12 @@ import dijkstrasAlgorithm from "@/algos/pathFinders/Djikstras";
 // algorithms - maze generators
 import DepthFirstSearchMazeGen from "@/algos/mazeGenerators/DFSMaze";
 import randomMaze from "@/algos/mazeGenerators/randomMaze";
-import recursiveDivisionMaze, {
-  drawBorderWalls
-} from "@/algos/mazeGenerators/RecursiveDivision";
+import recursiveDivisionMaze from "@/algos/mazeGenerators/RecursiveDivision";
 import ellersMaze from "@/algos/mazeGenerators/EllersAlgo";
 import primsMazeGenerator from "@/algos/mazeGenerators/PrimsAlgo";
 
 // constants
 import {
-  CELL_SIZE,
   closedCellColor,
   defaultCellColor,
   finalPathColor,
@@ -188,6 +188,7 @@ export default defineComponent({
 
   data() {
     return {
+      CELL_SIZE: 20,
       matrix: [] as CellClass[][],
       rows: 21,
       columns: 40,
@@ -219,7 +220,12 @@ export default defineComponent({
         }
       ] as ButtonsArray[],
 
-      diagonalMovementAllowed: false
+      diagonalMovementAllowed: false,
+
+      recursiveMaze: {
+        horizontalBias: false,
+        verticalBias: false
+      }
     };
   },
 
@@ -250,8 +256,6 @@ export default defineComponent({
           break;
 
         case mazeGenerationAlgorithms.RECURSIVE_DIVISION:
-          console.log(this.rows, this.columns);
-          // drawBorderWalls(this.matrix, this.makeWall);
           recursiveDivisionMaze(
             this.matrix,
             0,
@@ -260,6 +264,8 @@ export default defineComponent({
             this.columns - 1,
             this.startNode,
             this.endNode,
+            this.recursiveMaze.horizontalBias,
+            this.recursiveMaze.verticalBias,
             this.makeWall
           );
           break;
@@ -333,18 +339,18 @@ export default defineComponent({
       }
     },
 
-    makeWall(c: CellClass) {
+    makeWall(c: CellClass): Promise<void> {
       this.matrix[c.row][c.col].isWall = true;
       this.matrix[c.row][c.col].color = wallCellColor;
       this.matrix[c.row][c.col].drawBorder = false;
-      return new Promise(r => setTimeout(r, 15));
+      return new Promise(r => setTimeout(r, this.algorithmSpeed / 50));
     },
 
-    clearWall(c: CellClass) {
+    clearWall(c: CellClass): Promise<void> {
       this.matrix[c.row][c.col].isWall = false;
       this.matrix[c.row][c.col].color = defaultCellColor;
       this.matrix[c.row][c.col].drawBorder = true;
-      return new Promise(r => setTimeout(r, 15));
+      return new Promise(r => setTimeout(r, this.algorithmSpeed / 50));
     },
 
     highlightGrid(openCells: CellClass[], closedCells: CellClass[]) {
@@ -364,11 +370,15 @@ export default defineComponent({
     colorFinalPath() {
       let currentNode: CellClass = this.endNode;
 
-      while (currentNode.previous !== null) {
-        this.matrix[currentNode.row][currentNode.col].color = finalPathColor;
-        this.matrix[currentNode.row][currentNode.col].drawBorder = false;
-        currentNode = currentNode.previous;
-      }
+      const interval = setInterval(() => {
+        if (currentNode.previous !== null) {
+          this.matrix[currentNode.row][currentNode.col].color = finalPathColor;
+          this.matrix[currentNode.row][currentNode.col].drawBorder = false;
+          currentNode = currentNode.previous;
+        } else {
+          clearInterval(interval);
+        }
+      }, this.algorithmSpeed / 50);
 
       this.startNode.color = finalPathColor;
       this.startNode.drawBorder = false;
@@ -496,9 +506,12 @@ export default defineComponent({
   },
 
   mounted() {
-    const randCols = Math.floor((window.innerWidth - 20) / CELL_SIZE);
-
+    const randCols = Math.floor((window.innerWidth - 20) / this.CELL_SIZE);
     this.columns = randCols % 2 === 0 ? randCols - 1 : randCols;
+    this.rows = Math.floor((window.innerHeight * 0.8) / this.CELL_SIZE);
+
+    // this.columns = 20;
+    // this.rows = 10;
 
     this.initGrid();
 

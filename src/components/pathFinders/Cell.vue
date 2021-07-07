@@ -2,8 +2,8 @@
   <div
     :class="{ cell: true }"
     :style="{
-      width: `${dimension}px`,
-      height: `${dimension}px`,
+      width: `${cellSize}px`,
+      height: `${cellSize}px`,
       backgroundColor: cell.color,
       transition: 'background-color ease-in-out 300ms',
       'border-right': cell.drawBorder ? `solid ${cell.borderColor}` : '',
@@ -63,12 +63,15 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { CellClass } from "@/types/pathFinders";
-import { CELL_SIZE } from "@/constants/pathFindersConstants";
 
 export default defineComponent({
   props: {
     cell: {
       type: CellClass,
+      required: true
+    },
+    cellSize: {
+      type: Number,
       required: true
     },
     isStartNode: {
@@ -83,12 +86,6 @@ export default defineComponent({
       type: Boolean,
       required: true
     }
-  },
-
-  data() {
-    return {
-      dimension: CELL_SIZE
-    };
   },
 
   methods: {

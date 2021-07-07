@@ -46,9 +46,7 @@ export class CellClass {
     this.drawBorder = !isWall;
     this.borderColor = cellBorderColor;
     this.djikstraScore = Infinity;
-    this.ellersSet = Math.random()
-      .toString(36)
-      .substring(2);
+    this.ellersSet = (row * totalCols + col).toString();
   }
 
   addNeighbors(
