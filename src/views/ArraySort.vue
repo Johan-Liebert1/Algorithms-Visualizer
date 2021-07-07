@@ -2,7 +2,7 @@
   <div>
     <AlgoNavBar
       :algorithmsList="ALL_SORTING_ALGORITHM_NAMES"
-      :selectedAlgo="sortAlgorithm"
+      :selectedAlgo="chosenSortingAlgorithm"
       @algorithmChanged="setNewAlgorithm"
       :buttonsList="navbarButtons"
       v-model:algoSpeed.sync="sortSpeed"
@@ -22,72 +22,91 @@
     </AlgoNavBar>
     <div class="array-sort-container">
       <div class="algorithm-info has-text-centered">
-        <div>
+        <Tooltip :tooltipMessage="TOOLTIPS.VISUALIZING">
           <p class="has-text-weight-bold">Visualizing</p>
-          <p>{{ sortAlgorithm }}</p>
-        </div>
+          <p>{{ chosenSortingAlgorithm }}</p>
+        </Tooltip>
 
-        <div>
+        <Tooltip :tooltipMessage="TOOLTIPS.SPEED">
           <p class="has-text-weight-bold">Algo Speed</p>
           <p>{{ sortSpeed }}</p>
+        </Tooltip>
+
+        <div>
+          <Tooltip :tooltipMessage="TOOLTIPS.INITIAL_ELEMENT">
+            <div class="is-flex">
+              <div
+                class="cell-info-div"
+                :style="{ backgroundColor: arrayColors.base }"
+              ></div>
+              Initial Element
+            </div>
+          </Tooltip>
+
+          <Tooltip :tooltipMessage="TOOLTIPS.SORTED_ELEMENT">
+            <div class="is-flex" style="margin-top: 5px;">
+              <div
+                class="cell-info-div"
+                :style="{ backgroundColor: arrayColors.sorted }"
+              ></div>
+              Sorted Element
+            </div>
+          </Tooltip>
         </div>
 
         <div>
-          <div class="is-flex">
-            <div
-              class="cell-info-div"
-              :style="{ backgroundColor: arrayColors.base }"
-            ></div>
-            Initial Element
-          </div>
+          <Tooltip :tooltipMessage="TOOLTIPS.SWAPPING_ELEMENTS">
+            <div class="is-flex">
+              <div
+                class="cell-info-div"
+                :style="{ backgroundColor: arrayColors.swap }"
+              ></div>
+              Swap
+            </div>
+          </Tooltip>
 
-          <div class="is-flex" style="margin-top: 5px;">
-            <div
-              class="cell-info-div"
-              :style="{ backgroundColor: arrayColors.sorted }"
-            ></div>
-            Sorted Element
-          </div>
-        </div>
-
-        <div>
-          <div class="is-flex">
-            <div
-              class="cell-info-div"
-              :style="{ backgroundColor: arrayColors.swap }"
-            ></div>
-            Swap
-          </div>
-
-          <div class="is-flex" style="margin-top: 5px;">
-            <div
-              class="cell-info-div"
-              :style="{ backgroundColor: arrayColors.iterating }"
-            ></div>
-            Iterating
-          </div>
+          <Tooltip :tooltipMessage="TOOLTIPS.ITERATING_ELEMENTS">
+            <div class="is-flex" style="margin-top: 5px;">
+              <div
+                class="cell-info-div"
+                :style="{ backgroundColor: arrayColors.iterating }"
+              ></div>
+              Iterating
+            </div>
+          </Tooltip>
         </div>
 
         <div v-if="yellowBarLegend.show">
-          <div class="is-flex">
-            <div
-              class="cell-info-div"
-              :style="{ backgroundColor: arrayColors.pivot }"
-            ></div>
-            {{ yellowBarLegend.text }}
-          </div>
+          <Tooltip
+            :tooltipMessage="
+              chosenSortingAlgorithm === allSortingAlgorithms.QUICK_SORT
+                ? TOOLTIPS.PIVOT_ELEMENT
+                : TOOLTIPS.MINIMUM_ELEMENT
+            "
+          >
+            <div class="is-flex">
+              <div
+                class="cell-info-div"
+                :style="{ backgroundColor: arrayColors.pivot }"
+              ></div>
+              {{ yellowBarLegend.text }}
+            </div>
+          </Tooltip>
         </div>
       </div>
       <p>
         {{
-          sortAlgorithm === allSortingAlgorithms.QUICK_SORT
+          chosenSortingAlgorithm === allSortingAlgorithms.QUICK_SORT
             ? "Current Pivot - " + array[quickSort.pivotIdx].number
             : ""
         }}
       </p>
 
       <!-- radio button for min-max heap -->
-      <div class="control" v-if="sortAlgorithm === allSortingAlgorithms.HEAP_SORT">
+      <div
+        class="control"
+        v-if="chosenSortingAlgorithm === allSortingAlgorithms.HEAP_SORT"
+      >
         <label class="radio">
           <input type="radio" name="min-max-heap" checked @change="setMinMaxHeap" />
           Use Max Heap
@@ -127,26 +146,33 @@ import {
   pivotBarColor,
   sortedBarColor,
   sortingAlgorithms as allSortingAlgorithms,
-  swapBarColor
+  swapBarColor,
+  TOOLTIPS
 } from "@/constants/sortingAlgoConstants";
 
 // components
 import AlgoNavBar from "@/components/AlgoNavBar.vue";
 import Bar from "@/components/sorting/Bar.vue";
 import heapSort from "@/algos/sorting/heapSort";
+import Tooltip from "@/components/Tooltip.vue";
 
 export default defineComponent({
   name: "ArraySort",
-  components: { Bar, AlgoNavBar },
+  components: { Bar, AlgoNavBar, Tooltip },
 
   setup() {
     // non-reactive properties
-    console.log("setup");
     const ARRAY_SIZE = 40;
     const ALL_SORTING_ALGORITHM_NAMES = Object.values(allSortingAlgorithms);
     const MAX_HEIGHT = 350;
 
-    return { ARRAY_SIZE, ALL_SORTING_ALGORITHM_NAMES, MAX_HEIGHT, allSortingAlgorithms };
+    return {
+      ARRAY_SIZE,
+      ALL_SORTING_ALGORITHM_NAMES,
+      MAX_HEIGHT,
+      allSortingAlgorithms,
+      TOOLTIPS
+    };
   },
 
   data() {
@@ -155,7 +181,7 @@ export default defineComponent({
       sortSpeed: 500,
       currentlySorting: false,
       stopSorting: false,
-      sortAlgorithm: allSortingAlgorithms.MERGE_SORT as string,
+      chosenSortingAlgorithm: allSortingAlgorithms.MERGE_SORT as string,
       navbarButtons: [
         {
           text: "Sort",
@@ -190,7 +216,7 @@ export default defineComponent({
     },
 
     setNewAlgorithm(newAlgo: string) {
-      this.sortAlgorithm = newAlgo;
+      this.chosenSortingAlgorithm = newAlgo;
     },
 
     stopArraySort() {
@@ -200,7 +226,7 @@ export default defineComponent({
     sortArray() {
       if (this.currentlySorting) return;
 
-      switch (this.sortAlgorithm) {
+      switch (this.chosenSortingAlgorithm) {
         case allSortingAlgorithms.BUBBLE_SORT:
           bubbleSort(
             this.array.map(e => e.number),
@@ -260,7 +286,7 @@ export default defineComponent({
           break;
 
         default:
-          console.log(this.sortAlgorithm, "not implemented yet");
+          console.log(this.chosenSortingAlgorithm, "not implemented yet");
           break;
       }
     },
@@ -388,7 +414,7 @@ export default defineComponent({
     },
 
     yellowBarLegend(): { show: boolean; text?: string } {
-      switch (this.sortAlgorithm) {
+      switch (this.chosenSortingAlgorithm) {
         case allSortingAlgorithms.QUICK_SORT:
           return { show: true, text: "Pivot" };
 

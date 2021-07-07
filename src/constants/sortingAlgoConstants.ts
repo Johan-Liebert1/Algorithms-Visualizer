@@ -12,3 +12,14 @@ export const sortingAlgorithms = Object.freeze({
   QUICK_SORT: "Quick Sort",
   HEAP_SORT: "Heap Sort"
 });
+
+export const TOOLTIPS = Object.freeze({
+  VISUALIZING: "The algorithm to visualize (click for more info)",
+  SPEED: "Speed of the animation in milliseconds",
+  INITIAL_ELEMENT: "Element that is not moved from it's original position",
+  SORTED_ELEMENT: "Element that has been moved to it's sorted location in the array",
+  SWAPPING_ELEMENTS: "Elements that are being swapped with each other",
+  ITERATING_ELEMENTS: "Elements that are being iterated over",
+  PIVOT_ELEMENT: "Pivot chosen for Quick Sort",
+  MINIMUM_ELEMENT: "The smallest element found within the elements being iterated over"
+});

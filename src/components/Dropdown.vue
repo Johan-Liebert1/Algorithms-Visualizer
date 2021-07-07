@@ -49,7 +49,7 @@ export default defineComponent({
   min-width: 100%;
   background-color: #32475b;
   border-radius: 5px;
-  z-index: 10;
+  z-index: 300;
   animation: grow 200ms linear;
 }
 

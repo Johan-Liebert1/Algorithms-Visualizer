@@ -4,7 +4,12 @@
     @mouseover="mouseOverHandler"
     @mouseleave="mouseLeaveHandler"
   >
-    <div class="tooltip-container" ref="tooltipContainer" v-if="showTooltip">
+    <div
+      v-if="showTooltip"
+      class="tooltip-container"
+      :style="tooltipStyles"
+      ref="tooltipContainer"
+    >
       {{ tooltipMessage }}
     </div>
     <slot />
@@ -41,6 +46,18 @@ export default defineComponent({
         this.showTooltip = false;
       }, 250);
     }
+  },
+
+  computed: {
+    tooltipStyles() {
+      const minWidth: number = this.tooltipMessage.length >= 65 ? 400 : 200;
+      const left: number = Math.floor(minWidth - 100) * 0.5;
+
+      return {
+        minWidth: `${minWidth}%`,
+        left: `-${left}%`
+      };
+    }
   }
 });
 </script>
@@ -48,16 +65,14 @@ export default defineComponent({
 <style scoped>
 .tooltip-container {
   position: absolute;
-  min-width: 200%;
   bottom: 100%;
-  left: -50%;
-  word-wrap: break-word;
-  background-color: rgb(50, 50, 50, 0.9);
+  background-color: #222f3e;
   padding: 0.5rem 0.2rem;
   border-radius: 5px;
   color: white;
   transition: transform 200ms linear;
   animation: grow 200ms linear;
+  z-index: 100;
 }
 
 @keyframes grow {

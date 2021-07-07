@@ -60,7 +60,7 @@
         </Tooltip>
 
         <div>
-          <Tooltip :tooltipMessage="'Nodes that have not been visited by the algorithm'">
+          <Tooltip :tooltipMessage="TOOLTIPS.UNVISITED_NODE">
             <div class="is-flex">
               <div
                 class="cell-info-div"
@@ -70,7 +70,7 @@
             </div>
           </Tooltip>
 
-          <Tooltip :tooltipMessage="'Nodes that are walls and cannot be passed through'">
+          <Tooltip :tooltipMessage="TOOLTIPS.WALL_NODE">
             <div class="is-flex" style="margin-top: 5px;">
               <div
                 class="cell-info-div"
@@ -82,7 +82,7 @@
         </div>
 
         <div>
-          <Tooltip :tooltipMessage="'Nodes that can still be expanded'">
+          <Tooltip :tooltipMessage="TOOLTIPS.OPEN_NODE">
             <div class="is-flex">
               <div
                 class="cell-info-div"
@@ -92,11 +92,7 @@
             </div>
           </Tooltip>
 
-          <Tooltip
-            :tooltipMessage="
-              'Nodes that are unfit for further expansion and have been marked as closed by the algorithm'
-            "
-          >
+          <Tooltip :tooltipMessage="TOOLTIPS.CLOSED_NODE">
             <div class="is-flex" style="margin-top: 5px;">
               <div
                 class="cell-info-div"
@@ -108,11 +104,7 @@
         </div>
 
         <div>
-          <Tooltip
-            :tooltipMessage="
-              'Nodes that are part of the final path chosen by the algorithm'
-            "
-          >
+          <Tooltip :tooltipMessage="TOOLTIPS.FINAL_PATH">
             <div class="is-flex">
               <div
                 class="cell-info-div"
@@ -176,7 +168,8 @@ import {
   openCellColor,
   pathFindingAlgorithms,
   secondaryCellBorderColor,
-  wallCellColor
+  wallCellColor,
+  TOOLTIPS
 } from "@/constants/pathFindersConstants";
 import { mazeGenerationAlgorithms } from "@/constants/mazeConstants";
 
@@ -190,7 +183,7 @@ export default defineComponent({
 
   setup() {
     const currentlyDraggingCell = ref<CellClass | null>(null);
-    return { currentlyDraggingCell };
+    return { currentlyDraggingCell, TOOLTIPS };
   },
 
   data() {
@@ -203,14 +196,10 @@ export default defineComponent({
       algoRunning: false,
       startNode: new CellClass(0, 0, 0, 0),
       endNode: new CellClass(0, 0, 0, 0),
-      selectedPathFindingAlgorithm: pathFindingAlgorithms.A_STAR,
       algorithmSpeed: 500,
-      pathFindingAlgorithms: Object.entries(pathFindingAlgorithms).map(
-        ([key, value]) => value
-      ),
-      mazeGenerationAlgorithms: Object.entries(mazeGenerationAlgorithms).map(
-        ([key, value]) => value
-      ),
+      pathFindingAlgorithms: Object.values(pathFindingAlgorithms),
+      mazeGenerationAlgorithms: Object.values(mazeGenerationAlgorithms),
+      selectedPathFindingAlgorithm: pathFindingAlgorithms.A_STAR,
       selectedMazeGenerationAlgorithm: mazeGenerationAlgorithms.RANDOMIZED_DFS,
       navbarButtons: [
         {
@@ -229,6 +218,7 @@ export default defineComponent({
           handler: this.initGrid
         }
       ] as ButtonsArray[],
+
       diagonalMovementAllowed: false
     };
   },
