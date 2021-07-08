@@ -63,16 +63,4 @@ class LinkedList {
   }
 }
 
-const ll = new LinkedList();
-
-ll.insert(5)
-  .insert(50)
-  .insert(43)
-  .insert(15)
-  .insert(58)
-  .insert(438);
-
-console.log(ll.traverse());
-ll.reverse();
-
 export default LinkedList;

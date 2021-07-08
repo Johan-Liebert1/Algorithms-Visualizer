@@ -45,6 +45,7 @@
         </div>
 
         <div
+          v-if="cellSize"
           class="dropdown-container"
           :style="cellSizeDropdownVisible ? dropdownStyle : normalStyle"
         >
@@ -118,6 +119,10 @@ export default defineComponent({
       type: Array,
       required: true
     },
+    selectedAlgo: {
+      type: String,
+      required: true
+    },
     algoSpeed: {
       type: Number,
       required: false
@@ -125,10 +130,6 @@ export default defineComponent({
     cellSize: {
       type: Number,
       required: false
-    },
-    selectedAlgo: {
-      type: String,
-      required: true
     },
     showMazeDropdown: {
       type: Boolean,

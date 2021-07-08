@@ -12,6 +12,16 @@ class LinkedListNode {
     this.next = null;
     this.previous = null;
   }
+
+  /**
+   * Representation of a Node
+   */
+  repr(): string {
+    // const next = this.next ? this.next.value : "Null";
+
+    // return `Value - ${this.value} \nNext - ${next}`;
+    return this.value.toString();
+  }
 }
 
 export default LinkedListNode;
