@@ -6,7 +6,13 @@ import LinkedListNode, { llNodeNull } from "./LinkedListNode";
 class LinkedList {
   start: llNodeNull;
   length: number;
-  drawPointerOnNode: (index: number, color?: paper.Color, top?: boolean) => void;
+  drawPointerOnNode: (
+    index: number,
+    color?: paper.Color,
+    top?: boolean,
+    add?: boolean,
+    textString?: string
+  ) => void;
   translatePointer: (
     fromIdx: number,
     toIdx: number,
@@ -16,7 +22,13 @@ class LinkedList {
   toggleArrowVisibility: (index: number, show?: boolean) => void;
 
   constructor(
-    drawPointerOnNode: (index: number, color?: paper.Color, top?: boolean) => void,
+    drawPointerOnNode: (
+      index: number,
+      color?: paper.Color,
+      top?: boolean,
+      add?: boolean,
+      textString?: string
+    ) => void,
     translatePointer: (
       fromIdx: number,
       toIdx: number,
@@ -46,6 +58,8 @@ class LinkedList {
   }
 
   insert(value: numStr): LinkedList {
+    this.length++;
+
     const newNode = new LinkedListNode(value);
 
     if (!this.start) {
@@ -71,9 +85,9 @@ class LinkedList {
     p2 = p1.next as LinkedListNode;
     p3 = p2.next as LinkedListNode;
 
-    this.drawPointerOnNode(0, pointerColor1);
-    this.drawPointerOnNode(1, pointerColor2);
-    this.drawPointerOnNode(2, pointerColor3);
+    this.drawPointerOnNode(0, pointerColor1, false, true, "ptr 1");
+    this.drawPointerOnNode(1, pointerColor2, false, true, "ptr 2");
+    this.drawPointerOnNode(2, pointerColor3, false, true, "ptr 3");
 
     await sleep(1000);
 
@@ -101,8 +115,6 @@ class LinkedList {
     this.start = p2;
 
     this.translatePointer(0, p2.index, true);
-
-    console.log(this.traverse(), { p1, p2, p3 });
   }
 }
 
