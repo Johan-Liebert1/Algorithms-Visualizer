@@ -6,11 +6,13 @@ class LinkedListNode {
   value: numStr;
   next: llNodeNull;
   previous: llNodeNull;
+  index: number;
 
   constructor(value: numStr) {
     this.value = value;
     this.next = null;
     this.previous = null;
+    this.index = -1;
   }
 
   /**
