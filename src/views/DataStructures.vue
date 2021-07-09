@@ -19,7 +19,11 @@
             :key="index"
             @click="algo.handler"
           >
-            {{ algo.name }}
+            {{
+              algo.name === "delete_from_heap"
+                ? `Take out ${typeOfHeap} element`
+                : algo.name
+            }}
             <!-- <SVG :name="svgNames.downArrow" /> -->
           </div>
         </div>
@@ -142,6 +146,7 @@ export default defineComponent({
       selectedMainDsAlgo: allDsAlgosObject.BINARY_TREES,
       addNewNodeValue: 0 as numStr,
       animationSpeed: 500,
+      typeOfHeap: "Minimum" as "Minimum" | "Maximum",
       navbarButtons: {
         [allDsAlgosObject.LINKED_LIST.name]: [
           {
@@ -161,6 +166,12 @@ export default defineComponent({
           {
             name: "Postorder Traversal",
             handler: () => this.traverseBinaryTree("postorder")
+          }
+        ],
+        [allDsAlgosObject.HEAP.name]: [
+          {
+            name: "delete_from_heap",
+            handler: () => this.traverseBinaryTree("inorder")
           }
         ]
       }
