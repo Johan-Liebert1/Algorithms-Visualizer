@@ -119,7 +119,6 @@ export default defineComponent({
       this.myLinkedList.insert(this.addNewNodeValue);
       this.addNewNodeValue = "";
       this.clearCanvas();
-      console.log(this.myLinkedList);
 
       this.drawLinkedList(this.myLinkedList.start);
     },
