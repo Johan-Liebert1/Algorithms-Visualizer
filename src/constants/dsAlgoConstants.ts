@@ -15,6 +15,8 @@ export const allDsAlgosObject = Object.freeze({
   }
 });
 
+export type treeTraversalTypes = "inorder" | "preorder" | "postorder";
+
 export const NODE_SIZE = 50;
 export const ARROW_LENGTH = 40;
 export const ARROW_NODE_MARGIN = 10;

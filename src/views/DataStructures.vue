@@ -4,6 +4,7 @@
       :algorithmsList="allMainDsAlgos"
       :buttonsList="[]"
       :selectedAlgo="selectedMainDsAlgo.name"
+      @algorithmChanged="algorithmChanged"
       v-model:algoSpeed.sync="animationSpeed"
     />
     <div class="algo-container">
@@ -75,6 +76,9 @@ export default defineComponent({
   setup() {
     const allMainDsAlgos = Object.values(allDsAlgosObject).map(v => v.name);
 
+    const nullNode: paper.Path.Rectangle = {} as paper.Path.Rectangle;
+
+    // for linked lists
     const linkedListNodes: {
       node: paper.Path.Rectangle;
       arrowNext: paper.Group;
@@ -82,10 +86,17 @@ export default defineComponent({
     }[] = [];
 
     const linkedListStartPointer = {} as { pointer: paper.Group; index: number };
-
     let myLinkedList: LinkedList = {} as LinkedList;
 
-    const nullNode: paper.Path.Rectangle = {} as paper.Path.Rectangle;
+    // for trees
+    const treeNodesList: {
+      // uuid will be used to hightlight the node
+      [uuid: string]: {
+        node: paper.Path.Rectangle;
+        leftArrow: paper.Group;
+        rightArrow: paper.Group;
+      };
+    } = {};
 
     return {
       allDsAlgosObject,
@@ -94,7 +105,8 @@ export default defineComponent({
       linkedListStartPointer,
       myLinkedList,
       nullNode,
-      svgNames
+      svgNames,
+      treeNodesList
     };
   },
 
@@ -109,25 +121,47 @@ export default defineComponent({
             name: "Reversing a Linked List",
             handler: this.reverseLinkedList
           }
+        ],
+        [allDsAlgosObject.BINARY_TREES.name]: [
+          {
+            name: "Inorder Traversal",
+            handler: this.reverseLinkedList
+          }
         ]
       }
     };
   },
 
   methods: {
-    addNodeToLinkedList() {
-      this.myLinkedList.insert(this.addNewNodeValue);
-      this.addNewNodeValue = "";
+    algorithmChanged(value: string) {
       this.clearCanvas();
 
-      this.drawLinkedList(this.myLinkedList.start);
+      switch (value) {
+        case allDsAlgosObject.LINKED_LIST.name:
+          this.selectedMainDsAlgo = allDsAlgosObject.LINKED_LIST;
+          this.createNewLinkedList();
+          console.log("linkedlist selected");
+          break;
+
+        case allDsAlgosObject.BINARY_TREES.name:
+          this.selectedMainDsAlgo = allDsAlgosObject.BINARY_TREES;
+          console.log("BINARY_TREES selected");
+          break;
+
+        case allDsAlgosObject.HEAP.name:
+          this.selectedMainDsAlgo = allDsAlgosObject.HEAP;
+          console.log("HEAP selected");
+          break;
+
+        default:
+          break;
+      }
     },
 
     clearCanvas() {
-      this.linkedListStartPointer.pointer.remove();
+      if (this.linkedListStartPointer.pointer instanceof paper.Group)
+        this.linkedListStartPointer.pointer.remove();
       this.linkedListStartPointer = {} as { pointer: paper.Group; index: number };
-
-      console.log("linkedListNodes = ", this.linkedListNodes);
 
       if (this.nullNode instanceof paper.Path) {
         this.nullNode.remove();
@@ -150,21 +184,6 @@ export default defineComponent({
         new paper.Size(canvas.width, canvas.height)
       );
       rect.fillColor = new paper.Color(0);
-    },
-
-    constrainValue(min: number, max: number) {
-      // console.log(value, isNaN(value));
-      // if (isNaN(value)) {
-      //   this.addNewNodeValue = 0;
-      //   return;
-      // }
-      // value = parseInt(value);
-      // if (value < min || value > max) return;
-      // this.addNewNodeValue = value;
-    },
-
-    reverseLinkedList() {
-      this.myLinkedList.reverse();
     },
 
     drawArrow(
@@ -222,6 +241,67 @@ export default defineComponent({
       return group;
     },
 
+    drawNode(node: llNodeNull, x: number, y: number): paper.Path.Rectangle {
+      const startingPoint = new paper.Point(x, y);
+      const endingPoint = new paper.Point(x + NODE_SIZE, y + NODE_SIZE);
+      const middlePoint = new paper.Point(
+        (startingPoint.x + endingPoint.x) / 2,
+        startingPoint.y
+      );
+
+      const textContent = node ? node.repr() : "NULL";
+
+      const text = new paper.PointText(middlePoint);
+      text.justification = "center";
+      text.fillColor = textStrokeColor;
+      text.content = textContent;
+      text.scale(1.2);
+
+      const temp = new paper.Rectangle(startingPoint, endingPoint);
+
+      const rect = new paper.Path.Rectangle(temp, new paper.Size(5, 5));
+      rect.strokeColor = nodeStrokeColor;
+
+      text.position.y += NODE_SIZE / 2 + text.handleBounds.height / 4;
+
+      return rect;
+    },
+
+    // ================== LINKED LISTS START ==========================
+
+    createNewLinkedList() {
+      this.myLinkedList = new LinkedList(
+        this.drawPointerOnNode,
+        this.translatePointer,
+        this.rotateArrow,
+        this.toggleArrowVisibility
+      );
+
+      this.drawLinkedList(this.myLinkedList.start);
+    },
+
+    addNodeToLinkedList() {
+      this.myLinkedList.insert(this.addNewNodeValue);
+      this.clearCanvas();
+
+      this.drawLinkedList(this.myLinkedList.start);
+    },
+
+    constrainValue(min: number, max: number) {
+      // console.log(value, isNaN(value));
+      // if (isNaN(value)) {
+      //   this.addNewNodeValue = 0;
+      //   return;
+      // }
+      // value = parseInt(value);
+      // if (value < min || value > max) return;
+      // this.addNewNodeValue = value;
+    },
+
+    reverseLinkedList() {
+      this.myLinkedList.reverse();
+    },
+
     toggleArrowVisibility(index: number, show?: boolean) {
       if (show === undefined) {
         this.linkedListNodes[index].arrowNext.visible = !this.linkedListNodes[index]
@@ -252,32 +332,6 @@ export default defineComponent({
         arrow.rotate(180);
       }
       return new Promise(r => r());
-    },
-
-    drawNode(node: llNodeNull, x: number, y: number): paper.Path.Rectangle {
-      const startingPoint = new paper.Point(x, y);
-      const endingPoint = new paper.Point(x + NODE_SIZE, y + NODE_SIZE);
-      const middlePoint = new paper.Point(
-        (startingPoint.x + endingPoint.x) / 2,
-        startingPoint.y
-      );
-
-      const textContent = node ? node.repr() : "NULL";
-
-      const text = new paper.PointText(middlePoint);
-      text.justification = "center";
-      text.fillColor = textStrokeColor;
-      text.content = textContent;
-      text.scale(1.2);
-
-      const temp = new paper.Rectangle(startingPoint, endingPoint);
-
-      const rect = new paper.Path.Rectangle(temp, new paper.Size(5, 5));
-      rect.strokeColor = nodeStrokeColor;
-
-      text.position.y += NODE_SIZE / 2 + text.handleBounds.height / 4;
-
-      return rect;
     },
 
     /**
@@ -448,7 +502,15 @@ export default defineComponent({
 
       // draw the start pointer
       this.drawPointerOnNode(0, headPointerColor, true, false, "START");
+    },
+
+    // ============================== TREES START ================================
+
+    drawBinaryTree() {
+      // hi
     }
+
+    // ============================== HEAPS START =================================
   },
 
   mounted() {
@@ -465,14 +527,7 @@ export default defineComponent({
     );
     rect.fillColor = new paper.Color(0);
 
-    this.myLinkedList = new LinkedList(
-      this.drawPointerOnNode,
-      this.translatePointer,
-      this.rotateArrow,
-      this.toggleArrowVisibility
-    );
-
-    this.drawLinkedList(this.myLinkedList.start);
+    this.createNewLinkedList();
   },
 
   created() {

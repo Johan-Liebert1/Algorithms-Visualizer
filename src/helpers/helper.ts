@@ -9,3 +9,11 @@ export const sleep = (milliseconds: number): Promise<void> =>
  */
 export const randNum = (min: number, max: number): number =>
   min + Math.floor(Math.random() * (max - min + 1));
+
+/**
+ * Get a random id
+ */
+export const randomId = (): string =>
+  Math.random()
+    .toString(36)
+    .substr(2);
