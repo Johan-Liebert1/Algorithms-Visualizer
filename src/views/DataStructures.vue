@@ -153,7 +153,7 @@ export default defineComponent({
       rect.fillColor = new paper.Color(0);
     },
 
-    constrainValue(value: any, min: number, max: number) {
+    constrainValue(min: number, max: number) {
       // console.log(value, isNaN(value));
       // if (isNaN(value)) {
       //   this.addNewNodeValue = 0;

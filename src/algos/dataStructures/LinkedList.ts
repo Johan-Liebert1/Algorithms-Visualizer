@@ -78,7 +78,7 @@ class LinkedList {
     return this;
   }
 
-  async reverse() {
+  async reverse(): Promise<void> {
     let p1, p2, p3;
 
     p1 = this.start as LinkedListNode;
