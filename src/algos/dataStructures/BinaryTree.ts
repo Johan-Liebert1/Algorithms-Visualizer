@@ -1,6 +1,9 @@
 import { treeTraversalTypes } from "@/constants/dsAlgoConstants";
+import { arrayToListRepr } from "@/helpers/helper";
 import { numStr } from "@/types/global";
 import TreeNode from "./TreeNode";
+
+// 75,100,60,25,12,30
 
 class BinaryTree {
   root: TreeNode | null;
@@ -11,6 +14,7 @@ class BinaryTree {
     side: "leftArrow" | "rightArrow",
     depth: number
   ) => void;
+  putTextOnCanvas: (text: string, x?: number, y?: number) => void;
 
   constructor(
     highlightNode: (uuid: string) => Promise<void>,
@@ -19,14 +23,16 @@ class BinaryTree {
       newNode: TreeNode,
       side: "leftArrow" | "rightArrow",
       depth: number
-    ) => void
+    ) => void,
+    putTextOnCanvas: (text: string, x?: number, y?: number) => void
   ) {
     this.root = null;
     this.highlightNode = highlightNode;
     this.drawBinaryTreeNode = drawBinaryTreeNode;
+    this.putTextOnCanvas = putTextOnCanvas;
   }
 
-  insert(value: number, currentNode = this.root, depth = 2): BinaryTree {
+  async insert(value: number, currentNode = this.root, depth = 2): Promise<BinaryTree> {
     if (!this.root) {
       this.root = new TreeNode(value);
       return this;
@@ -40,12 +46,15 @@ class BinaryTree {
     if (!currentNode.leftChild && value < currentNode.value) {
       const newNode = new TreeNode(value);
       currentNode.leftChild = newNode;
+      await this.highlightNode(currentNode.uuid);
       this.drawBinaryTreeNode(currentNode, newNode, "leftArrow", depth);
     } else if (!currentNode.rightChild && value >= currentNode.value) {
       const newNode = new TreeNode(value);
       currentNode.rightChild = newNode;
+      await this.highlightNode(currentNode.uuid);
       this.drawBinaryTreeNode(currentNode, newNode, "rightArrow", depth);
     } else {
+      await this.highlightNode(currentNode.uuid);
       this.insert(value, nextNode, depth + 1);
     }
     return this;
@@ -61,6 +70,7 @@ class BinaryTree {
     if (traversalType === "preorder") {
       array.push(currentNode.value);
       await this.highlightNode(currentNode.uuid);
+      this.putTextOnCanvas(arrayToListRepr(array));
     }
 
     if (currentNode.leftChild) {
@@ -70,6 +80,7 @@ class BinaryTree {
     if (traversalType === "inorder") {
       array.push(currentNode.value);
       await this.highlightNode(currentNode.uuid);
+      this.putTextOnCanvas(arrayToListRepr(array));
     }
 
     if (currentNode.rightChild) {
@@ -79,6 +90,7 @@ class BinaryTree {
     if (traversalType === "postorder") {
       array.push(currentNode.value);
       await this.highlightNode(currentNode.uuid);
+      this.putTextOnCanvas(arrayToListRepr(array));
     }
 
     return array;

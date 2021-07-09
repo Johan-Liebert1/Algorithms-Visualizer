@@ -37,8 +37,15 @@
             </button>
           </div>
         </div>
+
+        <!-- <div>
+          <div>
+            def inorder(currentNode: rootNode): inorder(currentNode.left)
+            inorder(currentNode.right) print(currentNode.value)
+          </div>
+        </div> -->
       </div>
-      <canvas id="canvas" style="height: 100%; width: 80vw;"></canvas>
+      <canvas id="canvas"></canvas>
     </div>
   </div>
 </template>
@@ -61,6 +68,8 @@ import {
   nodeStrokeColor,
   NODE_SIZE,
   pointerColor1,
+  pointerColor2,
+  pointerColor3,
   textStrokeColor,
   transparent,
   treeTraversalTypes,
@@ -68,14 +77,16 @@ import {
   TREE_ARROW_LENGTH
 } from "@/constants/dsAlgoConstants";
 
-// types
+// dataStructures
 import LinkedList from "@/algos/dataStructures/LinkedList";
 import { llNodeNull } from "@/algos/dataStructures/LinkedListNode";
-import SVG from "@/components/Svg.vue";
-import { svgNames } from "@/constants/globalConstants";
 import BinaryTree from "@/algos/dataStructures/BinaryTree";
-import { numStr } from "@/types/global";
 import TreeNode from "@/algos/dataStructures/TreeNode";
+
+// types
+import { svgNames } from "@/constants/globalConstants";
+import { numStr } from "@/types/global";
+import { paperJsNode } from "@/types/dsAlgo";
 
 export default defineComponent({
   components: { AlgoNavBar },
@@ -83,12 +94,13 @@ export default defineComponent({
   setup() {
     const allMainDsAlgos = Object.values(allDsAlgosObject).map(v => v.name);
 
-    const nullNode: paper.Path.Rectangle = {} as paper.Path.Rectangle;
+    const nullNode: paperJsNode = {} as paperJsNode;
     const canvas = ref<HTMLCanvasElement>();
+    const canvasText = ref<paper.PointText>();
 
     // for linked lists
     const linkedListNodes: {
-      node: paper.Path.Rectangle;
+      node: paperJsNode;
       arrowNext: paper.Group;
       pointers: paper.Group[];
     }[] = [];
@@ -100,13 +112,15 @@ export default defineComponent({
     const binaryTreeNodesList: {
       // uuid will be used to hightlight the node
       [uuid: string]: {
-        node: paper.Path.Rectangle;
+        node: paperJsNode;
         leftArrow: paper.Group;
         rightArrow: paper.Group;
       };
     } = {};
 
     const myBinaryTree: BinaryTree = {} as BinaryTree;
+
+    // for heap
 
     return {
       allDsAlgosObject,
@@ -118,7 +132,8 @@ export default defineComponent({
       svgNames,
       binaryTreeNodesList,
       canvas,
-      myBinaryTree
+      myBinaryTree,
+      canvasText
     };
   },
 
@@ -209,7 +224,8 @@ export default defineComponent({
       }
 
       for (const obj of this.linkedListNodes) {
-        obj.node.remove();
+        obj.node.rect.remove();
+        obj.node.text.remove();
         obj.arrowNext.remove();
 
         for (const ptr of obj.pointers) {
@@ -225,6 +241,28 @@ export default defineComponent({
         new paper.Size(canvas.width, canvas.height)
       );
       rect.fillColor = new paper.Color(0);
+    },
+
+    putTextOnCanvas(text: string, x?: number, y?: number) {
+      if (!this.canvas) return;
+
+      if (!x) {
+        x = 100;
+      }
+
+      if (!y) {
+        y = this.canvas.height - 200;
+      }
+
+      if (this.canvasText) {
+        this.canvasText.remove();
+      }
+
+      this.canvasText = new paper.PointText(new paper.Point(x, y));
+      this.canvasText.content = text;
+      this.canvasText.justification = "left";
+      this.canvasText.fillColor = pointerColor2;
+      this.canvasText.scale(1.5);
     },
 
     drawArrow(
@@ -263,7 +301,7 @@ export default defineComponent({
         text.position.x -= text.handleBounds.width / 2;
         text.position.y += textY;
 
-        // rotate the text again so that
+        // rotate the text again so that it counteracts the rotation of the group
         textString !== "START" && text.rotate(180);
       }
 
@@ -287,7 +325,7 @@ export default defineComponent({
      * @param x x co-ordinate of the node
      * @param y y co-ordinate of the node
      */
-    drawNode(node: llNodeNull | TreeNode, x: number, y: number): paper.Path.Rectangle {
+    drawNode(node: llNodeNull | TreeNode, x: number, y: number): paperJsNode {
       const startingPoint = new paper.Point(x, y);
       const endingPoint = new paper.Point(x + NODE_SIZE, y + NODE_SIZE);
       const middlePoint = new paper.Point(
@@ -310,13 +348,11 @@ export default defineComponent({
 
       text.position.y += NODE_SIZE / 2 + text.handleBounds.height / 4;
 
-      // if (!rect.children) rect.children = [];
-
       rect.addChild(text);
 
       console.log("rect = ", rect);
 
-      return rect;
+      return { rect, text };
     },
 
     // ================== LINKED LISTS START ==========================
@@ -405,8 +441,8 @@ export default defineComponent({
       const { node } = this.linkedListNodes[index];
 
       const getValuesFrom = top
-        ? node.handleBounds.topRight
-        : node.handleBounds.bottomRight;
+        ? node.rect.handleBounds.topRight
+        : node.rect.handleBounds.bottomRight;
 
       const { x, y } = getValuesFrom;
 
@@ -466,9 +502,9 @@ export default defineComponent({
       let withinBounds = toIdx < this.linkedListNodes.length;
 
       if (!withinBounds) {
-        toX = this.nullNode.handleBounds.center.x;
+        toX = this.nullNode.rect.handleBounds.center.x;
       } else {
-        toX = this.linkedListNodes[toIdx].node.handleBounds.center.x;
+        toX = this.linkedListNodes[toIdx].node.rect.handleBounds.center.x;
       }
 
       let toY = pointer.position.y;
@@ -507,29 +543,29 @@ export default defineComponent({
       let x = 100,
         y = 300;
 
-      let drawnNode: paper.Path.Rectangle;
+      let drawnNode: paperJsNode;
 
       do {
         drawnNode = this.drawNode(ptr, x, y);
 
         const mouseEnter = () => {
-          drawnNode.strokeColor = nodeHoverColor;
-          drawnNode.fillColor = nodeHoverColor;
+          drawnNode.rect.strokeColor = nodeHoverColor;
+          drawnNode.rect.fillColor = nodeHoverColor;
           // text.bringToFront();
         };
 
         const mouseLeave = () => {
-          drawnNode.strokeColor = nodeStrokeColor;
-          drawnNode.fillColor = transparent;
+          drawnNode.rect.strokeColor = nodeStrokeColor;
+          drawnNode.rect.fillColor = transparent;
           // text.bringToFront();
         };
 
-        drawnNode.onMouseEnter = mouseEnter;
-        drawnNode.onMouseLeave = mouseLeave;
+        drawnNode.rect.onMouseEnter = mouseEnter;
+        drawnNode.rect.onMouseLeave = mouseLeave;
 
-        x += drawnNode.handleBounds.width + ARROW_LENGTH + 20;
+        x += drawnNode.rect.handleBounds.width + ARROW_LENGTH + 20;
 
-        const { x: x2, y: y2 } = drawnNode.handleBounds.bottomRight;
+        const { x: x2, y: y2 } = drawnNode.rect.handleBounds.bottomRight;
 
         let arrow: paper.Group;
 
@@ -564,12 +600,15 @@ export default defineComponent({
     },
 
     createNewBinaryTree() {
-      this.myBinaryTree = new BinaryTree(this.highlightNode, this.drawBinaryTreeNode);
+      this.myBinaryTree = new BinaryTree(
+        this.highlightNode,
+        this.drawBinaryTreeNode,
+        this.putTextOnCanvas
+      );
       this.drawBinaryTreeRoot();
     },
 
     addNodeToBinaryTree() {
-      // 75,100,60,25,12,30
       if (this.addNewNodeValue.toString().includes(",")) {
         this.addNewNodeValue
           .toString()
@@ -588,20 +627,21 @@ export default defineComponent({
     highlightNode(uuid: string): Promise<void> {
       const node = this.binaryTreeNodesList[uuid].node;
 
-      node.fillColor = nodeHoverColor;
+      node.rect.fillColor = nodeHoverColor;
+      node.text.bringToFront();
 
       return new Promise(r =>
         setTimeout(() => {
-          node.fillColor = transparent;
+          node.rect.fillColor = transparent;
           r();
-        }, 500)
+        }, this.animationSpeed)
       );
     },
 
     checkNodeHit() {
       for (const object of Object.values(this.binaryTreeNodesList)) {
         for (const object2 of Object.values(this.binaryTreeNodesList)) {
-          if (object.node.intersects(object2.node)) console.log("intersect");
+          if (object.node.rect.intersects(object2.node.rect)) console.log("intersect");
         }
       }
     },
@@ -625,8 +665,8 @@ export default defineComponent({
 
       const drawnNode = this.drawNode(newNode, x, y);
 
-      const { x: lx, y: ly } = drawnNode.handleBounds.bottomLeft;
-      const { x: rx, y: ry } = drawnNode.handleBounds.bottomRight;
+      const { x: lx, y: ly } = drawnNode.rect.handleBounds.bottomLeft;
+      const { x: rx, y: ry } = drawnNode.rect.handleBounds.bottomRight;
 
       const leftArrow = this.drawArrow(lx, ly, TREE_ARROW_LENGTH / depth);
       const rightArrow = this.drawArrow(rx, ry, TREE_ARROW_LENGTH / depth);
@@ -656,16 +696,16 @@ export default defineComponent({
       const drawnNode = this.drawNode(this.myBinaryTree.root, x, y);
 
       const arrow = this.drawArrow(
-        drawnNode.handleBounds.topRight.x + 10,
-        drawnNode.handleBounds.topRight.y + 25,
+        drawnNode.rect.handleBounds.topRight.x + 10,
+        drawnNode.rect.handleBounds.topRight.y + NODE_SIZE / 2,
         40,
         headPointerColor,
         "ROOT"
       );
 
       if (this.myBinaryTree.root) {
-        const { x: lx, y: ly } = drawnNode.handleBounds.bottomLeft;
-        const { x: rx, y: ry } = drawnNode.handleBounds.bottomRight;
+        const { x: lx, y: ly } = drawnNode.rect.handleBounds.bottomLeft;
+        const { x: rx, y: ry } = drawnNode.rect.handleBounds.bottomRight;
 
         const leftArrow = this.drawArrow(lx, ly, TREE_ARROW_LENGTH);
         const rightArrow = this.drawArrow(rx, ry, TREE_ARROW_LENGTH);
@@ -678,6 +718,9 @@ export default defineComponent({
           leftArrow,
           rightArrow
         };
+
+        leftArrow.visible = false;
+        rightArrow.visible = false;
       }
 
       /*
@@ -687,9 +730,9 @@ export default defineComponent({
       arrow.rotate(90, new paper.Point(arrow.position.x, arrow.position.y));
 
       // now the arrow is at the bottom of the node
-      arrow.position.y = drawnNode.handleBounds.center.y;
+      arrow.position.y = drawnNode.rect.handleBounds.center.y;
       arrow.position.x =
-        drawnNode.handleBounds.center.x + 30 + arrow.handleBounds.width / 2;
+        drawnNode.rect.handleBounds.center.x + 30 + arrow.handleBounds.width / 2;
 
       arrow.children[2].rotate(90);
     }
@@ -723,6 +766,11 @@ export default defineComponent({
 </script>
 
 <style scoped>
+#canvas {
+  height: 93vh !important;
+  width: 80vw;
+}
+
 .algo-container {
   display: flex;
   align-items: center;

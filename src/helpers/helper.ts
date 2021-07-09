@@ -17,3 +17,10 @@ export const randomId = (): string =>
   Math.random()
     .toString(36)
     .substr(2);
+
+/**
+ * @param array an array, [1,2,3]
+ * @returns 1 --> 2 --> 3
+ */
+export const arrayToListRepr = (array: (number | string)[]): string =>
+  array.join(" --> ");
