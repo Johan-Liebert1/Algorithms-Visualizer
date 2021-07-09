@@ -12,6 +12,10 @@ class TreeNode {
     this.rightChild = null;
     this.uuid = randomId();
   }
+
+  repr(): string {
+    return this.value.toString();
+  }
 }
 
 export default TreeNode;

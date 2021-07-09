@@ -20,6 +20,10 @@ export type treeTraversalTypes = "inorder" | "preorder" | "postorder";
 export const NODE_SIZE = 50;
 export const ARROW_LENGTH = 40;
 export const ARROW_NODE_MARGIN = 10;
+export const ARROW_TRIANGLE_RADIUS = 7;
+
+export const TREE_ARROW_ANGLE = 60;
+export const TREE_ARROW_LENGTH = 150;
 
 export const transparent = new paperCore.Color(1, 1, 1, 0);
 

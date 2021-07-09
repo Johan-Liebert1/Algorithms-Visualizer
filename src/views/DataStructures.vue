@@ -30,9 +30,9 @@
             <input
               type="text"
               v-model="addNewNodeValue"
-              @keydown="constrainValue($event.target.value, -999, 999)"
+              @keydown="$event.key === 'Enter' ? addNode() : ''"
             />
-            <button class="button is-success is-small" @click="addNodeToLinkedList">
+            <button class="button is-success is-small" @click="addNode">
               <span class="is-size-4">+</span>
             </button>
           </div>
@@ -44,7 +44,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 import paper from "paper";
 
 // components
@@ -55,13 +55,17 @@ import {
   allDsAlgosObject,
   ARROW_LENGTH,
   ARROW_NODE_MARGIN,
+  ARROW_TRIANGLE_RADIUS,
   headPointerColor,
   nodeHoverColor,
   nodeStrokeColor,
   NODE_SIZE,
   pointerColor1,
   textStrokeColor,
-  transparent
+  transparent,
+  treeTraversalTypes,
+  TREE_ARROW_ANGLE,
+  TREE_ARROW_LENGTH
 } from "@/constants/dsAlgoConstants";
 
 // types
@@ -69,6 +73,9 @@ import LinkedList from "@/algos/dataStructures/LinkedList";
 import { llNodeNull } from "@/algos/dataStructures/LinkedListNode";
 import SVG from "@/components/Svg.vue";
 import { svgNames } from "@/constants/globalConstants";
+import BinaryTree from "@/algos/dataStructures/BinaryTree";
+import { numStr } from "@/types/global";
+import TreeNode from "@/algos/dataStructures/TreeNode";
 
 export default defineComponent({
   components: { AlgoNavBar },
@@ -77,6 +84,7 @@ export default defineComponent({
     const allMainDsAlgos = Object.values(allDsAlgosObject).map(v => v.name);
 
     const nullNode: paper.Path.Rectangle = {} as paper.Path.Rectangle;
+    const canvas = ref<HTMLCanvasElement>();
 
     // for linked lists
     const linkedListNodes: {
@@ -89,7 +97,7 @@ export default defineComponent({
     let myLinkedList: LinkedList = {} as LinkedList;
 
     // for trees
-    const treeNodesList: {
+    const binaryTreeNodesList: {
       // uuid will be used to hightlight the node
       [uuid: string]: {
         node: paper.Path.Rectangle;
@@ -97,6 +105,8 @@ export default defineComponent({
         rightArrow: paper.Group;
       };
     } = {};
+
+    const myBinaryTree: BinaryTree = {} as BinaryTree;
 
     return {
       allDsAlgosObject,
@@ -106,14 +116,16 @@ export default defineComponent({
       myLinkedList,
       nullNode,
       svgNames,
-      treeNodesList
+      binaryTreeNodesList,
+      canvas,
+      myBinaryTree
     };
   },
 
   data() {
     return {
-      selectedMainDsAlgo: allDsAlgosObject.LINKED_LIST,
-      addNewNodeValue: 0 as number | string,
+      selectedMainDsAlgo: allDsAlgosObject.BINARY_TREES,
+      addNewNodeValue: 0 as numStr,
       animationSpeed: 500,
       navbarButtons: {
         [allDsAlgosObject.LINKED_LIST.name]: [
@@ -125,7 +137,15 @@ export default defineComponent({
         [allDsAlgosObject.BINARY_TREES.name]: [
           {
             name: "Inorder Traversal",
-            handler: this.reverseLinkedList
+            handler: () => this.traverseBinaryTree("inorder")
+          },
+          {
+            name: "Preorder Traversal",
+            handler: () => this.traverseBinaryTree("preorder")
+          },
+          {
+            name: "Postorder Traversal",
+            handler: () => this.traverseBinaryTree("postorder")
           }
         ]
       }
@@ -145,7 +165,7 @@ export default defineComponent({
 
         case allDsAlgosObject.BINARY_TREES.name:
           this.selectedMainDsAlgo = allDsAlgosObject.BINARY_TREES;
-          console.log("BINARY_TREES selected");
+          this.createNewBinaryTree();
           break;
 
         case allDsAlgosObject.HEAP.name:
@@ -158,6 +178,27 @@ export default defineComponent({
       }
     },
 
+    addNode() {
+      switch (this.selectedMainDsAlgo.name) {
+        case allDsAlgosObject.LINKED_LIST.name:
+          this.addNodeToLinkedList();
+          break;
+
+        case allDsAlgosObject.BINARY_TREES.name:
+          this.addNodeToBinaryTree();
+          break;
+
+        case allDsAlgosObject.HEAP.name:
+          this.selectedMainDsAlgo = allDsAlgosObject.HEAP;
+          console.log("HEAP selected");
+          break;
+
+        default:
+          break;
+      }
+    },
+
+    // ================================= GLOBAL DRAWING STUFF ========================
     clearCanvas() {
       if (this.linkedListStartPointer.pointer instanceof paper.Group)
         this.linkedListStartPointer.pointer.remove();
@@ -206,7 +247,7 @@ export default defineComponent({
       const triangle = new paper.Path.RegularPolygon(
         new paper.Point(x1, y1 + length),
         3, // number of sides
-        7 // radius
+        ARROW_TRIANGLE_RADIUS // radius
       );
       triangle.rotate(180);
 
@@ -241,7 +282,12 @@ export default defineComponent({
       return group;
     },
 
-    drawNode(node: llNodeNull, x: number, y: number): paper.Path.Rectangle {
+    /**
+     * @param node LinkedListNode, TreeNode or Null. Value inside the node will be the value of the node if it exists, else will be 'NULL'
+     * @param x x co-ordinate of the node
+     * @param y y co-ordinate of the node
+     */
+    drawNode(node: llNodeNull | TreeNode, x: number, y: number): paper.Path.Rectangle {
       const startingPoint = new paper.Point(x, y);
       const endingPoint = new paper.Point(x + NODE_SIZE, y + NODE_SIZE);
       const middlePoint = new paper.Point(
@@ -263,6 +309,12 @@ export default defineComponent({
       rect.strokeColor = nodeStrokeColor;
 
       text.position.y += NODE_SIZE / 2 + text.handleBounds.height / 4;
+
+      // if (!rect.children) rect.children = [];
+
+      rect.addChild(text);
+
+      console.log("rect = ", rect);
 
       return rect;
     },
@@ -506,8 +558,140 @@ export default defineComponent({
 
     // ============================== TREES START ================================
 
-    drawBinaryTree() {
-      // hi
+    traverseBinaryTree(traversalType: treeTraversalTypes) {
+      const list: number[] = [];
+      this.myBinaryTree.treeTraversal(list, traversalType);
+    },
+
+    createNewBinaryTree() {
+      this.myBinaryTree = new BinaryTree(this.highlightNode, this.drawBinaryTreeNode);
+      this.drawBinaryTreeRoot();
+    },
+
+    addNodeToBinaryTree() {
+      // 75,100,60,25,12,30
+      if (this.addNewNodeValue.toString().includes(",")) {
+        this.addNewNodeValue
+          .toString()
+          .split(",")
+          .forEach(spl => this.myBinaryTree.insert(Number(spl)));
+      } else {
+        this.myBinaryTree.insert(Number(this.addNewNodeValue));
+      }
+
+      if (!this.myBinaryTree.root?.leftChild && !this.myBinaryTree.root?.rightChild) {
+        this.clearCanvas();
+        this.drawBinaryTreeRoot();
+      }
+    },
+
+    highlightNode(uuid: string): Promise<void> {
+      const node = this.binaryTreeNodesList[uuid].node;
+
+      node.fillColor = nodeHoverColor;
+
+      return new Promise(r =>
+        setTimeout(() => {
+          node.fillColor = transparent;
+          r();
+        }, 500)
+      );
+    },
+
+    checkNodeHit() {
+      for (const object of Object.values(this.binaryTreeNodesList)) {
+        for (const object2 of Object.values(this.binaryTreeNodesList)) {
+          if (object.node.intersects(object2.node)) console.log("intersect");
+        }
+      }
+    },
+
+    drawBinaryTreeNode(
+      parentNode: TreeNode,
+      newNode: TreeNode,
+      side: "leftArrow" | "rightArrow",
+      depth: number
+    ) {
+      // center of the new node is that the end of the tip of the arrow
+      // of the parent node
+      let { x, y } = this.binaryTreeNodesList[parentNode.uuid][side].children[1].position;
+
+      // make parent's arrow visible
+      this.binaryTreeNodesList[parentNode.uuid][side].visible = true;
+
+      y += ARROW_TRIANGLE_RADIUS;
+
+      if (side === "leftArrow") x -= NODE_SIZE;
+
+      const drawnNode = this.drawNode(newNode, x, y);
+
+      const { x: lx, y: ly } = drawnNode.handleBounds.bottomLeft;
+      const { x: rx, y: ry } = drawnNode.handleBounds.bottomRight;
+
+      const leftArrow = this.drawArrow(lx, ly, TREE_ARROW_LENGTH / depth);
+      const rightArrow = this.drawArrow(rx, ry, TREE_ARROW_LENGTH / depth);
+
+      this.binaryTreeNodesList[newNode.uuid] = {
+        node: drawnNode,
+        leftArrow,
+        rightArrow
+      };
+
+      leftArrow.rotate(TREE_ARROW_ANGLE / (depth / 1.5), new paper.Point(lx, ly));
+      rightArrow.rotate(-TREE_ARROW_ANGLE / (depth / 1.5), new paper.Point(rx, ry));
+
+      // hide the arrows and only show them once a child is added
+      leftArrow.visible = false;
+      rightArrow.visible = false;
+
+      this.checkNodeHit();
+    },
+
+    drawBinaryTreeRoot() {
+      if (!this.canvas) return;
+
+      let x = this.canvas.width / 2.5;
+      let y = 50;
+
+      const drawnNode = this.drawNode(this.myBinaryTree.root, x, y);
+
+      const arrow = this.drawArrow(
+        drawnNode.handleBounds.topRight.x + 10,
+        drawnNode.handleBounds.topRight.y + 25,
+        40,
+        headPointerColor,
+        "ROOT"
+      );
+
+      if (this.myBinaryTree.root) {
+        const { x: lx, y: ly } = drawnNode.handleBounds.bottomLeft;
+        const { x: rx, y: ry } = drawnNode.handleBounds.bottomRight;
+
+        const leftArrow = this.drawArrow(lx, ly, TREE_ARROW_LENGTH);
+        const rightArrow = this.drawArrow(rx, ry, TREE_ARROW_LENGTH);
+
+        leftArrow.rotate(TREE_ARROW_ANGLE, new paper.Point(lx, ly));
+        rightArrow.rotate(-TREE_ARROW_ANGLE, new paper.Point(rx, ry));
+
+        this.binaryTreeNodesList[this.myBinaryTree.root.uuid] = {
+          node: drawnNode,
+          leftArrow,
+          rightArrow
+        };
+      }
+
+      /*
+        arrow is drawn with head pointing downwards. Bring the head to the center
+        of the node and rotate the whole thing about its head
+      */
+      arrow.rotate(90, new paper.Point(arrow.position.x, arrow.position.y));
+
+      // now the arrow is at the bottom of the node
+      arrow.position.y = drawnNode.handleBounds.center.y;
+      arrow.position.x =
+        drawnNode.handleBounds.center.x + 30 + arrow.handleBounds.width / 2;
+
+      arrow.children[2].rotate(90);
     }
 
     // ============================== HEAPS START =================================
@@ -515,6 +699,8 @@ export default defineComponent({
 
   mounted() {
     const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+
+    this.canvas = canvas;
 
     canvas.height = window.innerHeight * 0.93;
     canvas.width = window.innerWidth * 0.8;
@@ -527,7 +713,7 @@ export default defineComponent({
     );
     rect.fillColor = new paper.Color(0);
 
-    this.createNewLinkedList();
+    this.createNewBinaryTree();
   },
 
   created() {
