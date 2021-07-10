@@ -70,6 +70,31 @@
         </div>
 
         <div
+          v-if="arraySize"
+          class="dropdown-container"
+          :style="arraySizeDropdownVisible ? dropdownStyle : normalStyle"
+        >
+          <h1
+            class="is-size-4"
+            @click="arraySizeDropdownVisible = !arraySizeDropdownVisible"
+          >
+            Array Elements <SVG :name="svgNames.downArrow" />
+          </h1>
+          <Dropdown v-if="arraySizeDropdownVisible" :dropdownItems="null">
+            <p>Elements: {{ arraySize }}</p>
+            <input
+              type="range"
+              min="10"
+              max="100"
+              step="5"
+              class="slider"
+              :value="arraySize"
+              @change="$emit('update:arraySize', parseInt($event.target.value))"
+            />
+          </Dropdown>
+        </div>
+
+        <div
           class="dropdown-container"
           v-if="showMazeDropdown"
           :style="mazeDropdownVisible ? dropdownStyle : normalStyle"
@@ -131,6 +156,10 @@ export default defineComponent({
       type: Number,
       required: false
     },
+    arraySize: {
+      type: Number,
+      required: false
+    },
     showMazeDropdown: {
       type: Boolean,
       default: false
@@ -147,6 +176,7 @@ export default defineComponent({
       speedDropdownVisible: false,
       mazeDropdownVisible: false,
       cellSizeDropdownVisible: false,
+      arraySizeDropdownVisible: false,
       normalStyle: {
         color: "#ddd"
       },

@@ -6,6 +6,7 @@
       @algorithmChanged="setNewAlgorithm"
       :buttonsList="navbarButtons"
       v-model:algoSpeed.sync="sortSpeed"
+      v-model:arraySize.sync="ARRAY_SIZE"
     />
 
     <div class="array-sort-container">
@@ -106,7 +107,12 @@
       </div>
 
       <div class="bar-container">
-        <Bar v-for="(element, index) in array" :key="index" :arrayElement="element" />
+        <Bar
+          v-for="(element, index) in array"
+          :key="index"
+          :arrayElement="element"
+          :barWidth="arrayBarWidth"
+        />
       </div>
     </div>
   </div>
@@ -150,12 +156,10 @@ export default defineComponent({
 
   setup() {
     // non-reactive properties
-    const ARRAY_SIZE = 40;
     const ALL_SORTING_ALGORITHM_NAMES = Object.values(allSortingAlgorithms);
-    const MAX_HEIGHT = 350;
+    const MAX_HEIGHT = 400;
 
     return {
-      ARRAY_SIZE,
       ALL_SORTING_ALGORITHM_NAMES,
       MAX_HEIGHT,
       allSortingAlgorithms,
@@ -165,6 +169,8 @@ export default defineComponent({
 
   data() {
     return {
+      ARRAY_SIZE: 40,
+      arrayBarWidth: 20,
       array: [] as sortArrayElement[],
       sortSpeed: 500,
       currentlySorting: false,
@@ -419,13 +425,21 @@ export default defineComponent({
     }
   },
 
+  watch: {
+    ARRAY_SIZE(newArraySize) {
+      if (newArraySize * this.arrayBarWidth > window.innerWidth * 0.85) {
+        this.arrayBarWidth /= 2;
+      }
+
+      this.generateRandomArray();
+    }
+  },
+
   mounted() {
-    console.log("mounted");
     this.generateRandomArray();
   },
 
   created() {
-    console.log("created");
     this.generateRandomArray();
   }
 });

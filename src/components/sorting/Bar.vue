@@ -2,24 +2,27 @@
   <div
     class="array-bar"
     :style="{
-      width: '20px',
+      width: `${barWidth}px`,
       height: `${arrayElement.barHeight}px`,
       backgroundColor: arrayElement.barColor
     }"
   >
-    {{ arrayElement.number }}
+    {{ barWidth >= 20 ? arrayElement.number : "" }}
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { sortArrayElement } from "@/types/sortingAlgo";
 
 export default defineComponent({
   name: "Bar",
   props: {
     arrayElement: {
       type: Object,
+      required: true
+    },
+    barWidth: {
+      type: Number,
       required: true
     }
   }

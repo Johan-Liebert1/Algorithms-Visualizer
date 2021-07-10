@@ -7,6 +7,7 @@ class Heap {
   heap: (number | TreeNode)[];
   list: (number | TreeNode)[];
   maxHeap: boolean;
+  // forSorting: boolean;
   swapElements: (idx1: number, idx2: number) => Promise<void>;
   colorElement: (idx: number, color?: string) => Promise<void>;
   drawNode?: (node: llNodeNull | TreeNode, x: number, y: number) => paperJsNode;
@@ -14,6 +15,7 @@ class Heap {
   constructor(
     list: number[],
     maxHeap: boolean,
+    // forSorting: boolean,
     swapElements: (idx1: number, idx2: number) => Promise<void>,
     colorElement: (idx: number, color?: string) => Promise<void>,
     drawNode?: (node: llNodeNull | TreeNode, x: number, y: number) => paperJsNode
@@ -24,6 +26,7 @@ class Heap {
     this.swapElements = swapElements;
     this.colorElement = colorElement;
     this.drawNode = drawNode;
+    // this.sub = forSorting ? -1 : 0; // subtract an index when sorting
   }
 
   getLeftChild = (index: number): number => 2 * index;
@@ -50,7 +53,7 @@ class Heap {
       }
 
       swap(this.heap, parentIdx, index);
-      await this.swapElements(parentIdx, index);
+      await this.swapElements(parentIdx - 1, index - 1);
 
       index = parentIdx;
     }
@@ -63,7 +66,7 @@ class Heap {
   */
 
     swap(this.heap, 1, heapEnd);
-    await this.swapElements(1, heapEnd);
+    await this.swapElements(0, heapEnd - 1);
 
     let index = 1;
 
@@ -98,7 +101,7 @@ class Heap {
       }
 
       swap(this.heap, index, childToTest);
-      await this.swapElements(index, childToTest);
+      await this.swapElements(index - 1, childToTest - 1);
 
       index = childToTest;
     }
