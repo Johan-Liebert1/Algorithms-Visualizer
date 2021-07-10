@@ -1,6 +1,5 @@
 import { treeTraversalTypes } from "@/constants/dsAlgoConstants";
 import { arrayToListRepr } from "@/helpers/helper";
-import { numStr } from "@/types/global";
 import TreeNode from "./TreeNode";
 
 // 75,100,60,25,12,30
@@ -46,11 +45,13 @@ class BinaryTree {
     if (!currentNode.leftChild && value < currentNode.value) {
       const newNode = new TreeNode(value);
       currentNode.leftChild = newNode;
+
       await this.highlightNode(currentNode.uuid);
       this.drawBinaryTreeNode(currentNode, newNode, "leftArrow", depth);
     } else if (!currentNode.rightChild && value >= currentNode.value) {
       const newNode = new TreeNode(value);
       currentNode.rightChild = newNode;
+
       await this.highlightNode(currentNode.uuid);
       this.drawBinaryTreeNode(currentNode, newNode, "rightArrow", depth);
     } else {

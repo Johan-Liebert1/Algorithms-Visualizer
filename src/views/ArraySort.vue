@@ -334,12 +334,14 @@ export default defineComponent({
     /**
      * Sets the color of a bar
      */
-    colorElement(index: number, color: string = sortedBarColor) {
+    colorElement(index: number, color: string = sortedBarColor): Promise<void> {
       if (!this.array[index])
         console.log("undefined = ", this.array[index], index, this.array.length, color);
 
       if (this.array[index].barColor !== sortedBarColor)
         this.array[index].barColor = color;
+
+      return new Promise(r => r());
     },
 
     /**
