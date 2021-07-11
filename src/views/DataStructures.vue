@@ -13,19 +13,43 @@
           <h1 class="is-size-3" style="margin: 1rem 0; text-align: center">
             {{ selectedMainDsAlgo.name }} Algorithms
           </h1>
+
           <div
-            class="left-panel-algos"
-            v-for="(algo, index) in navbarButtons[selectedMainDsAlgo.name]"
-            :key="index"
-            @click="algo.handler"
+            v-if="selectedMainDsAlgo.name === allDsAlgosObject.HEAP.name"
+            class="is-flex"
+            style="justify-content: center; margin-bottom: 1rem"
           >
-            {{
-              algo.name === "delete_from_heap"
-                ? `Take out ${typeOfHeap} element`
-                : algo.name
-            }}
-            <!-- <SVG :name="svgNames.downArrow" /> -->
+            <label class="radio radio-label">
+              <input
+                type="radio"
+                name="min-max-heap"
+                checked
+                @change="changeTypeOfHeap('Maximum')"
+              />
+              Max Heap
+            </label>
+            <label class="radio radio-label">
+              <input
+                type="radio"
+                name="min-max-heap"
+                @change="changeTypeOfHeap('Minimum')"
+              />
+              Min Heap
+            </label>
           </div>
+        </div>
+
+        <div
+          class="left-panel-algos"
+          v-for="(algo, index) in navbarButtons[selectedMainDsAlgo.name]"
+          :key="index"
+          @click="algo.handler"
+        >
+          {{
+            algo.name === "delete_from_heap"
+              ? `Take out ${typeOfHeap} element`
+              : algo.name
+          }}
         </div>
 
         <div style="margin-top: 3rem">
@@ -37,7 +61,24 @@
               @keydown="$event.key === 'Enter' ? addNode() : ''"
             />
             <button class="button is-success is-small" @click="addNode">
-              <span class="is-size-4">+</span>
+              <span class="is-size-4"><SVG :name="svgNames.plus"/></span>
+            </button>
+          </div>
+        </div>
+
+        <div
+          v-if="selectedMainDsAlgo.name !== allDsAlgosObject.HEAP.name"
+          style="margin-top: 3rem"
+        >
+          <p style="margin-left: 10%">Delete Node</p>
+          <div class="is-flex" style="align-items: center; justify-content: space-evenly">
+            <input
+              type="text"
+              v-model="deleteNodeValue"
+              @keydown="$event.key === 'Enter' ? deleteNode() : ''"
+            />
+            <button class="button is-danger is-small" @click="deleteNode">
+              <span class="is-size-4"><SVG :name="svgNames.delete"/></span>
             </button>
           </div>
         </div>
@@ -82,6 +123,7 @@ import paper from "paper";
 
 // components
 import AlgoNavBar from "@/components/AlgoNavBar.vue";
+import SVG from "@/components/Svg.vue";
 
 // constants
 import {
@@ -124,7 +166,7 @@ import {
 import { sleep } from "@/helpers/helper";
 
 export default defineComponent({
-  components: { AlgoNavBar },
+  components: { AlgoNavBar, SVG },
 
   setup() {
     const allMainDsAlgos = Object.values(allDsAlgosObject).map(v => v.name);
@@ -185,6 +227,7 @@ export default defineComponent({
     return {
       selectedMainDsAlgo: allDsAlgosObject.HEAP,
       addNewNodeValue: 0 as numStr,
+      deleteNodeValue: 0 as numStr,
       animationSpeed: 500,
       typeOfHeap: "Maximum" as "Minimum" | "Maximum",
       navbarButtons: {
@@ -251,6 +294,21 @@ export default defineComponent({
 
         case allDsAlgosObject.BINARY_TREES.name:
           this.addNodeToBinaryTree();
+          break;
+
+        case allDsAlgosObject.HEAP.name:
+          this.addNodeToHeap();
+          break;
+
+        default:
+          break;
+      }
+    },
+
+    deleteNode() {
+      switch (this.selectedMainDsAlgo.name) {
+        case allDsAlgosObject.BINARY_TREES.name:
+          this.myBinaryTree.deleteNode(Number(this.deleteNodeValue));
           break;
 
         case allDsAlgosObject.HEAP.name:
@@ -695,7 +753,7 @@ export default defineComponent({
         setTimeout(() => {
           node.rect.fillColor = transparent;
           r();
-        }, this.animationSpeed * 10)
+        }, this.animationSpeed)
       );
     },
 
@@ -806,7 +864,7 @@ export default defineComponent({
 
       // if a root actually exists, draw it's arrows and value
       // console.log(this.myHeap.heap);
-      if (this.myBinaryTree.root || this.myHeap.heap.length > 0) {
+      if (this.myBinaryTree.root || this.myHeap?.heap?.length > 0) {
         // console.log("INSIDE IF");
         const { x: lx, y: ly } = drawnNode.rect.handleBounds.bottomLeft;
         const { x: rx, y: ry } = drawnNode.rect.handleBounds.bottomRight;
@@ -854,6 +912,12 @@ export default defineComponent({
     },
 
     // ============================== HEAPS START =================================
+    changeTypeOfHeap(minMax: "Minimum" | "Maximum") {
+      this.typeOfHeap = minMax;
+      this.clearCanvas();
+      this.createNewHeap();
+    },
+
     async swapNodes(i: number, j: number): Promise<void> {
       i++; // heap index starts from 1, but we send the swap index by decrementing by 1
       j++; // heap index starts from 1, but we send the swap index by decrementing by 1
@@ -942,6 +1006,8 @@ export default defineComponent({
     },
 
     deleteFromHeap() {
+      if (!this.myHeap || this.myHeap.heap.length < 1) return;
+
       this.myHeap.deleteFromHeap(this.myHeap.heap.length - 1);
     },
 
@@ -1003,7 +1069,7 @@ export default defineComponent({
 }
 
 .left-panel-algos {
-  padding: 1rem 0;
+  padding: 1rem;
   width: 100%;
   border-top: 1px solid #4eb380;
   border-bottom: 1px solid #4eb380;
@@ -1039,5 +1105,11 @@ input {
   justify-content: center;
   margin-top: 2rem;
   padding-left: 1rem;
+}
+
+.radio-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 </style>

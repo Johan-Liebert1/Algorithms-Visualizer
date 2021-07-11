@@ -4,6 +4,8 @@ import TreeNode from "./TreeNode";
 
 // 75,100,60,25,12,30
 
+// 8,12,1,9,11,18
+
 class BinaryTree {
   root: TreeNode | null;
   highlightNode: (uuid: string) => Promise<void>;
@@ -29,6 +31,34 @@ class BinaryTree {
     this.highlightNode = highlightNode;
     this.drawBinaryTreeNode = drawBinaryTreeNode;
     this.putTextOnCanvas = putTextOnCanvas;
+  }
+
+  search(value: number, currentNode = this.root): TreeNode | null {
+    if (!currentNode) return null;
+
+    if (currentNode.value === value) return currentNode;
+
+    const nextNode =
+      value < currentNode.value ? currentNode.leftChild : currentNode.rightChild;
+
+    this.search(value, nextNode);
+
+    return null;
+  }
+
+  findLargestLeftChild(node: TreeNode): TreeNode {
+    // find the rightmost node of the left sub-tree
+    let currentNode = node.leftChild;
+
+    for (;;) {
+      // node is leaf node
+      if (!currentNode || (!currentNode.leftChild && !currentNode.rightChild)) break;
+
+      if (currentNode.rightChild) currentNode = currentNode.rightChild;
+      else if (currentNode.leftChild) currentNode = currentNode.leftChild;
+    }
+
+    return currentNode || node;
   }
 
   async insert(value: number, currentNode = this.root, depth = 2): Promise<BinaryTree> {
@@ -59,6 +89,38 @@ class BinaryTree {
       this.insert(value, nextNode, depth + 1);
     }
     return this;
+  }
+
+  deleteNode(value: number) {
+    const nodeToDelete = this.search(value);
+
+    console.log({ nodeToDelete }, nodeToDelete?.value);
+
+    if (!nodeToDelete) return null;
+
+    // the largestLeftChild will be larger than all numbers to the left of the nodeToDelete
+    // and will be smaller than all the numbers to the right of the nodeToDelete
+    const largestLeftChild = this.findLargestLeftChild(nodeToDelete);
+
+    console.log({ largestLeftChild }, largestLeftChild.value);
+
+    // swap the nodeToDelete with the largestLeftChild, then delete the largestLeftChild
+    // will be easy as it's a leaf node
+
+    const temp = nodeToDelete.value;
+    largestLeftChild.value = temp;
+    nodeToDelete.value = temp;
+
+    // break the connection between the largestLeftChild and it's parentNode
+    if (largestLeftChild.parent?.leftChild === largestLeftChild) {
+      largestLeftChild.parent.leftChild = null;
+    }
+
+    if (largestLeftChild.parent?.rightChild === largestLeftChild) {
+      largestLeftChild.parent.rightChild = null;
+    }
+
+    console.log(this);
   }
 
   async treeTraversal(
