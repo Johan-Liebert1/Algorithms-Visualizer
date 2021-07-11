@@ -85,9 +85,9 @@ class LinkedList {
     p2 = p1.next as LinkedListNode;
     p3 = p2.next as LinkedListNode;
 
-    this.drawPointerOnNode(0, pointerColor1, false, true, "ptr 1");
-    this.drawPointerOnNode(1, pointerColor2, false, true, "ptr 2");
-    this.drawPointerOnNode(2, pointerColor3, false, true, "ptr 3");
+    this.drawPointerOnNode(0, pointerColor1.paperColor, false, true, "ptr 1");
+    this.drawPointerOnNode(1, pointerColor2.paperColor, false, true, "ptr 2");
+    this.drawPointerOnNode(2, pointerColor3.paperColor, false, true, "ptr 3");
 
     await sleep(1000);
 

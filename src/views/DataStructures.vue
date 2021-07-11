@@ -42,12 +42,34 @@
           </div>
         </div>
 
-        <!-- <div>
-          <div>
-            def inorder(currentNode: rootNode): inorder(currentNode.left)
-            inorder(currentNode.right) print(currentNode.value)
+        <div class="legend">
+          <h1 class="is-size-4" style="align-self: center">
+            Legend
+          </h1>
+          <div class="is-flex" style="margin-top: 5px;">
+            <div
+              class="cell-info-div"
+              :style="{ backgroundColor: nodeHoverColor.hex }"
+            ></div>
+            On this node
           </div>
-        </div> -->
+
+          <div class="is-flex" style="margin-top: 5px;">
+            <div
+              class="cell-info-div"
+              :style="{ backgroundColor: pointerColor1.hex }"
+            ></div>
+            Comparing Nodes
+          </div>
+
+          <div class="is-flex" style="margin-top: 5px;">
+            <div
+              class="cell-info-div"
+              :style="{ backgroundColor: pointerColor2.hex }"
+            ></div>
+            Swapping Nodes
+          </div>
+        </div>
       </div>
       <canvas id="canvas"></canvas>
     </div>
@@ -86,6 +108,7 @@ import LinkedList from "@/algos/dataStructures/LinkedList";
 import { llNodeNull } from "@/algos/dataStructures/LinkedListNode";
 import BinaryTree from "@/algos/dataStructures/BinaryTree";
 import TreeNode from "@/algos/dataStructures/TreeNode";
+import Heap from "@/algos/dataStructures/Heap";
 
 // types
 import { svgNames } from "@/constants/globalConstants";
@@ -96,7 +119,8 @@ import {
   linkedListNodesList,
   paperJsNode
 } from "@/types/dsAlgo";
-import Heap from "@/algos/dataStructures/Heap";
+
+// helpers
 import { sleep } from "@/helpers/helper";
 
 export default defineComponent({
@@ -131,17 +155,29 @@ export default defineComponent({
     return {
       allDsAlgosObject,
       allMainDsAlgos,
+
+      // linked list
       linkedListNodes,
       linkedListStartPointer,
       myLinkedList,
+      // trees
+      binaryTreeNodesList,
+      myBinaryTree,
+      // heaps
+      heapNodesList,
+      myHeap,
+
       nullNode,
       svgNames,
-      binaryTreeNodesList,
       canvas,
-      myBinaryTree,
       canvasText,
-      heapNodesList,
-      myHeap
+
+      // colors
+      headPointerColor,
+      nodeHoverColor,
+      pointerColor1,
+      pointerColor2,
+      pointerColor3
     };
   },
 
@@ -150,7 +186,7 @@ export default defineComponent({
       selectedMainDsAlgo: allDsAlgosObject.HEAP,
       addNewNodeValue: 0 as numStr,
       animationSpeed: 500,
-      typeOfHeap: "Minimum" as "Minimum" | "Maximum",
+      typeOfHeap: "Maximum" as "Minimum" | "Maximum",
       navbarButtons: {
         [allDsAlgosObject.LINKED_LIST.name]: [
           {
@@ -175,7 +211,7 @@ export default defineComponent({
         [allDsAlgosObject.HEAP.name]: [
           {
             name: "delete_from_heap",
-            handler: () => this.traverseBinaryTree("inorder")
+            handler: () => this.deleteFromHeap()
           }
         ]
       }
@@ -228,8 +264,10 @@ export default defineComponent({
 
     // ================================= GLOBAL DRAWING STUFF ========================
     clearCanvas() {
-      if (this.linkedListStartPointer.pointer instanceof paper.Group)
+      if (this.linkedListStartPointer.pointer instanceof paper.Group) {
         this.linkedListStartPointer.pointer.remove();
+      }
+
       this.linkedListStartPointer = {} as { pointer: paper.Group; index: number };
 
       if (this.nullNode instanceof paper.Path) {
@@ -274,7 +312,7 @@ export default defineComponent({
       this.canvasText = new paper.PointText(new paper.Point(x, y));
       this.canvasText.content = text;
       this.canvasText.justification = "left";
-      this.canvasText.fillColor = pointerColor2;
+      this.canvasText.fillColor = pointerColor2.paperColor;
       this.canvasText.scale(1.5);
     },
 
@@ -286,7 +324,7 @@ export default defineComponent({
       textString?: string
     ): paper.Group {
       if (!color) {
-        color = nodeHoverColor;
+        color = nodeHoverColor.paperColor;
       }
 
       const line = new paper.Path.Line(
@@ -309,7 +347,7 @@ export default defineComponent({
 
         text = new paper.PointText(new paper.Point(x1, y1));
         text.content = textString;
-        text.fillColor = headPointerColor;
+        text.fillColor = headPointerColor.paperColor;
 
         text.position.x -= text.handleBounds.width / 2;
         text.position.y += textY;
@@ -447,7 +485,7 @@ export default defineComponent({
       add = true,
       textString?: string
     ): void {
-      if (!color) color = pointerColor1;
+      if (!color) color = pointerColor1.paperColor;
 
       const { node } = this.linkedListNodes[index];
 
@@ -560,8 +598,8 @@ export default defineComponent({
         drawnNode = this.drawNode(ptr, x, y);
 
         const mouseEnter = () => {
-          drawnNode.rect.strokeColor = nodeHoverColor;
-          drawnNode.rect.fillColor = nodeHoverColor;
+          drawnNode.rect.strokeColor = nodeHoverColor.paperColor;
+          drawnNode.rect.fillColor = nodeHoverColor.paperColor;
           // text.bringToFront();
         };
 
@@ -600,7 +638,7 @@ export default defineComponent({
       if (this.myLinkedList.length > 0) this.nullNode = this.drawNode(null, x, y);
 
       // draw the start pointer
-      this.drawPointerOnNode(0, headPointerColor, true, false, "START");
+      this.drawPointerOnNode(0, headPointerColor.paperColor, true, false, "START");
     },
 
     // ============================== TREES START ================================
@@ -636,7 +674,7 @@ export default defineComponent({
     },
 
     highlightNode(uuid: string | number, color?: string | paper.Color): Promise<void> {
-      if (!color) color = nodeHoverColor;
+      if (!color) color = nodeHoverColor.paperColor;
 
       if (typeof color === "string") color = new paper.Color(color);
 
@@ -657,7 +695,7 @@ export default defineComponent({
         setTimeout(() => {
           node.rect.fillColor = transparent;
           r();
-        }, this.animationSpeed)
+        }, this.animationSpeed * 10)
       );
     },
 
@@ -762,7 +800,7 @@ export default defineComponent({
         drawnNode.rect.handleBounds.topRight.x + 10,
         drawnNode.rect.handleBounds.topRight.y + NODE_SIZE / 2,
         40,
-        headPointerColor,
+        headPointerColor.paperColor,
         "ROOT"
       );
 
@@ -830,18 +868,18 @@ export default defineComponent({
       const node1 = this.heapNodesList[i];
       const node2 = this.heapNodesList[j];
 
-      node1.node.rect.fillColor = pointerColor1;
+      node1.node.rect.fillColor = pointerColor1.paperColor;
       node1.node.text.bringToFront();
 
-      node2.node.rect.fillColor = pointerColor1;
+      node2.node.rect.fillColor = pointerColor1.paperColor;
       node2.node.text.bringToFront();
 
       await sleep(1000);
 
-      node1.node.rect.fillColor = pointerColor2;
+      node1.node.rect.fillColor = pointerColor2.paperColor;
       node1.node.text.bringToFront();
 
-      node2.node.rect.fillColor = pointerColor2;
+      node2.node.rect.fillColor = pointerColor2.paperColor;
       node2.node.text.bringToFront();
 
       return new Promise(r =>
@@ -901,6 +939,10 @@ export default defineComponent({
 
         await this.myHeap.insert(Number(this.addNewNodeValue));
       }
+    },
+
+    deleteFromHeap() {
+      this.myHeap.deleteFromHeap(this.myHeap.heap.length - 1);
     },
 
     createNewHeap() {
@@ -988,5 +1030,14 @@ input {
   border-radius: 5px;
   outline: none;
   width: 60%;
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  margin-top: 2rem;
+  padding-left: 1rem;
 }
 </style>

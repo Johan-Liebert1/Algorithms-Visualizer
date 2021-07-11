@@ -10,6 +10,8 @@ export type paperJsNode = {
 
 export type heapNode = {
   [index: number]: {
+    // tree node could've been a number, but in order to use the same function that draws a binary tree
+    // it's type is TreeNode | null
     treeNode: TreeNode | null;
     node: paperJsNode;
     leftArrow: paper.Group;

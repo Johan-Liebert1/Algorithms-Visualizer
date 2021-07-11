@@ -1,3 +1,4 @@
+import { sleep } from "@/helpers/helper";
 import { paperJsNode } from "@/types/dsAlgo";
 import { swap } from "../sorting/swap";
 import { llNodeNull } from "./LinkedListNode";
@@ -7,7 +8,6 @@ class Heap {
   heap: (number | TreeNode)[];
   list: (number | TreeNode)[];
   maxHeap: boolean;
-  // forSorting: boolean;
   swapElements: (idx1: number, idx2: number) => Promise<void>;
   colorElement: (idx: number, color?: string) => Promise<void>;
   drawNode?: (node: llNodeNull | TreeNode, x: number, y: number) => paperJsNode;
@@ -15,7 +15,6 @@ class Heap {
   constructor(
     list: number[],
     maxHeap: boolean,
-    // forSorting: boolean,
     swapElements: (idx1: number, idx2: number) => Promise<void>,
     colorElement: (idx: number, color?: string) => Promise<void>,
     drawNode?: (node: llNodeNull | TreeNode, x: number, y: number) => paperJsNode
@@ -26,7 +25,6 @@ class Heap {
     this.swapElements = swapElements;
     this.colorElement = colorElement;
     this.drawNode = drawNode;
-    // this.sub = forSorting ? -1 : 0; // subtract an index when sorting
   }
 
   getLeftChild = (index: number): number => 2 * index;
@@ -67,6 +65,10 @@ class Heap {
 
     swap(this.heap, 1, heapEnd);
     await this.swapElements(0, heapEnd - 1);
+
+    await this.colorElement(heapEnd - 1, "#345");
+
+    await sleep(10000);
 
     let index = 1;
 
