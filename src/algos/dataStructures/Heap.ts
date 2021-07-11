@@ -114,8 +114,6 @@ class Heap {
 
     await this.bubbleUp(this.heap.length - 1);
 
-    console.log(this.heap);
-
     return this;
   };
 

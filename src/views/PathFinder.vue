@@ -473,7 +473,7 @@ export default defineComponent({
     initGridWrtCellSize() {
       const randCols = Math.floor((window.innerWidth - 20) / this.CELL_SIZE);
       this.columns = randCols % 2 === 0 ? randCols - 1 : randCols;
-      this.rows = Math.floor((window.innerHeight * 0.8) / this.CELL_SIZE);
+      this.rows = Math.floor((window.innerHeight * 0.7) / this.CELL_SIZE);
 
       this.initGrid();
     }
@@ -533,6 +533,7 @@ export default defineComponent({
   justify-content: space-evenly;
   align-items: center;
   margin-bottom: 1.5rem;
+  min-height: 93vh;
 }
 
 .grid-container {
