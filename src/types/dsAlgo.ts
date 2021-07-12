@@ -30,3 +30,8 @@ export type linkedListNodesList = {
   arrowNext: paper.Group;
   pointers: paper.Group[];
 };
+
+export type typeLinkedListStartPointer = {
+  pointer: paper.Group;
+  index: number;
+};

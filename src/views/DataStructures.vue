@@ -122,6 +122,14 @@ import paper from "paper";
 import AlgoNavBar from "@/components/AlgoNavBar.vue";
 import SVG from "@/components/Svg.vue";
 
+import { drawArrow, drawNode, putTextOnCanvas } from "@/components/dsAlgo/globalHelpers";
+import {
+  animateLinkedListNodeDeletion,
+  drawLinkedList,
+  drawPointerOnNode,
+  translatePointer
+} from "@/components/dsAlgo/linkedListHelper";
+
 // constants
 import {
   allDsAlgosObject,
@@ -158,6 +166,7 @@ import {
   binaryTreeNode,
   heapNode,
   linkedListNodesList,
+  typeLinkedListStartPointer,
   paperJsNode
 } from "@/types/dsAlgo";
 
@@ -177,7 +186,7 @@ export default defineComponent({
     // for linked lists
     const linkedListNodes: linkedListNodesList[] = [];
 
-    const linkedListStartPointer = {} as { pointer: paper.Group; index: number };
+    const linkedListStartPointer = {} as typeLinkedListStartPointer;
     let myLinkedList: LinkedList = {} as LinkedList;
 
     // for trees
@@ -346,116 +355,6 @@ export default defineComponent({
       rect.fillColor = backgroundColor.paperColor;
     },
 
-    putTextOnCanvas(text: string, x?: number, y?: number) {
-      if (!this.canvas) return;
-
-      if (!x) {
-        x = 100;
-      }
-
-      if (!y) {
-        y = this.canvas.height - 200;
-      }
-
-      if (this.canvasText) {
-        this.canvasText.remove();
-      }
-
-      this.canvasText = new paper.PointText(new paper.Point(x, y));
-      this.canvasText.content = text;
-      this.canvasText.justification = "left";
-      this.canvasText.fillColor = pointerColor2.paperColor;
-      this.canvasText.scale(1.5);
-    },
-
-    drawArrow(
-      x1: number,
-      y1: number,
-      length: number,
-      color?: paper.Color,
-      textString?: string
-    ): paper.Group {
-      if (!color) {
-        color = nodeHoverColor.paperColor;
-      }
-
-      const line = new paper.Path.Line(
-        new paper.Point(x1, y1),
-        new paper.Point(x1, y1 + length)
-      );
-      line.strokeWidth = 3;
-
-      const triangle = new paper.Path.RegularPolygon(
-        new paper.Point(x1, y1 + length),
-        3, // number of sides
-        ARROW_TRIANGLE_RADIUS // radius
-      );
-      triangle.rotate(180);
-
-      let text;
-
-      if (textString) {
-        const textY = textString === "START" ? -10 : -20;
-
-        text = new paper.PointText(new paper.Point(x1, y1));
-        text.content = textString;
-        text.fillColor = headPointerColor.paperColor;
-
-        text.position.x -= text.handleBounds.width / 2;
-        text.position.y += textY;
-
-        // rotate the text again so that it counteracts the rotation of the group
-        textString !== "START" && text.rotate(180);
-      }
-
-      const groupArray = text ? [line, triangle, text] : [line, triangle];
-
-      const group = new paper.Group(groupArray);
-      group.fillColor = color;
-      group.strokeColor = color;
-
-      if (text && textString !== "START") {
-        group.position.y += 30;
-      } else if (text) {
-        group.position.y += 10;
-      }
-
-      return group;
-    },
-
-    /**
-     * @param node LinkedListNode, TreeNode or Null. Value inside the node will be the value of the node if it exists, else will be 'NULL'
-     * @param x x co-ordinate of the node
-     * @param y y co-ordinate of the node
-     */
-    drawNode(node: llNodeNull | TreeNode, x: number, y: number): paperJsNode {
-      const startingPoint = new paper.Point(x, y);
-      const endingPoint = new paper.Point(x + NODE_SIZE, y + NODE_SIZE);
-      const middlePoint = new paper.Point(
-        (startingPoint.x + endingPoint.x) / 2,
-        startingPoint.y
-      );
-
-      const textContent = node ? node.repr() : "NULL";
-
-      const text = new paper.PointText(middlePoint);
-      text.justification = "center";
-      text.fillColor = textStrokeColor;
-      text.content = textContent;
-      text.scale(1.2);
-
-      const temp = new paper.Rectangle(startingPoint, endingPoint);
-
-      const rect = new paper.Path.Rectangle(temp, new paper.Size(5, 5));
-      rect.strokeColor = nodeStrokeColor;
-
-      text.position.y += NODE_SIZE / 2 + text.handleBounds.height / 4;
-
-      rect.addChild(text);
-
-      return { rect, text };
-    },
-
     // ================== LINKED LISTS START ==========================
 
     createNewLinkedList() {
@@ -468,6 +367,54 @@ export default defineComponent({
       );
 
       this.drawLinkedList(this.myLinkedList.start);
+    },
+
+    drawPointerOnNode(
+      index: number,
+      color?: paper.Color,
+      top?: boolean,
+      add?: boolean,
+      textString?: string
+    ) {
+      const { linkedListStartPointer, linkedListNodes, nullNode } = drawPointerOnNode(
+        this.linkedListNodes,
+        this.nullNode,
+        index,
+        this.linkedListStartPointer,
+        color,
+        top,
+        add,
+        textString
+      );
+
+      if (linkedListStartPointer) this.linkedListStartPointer = linkedListStartPointer;
+
+      this.linkedListNodes = linkedListNodes;
+      this.nullNode = nullNode;
+    },
+
+    async translatePointer(
+      fromIdx: number,
+      toIdx: number,
+      startPointer?: boolean | undefined
+    ) {
+      const {
+        linkedListNodes,
+        nullNode,
+        linkedListStartPointer
+      } = await translatePointer(
+        this.linkedListNodes,
+        this.nullNode,
+        this.linkedListStartPointer,
+        fromIdx,
+        toIdx,
+        this.animationSpeed,
+        startPointer
+      );
+
+      if (linkedListStartPointer) this.linkedListStartPointer = linkedListStartPointer;
+      this.linkedListNodes = linkedListNodes;
+      this.nullNode = nullNode;
     },
 
     addNodeToLinkedList() {
@@ -526,296 +473,36 @@ export default defineComponent({
       return new Promise(r => r());
     },
 
-    /**
-     * @param index index of the node on which to draw the pointer
-     * @param color color of the pointer
-     * @param top whether to put draw pointer on top of the node or at the bottom
-     * @param add whether to add the new pointer's paper object to the node's list of pointers
-     * @param textString text to show above or below the pointer
-     */
-    drawPointerOnNode(
-      index: number,
-      color?: paper.Color,
-      top = false,
-      add = true,
-      textString?: string
-    ): void {
-      if (!color) color = pointerColor1.paperColor;
-
-      let linkedListNodeObject: linkedListNodesList;
-
-      linkedListNodeObject = this.linkedListNodes[index];
-
-      const node = linkedListNodeObject ? linkedListNodeObject.node : this.nullNode;
-
-      const getValuesFrom = top
-        ? node.rect.handleBounds.topRight
-        : node.rect.handleBounds.bottomRight;
-
-      const { x, y } = getValuesFrom;
-
-      const arrow = this.drawArrow(x, y, 30, color, textString);
-
-      arrow.position.x -= NODE_SIZE / 2;
-
-      if (!top) {
-        arrow.position.y += ARROW_NODE_MARGIN; //+ this.linkedListNodes[index].pointers.length * ARROW_LENGTH;
-        arrow.rotate(180);
-      } else {
-        arrow.position.y -= arrow.handleBounds.height + ARROW_NODE_MARGIN;
-      }
-
-      // only add the pointer to the pointers list if the node is not a null node
-
-      if (node !== this.nullNode) {
-        if (!this.linkedListNodes[index].pointers) {
-          this.linkedListNodes[index].pointers = [];
-        }
-
-        // we won't be adding the start pointer to a node's pointers list
-        if (add) {
-          this.linkedListNodes[index].pointers.push(arrow);
-        } else {
-          // it's a start pointer
-          this.linkedListStartPointer = {
-            pointer: arrow,
-            index
-          };
-        }
-      }
-    },
-
-    removePointersFromNode(index: number) {
-      this.linkedListNodes[index].pointers?.forEach(ptr => ptr.remove());
-    },
-
-    /**
-     * @param fromIdx Pointer of the node to be translated
-     * @param toIdx Translate pointer to which node
-     * @param startPointer If it's a start pointer, draw it on the top
-     *
-     * if toIdx is within bound of the array, the pointer is translated to the
-     * corresponding node, else it's translated to the NULL node
-     */
-    translatePointer(
-      fromIdx: number,
-      toIdx: number,
-      startPointer = false
-    ): Promise<void> {
-      let pointer: paper.Group;
-
-      if (!startPointer) {
-        pointer = this.linkedListNodes[fromIdx].pointers[0];
-      } else {
-        pointer = this.linkedListStartPointer.pointer;
-      }
-
-      const { x: fromX, y: fromY } = pointer.position;
-
-      let toX: number;
-      let withinBounds = toIdx < this.linkedListNodes.length && toIdx !== -1;
-
-      if (!withinBounds) {
-        toX = this.nullNode.rect.handleBounds.center.x;
-      } else {
-        toX = this.linkedListNodes[toIdx].node.rect.handleBounds.center.x;
-      }
-
-      let toY = pointer.position.y;
-
-      // if (!startPointer) {
-      //   toY += this.linkedListNodes[toIdx].pointers.length * ARROW_LENGTH;
-      // }
-
-      const intervals = 100;
-
-      const dx = (toX - fromX) / intervals;
-      const dy = (toY - fromY) / intervals;
-      let i = 0;
-
-      const time = this.animationSpeed / 50;
-
-      const sInterval = setInterval(() => {
-        if (i === intervals) clearInterval(sInterval);
-
-        pointer.position.x += dx;
-        pointer.position.y += dy;
-
-        i++;
-      }, time);
-
-      if (withinBounds) {
-        this.linkedListNodes[fromIdx].pointers.shift();
-        this.linkedListNodes[toIdx].pointers.push(pointer);
-      }
-
-      return new Promise(r => setTimeout(r, time * 2 * intervals));
-    },
-
-    removePaperJsNode(
-      nodeToRemove: paperJsNode,
-      objectsToRemove?: { [key: string]: paper.Path | paper.Group }
-    ) {
-      nodeToRemove.rect.remove();
-      nodeToRemove.text.remove();
-
-      if (objectsToRemove)
-        Object.values(objectsToRemove).forEach(paperObject => paperObject.remove());
-    },
-
     async animateLinkedListNodeDeletion(indexToDelete: number): Promise<void> {
-      /*
-        1. Take the pointer of the node previous to this node, then
-        point it to the next node
-        2. Delete the current node's pointer
-      */
+      const {
+        linkedListNodes,
+        linkedListStartPointer,
+        nullNode
+      } = await animateLinkedListNodeDeletion(
+        this.linkedListNodes,
+        this.nullNode,
+        indexToDelete,
+        this.animationSpeed
+      );
 
-      const previousNode = this.linkedListNodes[indexToDelete - 1];
+      this.linkedListNodes = linkedListNodes;
+      this.nullNode = nullNode;
 
-      const nodeToDelete = this.linkedListNodes[indexToDelete];
-
-      let nextNode: linkedListNodesList | paperJsNode = this.linkedListNodes[
-        indexToDelete + 1
-      ];
-      nextNode = nextNode ? nextNode : this.nullNode;
-
-      // edge cases, start node deleted
-      if (!previousNode) {
-        nodeToDelete.arrowNext.visible = false;
-        nodeToDelete.node.rect.fillColor = nodeDeleteColor.paperColor;
-        nodeToDelete.node.text.fillColor = backgroundColor.paperColor;
-        nodeToDelete.node.text.bringToFront();
-
-        setTimeout(() => {
-          this.linkedListNodes = this.linkedListNodes.filter(
-            node => node !== nodeToDelete
-          );
-
-          this.removePaperJsNode(nodeToDelete.node, {
-            arrowNext: nodeToDelete.arrowNext
-          });
-        }, this.animationSpeed);
-
-        return;
-      }
-
-      // edge case, end node deleted
-
-      // middle node deleted
-      /*
-       1. Hide previous node's arrow
-       2. Delete arrow of current node
-       3. Delete the current node
-       4. Translate all the right nodes to the left
-       5. Visibilize previous node's arrow
-      */
-      previousNode.arrowNext.tween({ opacity: 1 }, { opacity: 0 }, this.animationSpeed);
-      nodeToDelete.arrowNext.tween({ opacity: 1 }, { opacity: 0 }, this.animationSpeed);
-
-      const deltedNodeX =
-        nodeToDelete.node.rect.position.x +
-        nodeToDelete.arrowNext.handleBounds.width +
-        NODE_SIZE +
-        ARROW_NODE_MARGIN;
-
-      setTimeout(() => {
-        this.linkedListNodes = this.linkedListNodes.filter(node => node !== nodeToDelete);
-
-        const group = new paper.Group([nodeToDelete.node.rect, nodeToDelete.node.text]);
-
-        group
-          .tween({ opacity: 1 }, { opacity: 0 }, { duration: this.animationSpeed })
-          .then(() => {
-            this.removePaperJsNode(nodeToDelete.node, {
-              arrowNext: nodeToDelete.arrowNext
-            });
-
-            const list = this.linkedListNodes.slice(indexToDelete);
-            const newGroup = new paper.Group();
-
-            let i = 0;
-            for (const obj of list) {
-              newGroup.insertChild(i, obj.node.rect);
-              newGroup.insertChild(i + 1, obj.node.text);
-              newGroup.insertChild(i + 2, obj.arrowNext);
-              i += 2;
-            }
-
-            newGroup.insertChild(i, this.nullNode.rect);
-            newGroup.insertChild(i + 1, this.nullNode.text);
-
-            newGroup
-              .tween(
-                { position: { x: newGroup.position.x, y: newGroup.position.y } },
-                {
-                  position: {
-                    x: deltedNodeX,
-                    y: newGroup.position.y
-                  }
-                },
-                { duration: this.animationSpeed }
-              )
-              .then(() => {
-                previousNode.arrowNext.tween(
-                  { opacity: 0 },
-                  { opacity: 1 },
-                  this.animationSpeed
-                );
-              });
-          });
-      }, this.animationSpeed);
+      if (linkedListStartPointer) this.linkedListStartPointer = linkedListStartPointer;
     },
 
     drawLinkedList(startPtr: llNodeNull) {
-      let ptr = startPtr;
-      let x = 100,
-        y = 300;
+      const { linkedListNodes, linkedListStartPointer, nullNode } = drawLinkedList(
+        startPtr,
+        this.myLinkedList,
+        this.linkedListNodes,
+        this.nullNode
+      );
 
-      let drawnNode: paperJsNode;
+      this.linkedListNodes = linkedListNodes;
+      this.nullNode = nullNode;
 
-      do {
-        drawnNode = this.drawNode(ptr, x, y);
-
-        x += drawnNode.rect.handleBounds.width + ARROW_LENGTH + 20;
-
-        const { x: x2, y: y2 } = drawnNode.rect.handleBounds.bottomRight;
-
-        let arrow: paper.Group;
-
-        arrow = this.drawArrow(x2 + 5, y2, ARROW_LENGTH);
-        arrow.rotate(-90, new paper.Point(x2 + 5, y2));
-        arrow.position.y -= NODE_SIZE / 2;
-
-        // don't show any arrows to next node if linked list is empty
-        if (this.myLinkedList.length === 0) arrow.visible = false;
-
-        this.linkedListNodes.push({
-          node: drawnNode,
-          arrowNext: arrow,
-          pointers: []
-        });
-
-        if (ptr) ptr = ptr.next;
-      } while (ptr !== null);
-
-      // draw a NULL node
-      if (this.myLinkedList.length > 0) this.nullNode = this.drawNode(null, x, y);
-
-      // draw the start pointer
-      this.drawPointerOnNode(0, headPointerColor.paperColor, true, false, "START");
-
-      // testing curves
-      const handleOut = new paper.Point(100, 200);
-
-      const firstPoint = new paper.Point(100, 50);
-      const firstSegment = new paper.Segment(firstPoint, undefined, handleOut);
-
-      const secondPoint = new paper.Point(500, 50);
-      const secondSegment = new paper.Segment(secondPoint, undefined, undefined);
-
-      const path = new paper.Path([firstSegment, secondSegment]);
-      path.strokeColor = new paper.Color("white");
-      path.strokeWidth = 3;
+      if (linkedListStartPointer) this.linkedListStartPointer = linkedListStartPointer;
     },
 
     // ============================== TREES START ================================
@@ -829,7 +516,9 @@ export default defineComponent({
       this.myBinaryTree = new BinaryTree(
         this.highlightNode,
         this.drawBinaryTreeNode,
-        this.putTextOnCanvas
+        (text: string, x?: number, y?: number) => {
+          this.canvasText = putTextOnCanvas(this.canvas, this.canvasText, text, x, y);
+        }
       );
       this.drawBinaryTreeRoot(this.myBinaryTree.root);
     },
@@ -925,13 +614,13 @@ export default defineComponent({
         newNode = new TreeNode(newNode);
       }
 
-      const drawnNode = this.drawNode(newNode, x, y);
+      const drawnNode = drawNode(newNode, x, y);
 
       const { x: lx, y: ly } = drawnNode.rect.handleBounds.bottomLeft;
       const { x: rx, y: ry } = drawnNode.rect.handleBounds.bottomRight;
 
-      const leftArrow = this.drawArrow(lx, ly, TREE_ARROW_LENGTH / depth);
-      const rightArrow = this.drawArrow(rx, ry, TREE_ARROW_LENGTH / depth);
+      const leftArrow = drawArrow(lx, ly, TREE_ARROW_LENGTH / depth);
+      const rightArrow = drawArrow(rx, ry, TREE_ARROW_LENGTH / depth);
 
       if (isForTree) {
         this.binaryTreeNodesList[newNode.uuid] = {
@@ -971,9 +660,9 @@ export default defineComponent({
       let x = this.canvas.width / 2.5;
       let y = 50;
 
-      const drawnNode = this.drawNode(root, x, y);
+      const drawnNode = drawNode(root, x, y);
 
-      const arrow = this.drawArrow(
+      const arrow = drawArrow(
         drawnNode.rect.handleBounds.topRight.x + 10,
         drawnNode.rect.handleBounds.topRight.y + NODE_SIZE / 2,
         40,
@@ -988,8 +677,8 @@ export default defineComponent({
         const { x: lx, y: ly } = drawnNode.rect.handleBounds.bottomLeft;
         const { x: rx, y: ry } = drawnNode.rect.handleBounds.bottomRight;
 
-        const leftArrow = this.drawArrow(lx, ly, TREE_ARROW_LENGTH);
-        const rightArrow = this.drawArrow(rx, ry, TREE_ARROW_LENGTH);
+        const leftArrow = drawArrow(lx, ly, TREE_ARROW_LENGTH);
+        const rightArrow = drawArrow(rx, ry, TREE_ARROW_LENGTH);
 
         leftArrow.rotate(TREE_ARROW_ANGLE, new paper.Point(lx, ly));
         rightArrow.rotate(-TREE_ARROW_ANGLE, new paper.Point(rx, ry));
