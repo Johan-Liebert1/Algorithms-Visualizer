@@ -142,3 +142,5 @@ export class CellClass {
     return this;
   }
 }
+
+export type MazeBias = "none" | "horizontal" | "vertical";

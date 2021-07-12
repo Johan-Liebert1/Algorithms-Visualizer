@@ -19,7 +19,7 @@ const ellersMaze = async (
 
   await sleep(1000);
 
-  const colWallRemoveThreshold = 0.3;
+  const colWallRemoveThreshold = 0.25;
   const rowWallRemoveThreshold = 0.1;
 
   let row = 0;

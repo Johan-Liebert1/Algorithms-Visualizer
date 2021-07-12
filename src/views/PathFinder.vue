@@ -94,6 +94,26 @@
         </div>
       </div>
 
+      <div
+        v-if="
+          selectedMazeGenerationAlgorithm ===
+            allMazeGenerationAlgorithms.RECURSIVE_DIVISION
+        "
+      >
+        <label class="radio">
+          <input type="radio" name="maze-bias" checked @change="changeMazeBias('none')" />
+          No Bias
+        </label>
+        <label class="radio">
+          <input type="radio" name="maze-bias" @change="changeMazeBias('horizontal')" />
+          Horizontal Bias
+        </label>
+        <label class="radio">
+          <input type="radio" name="maze-bias" @change="changeMazeBias('vertical')" />
+          Vertical Bias
+        </label>
+      </div>
+
       <div class="grid-container" id="grid-container" @dragover="nodeDragOver">
         <div v-for="(row, index) in matrix" :key="index" class="is-flex">
           <Cell
@@ -120,7 +140,7 @@
 import { defineComponent, ref } from "vue";
 
 // types
-import { CellClass } from "@/types/pathFinders";
+import { CellClass, MazeBias } from "@/types/pathFinders";
 import { ButtonsArray } from "@/types/global";
 
 // algorithms - path finders
@@ -161,7 +181,12 @@ export default defineComponent({
 
   setup() {
     const currentlyDraggingCell = ref<CellClass | null>(null);
-    return { currentlyDraggingCell, TOOLTIPS, svgNames };
+    return {
+      currentlyDraggingCell,
+      TOOLTIPS,
+      svgNames,
+      allMazeGenerationAlgorithms: mazeGenerationAlgorithms
+    };
   },
 
   data() {
@@ -214,6 +239,7 @@ export default defineComponent({
 
     setNewMazeGenAlgo(value: string) {
       this.selectedMazeGenerationAlgorithm = value;
+      console.log({ value });
       this.generateMaze();
     },
 
@@ -360,6 +386,29 @@ export default defineComponent({
 
       this.startNode.color = finalPathColor;
       this.startNode.drawBorder = false;
+    },
+
+    changeMazeBias(newBias: MazeBias) {
+      console.log("choosing bias");
+      switch (newBias) {
+        case "none":
+          this.recursiveMaze.verticalBias = false;
+          this.recursiveMaze.horizontalBias = false;
+          break;
+
+        case "horizontal":
+          this.recursiveMaze.verticalBias = false;
+          this.recursiveMaze.horizontalBias = true;
+          break;
+
+        case "vertical":
+          this.recursiveMaze.verticalBias = true;
+          this.recursiveMaze.horizontalBias = false;
+          break;
+
+        default:
+          break;
+      }
     },
 
     setIsDiagonalMovementAllowed() {

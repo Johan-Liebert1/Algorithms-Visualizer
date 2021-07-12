@@ -9,11 +9,11 @@ enum Direction {
 const chooseOrientation = (
   width: number,
   height: number,
-  horizontalBias = false,
-  verticalBias = false
+  horizontalBias: boolean,
+  verticalBias: boolean
 ): Direction => {
   if (horizontalBias) {
-    return Math.random() < 0.7 ? Direction.horizontal : Direction.vertical;
+    return Math.random() < 0.6 ? Direction.horizontal : Direction.vertical;
   } else if (verticalBias) {
     return Math.random() > 0.7 ? Direction.horizontal : Direction.vertical;
   }
@@ -55,7 +55,12 @@ const recursiveDivisionMaze = async (
 
   // whether we're drawing a horizontal wall or a vertical wall
   const isHorizontal =
-    chooseOrientation(endCol - startCol, endRow - startRow) === Direction.horizontal;
+    chooseOrientation(
+      endCol - startCol,
+      endRow - startRow,
+      horizontalBias,
+      verticalBias
+    ) === Direction.horizontal;
   const isVertical = !isHorizontal;
 
   // get random row to fill with walls if horizontal

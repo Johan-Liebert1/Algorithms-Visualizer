@@ -29,9 +29,17 @@ export const transparent = new paperCore.Color(1, 1, 1, 0);
 
 export const nodeStrokeColor = new paperCore.Color("#fff");
 export const textStrokeColor = new paperCore.Color("#fff");
+export const backgroundColor = {
+  hex: "#130f40",
+  paperColor: new paperCore.Color("#000")
+};
 export const nodeHoverColor = {
   hex: "#3498db",
   paperColor: new paperCore.Color("#3498db")
+};
+export const nodeDeleteColor = {
+  hex: "#fff",
+  paperColor: new paperCore.Color("#fff")
 };
 export const headPointerColor = {
   hex: "#8e44ad",

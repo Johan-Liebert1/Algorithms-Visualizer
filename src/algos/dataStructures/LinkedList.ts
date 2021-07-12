@@ -20,6 +20,7 @@ class LinkedList {
   ) => Promise<void>;
   rotateArrow: (index: number, animate?: boolean) => Promise<void>;
   toggleArrowVisibility: (index: number, show?: boolean) => void;
+  animateLinkedListNodeDeletion: (indexToDelet: number) => void;
 
   constructor(
     drawPointerOnNode: (
@@ -35,7 +36,8 @@ class LinkedList {
       startPointer?: boolean
     ) => Promise<void>,
     rotateArrow: (index: number, animate?: boolean) => Promise<void>,
-    toggleArrowVisibility: (index: number, show?: boolean) => void
+    toggleArrowVisibility: (index: number, show?: boolean) => void,
+    animateLinkedListNodeDeletion: (indexToDelet: number) => void
   ) {
     this.start = null;
     this.length = 0;
@@ -43,6 +45,7 @@ class LinkedList {
     this.translatePointer = translatePointer;
     this.rotateArrow = rotateArrow;
     this.toggleArrowVisibility = toggleArrowVisibility;
+    this.animateLinkedListNodeDeletion = animateLinkedListNodeDeletion;
   }
 
   traverse(): string {
@@ -75,6 +78,46 @@ class LinkedList {
     newNode.index = ptr.index + 1;
     ptr.next = newNode;
 
+    return this;
+  }
+
+  async delete(value: numStr) {
+    let ptr1 = this.start;
+    let ptr2 = ptr1?.next;
+
+    this.drawPointerOnNode(0, pointerColor1.paperColor, false, true, "ptr 1");
+    this.drawPointerOnNode(1, pointerColor2.paperColor, false, true, "ptr 2");
+
+    if (ptr1?.value === value) {
+      this.start = this.start?.next as LinkedListNode;
+      ptr1.next = null;
+
+      const translateToIndex = ptr2 ? ptr2.index : -1;
+
+      this.translatePointer(0, translateToIndex, true);
+
+      this.animateLinkedListNodeDeletion(0);
+
+      return this;
+    }
+
+    while (ptr2 && ptr1) {
+      if (ptr2.value == value) {
+        // found the node to delete
+        ptr1.next = ptr2.next;
+        ptr2.next = null;
+        this.animateLinkedListNodeDeletion(ptr2.index);
+        break;
+      }
+
+      if (ptr1) await this.translatePointer(ptr1.index, ptr1.index + 1);
+      if (ptr2) await this.translatePointer(ptr2.index, ptr2.index + 1);
+
+      ptr1 = ptr1.next;
+      ptr2 = ptr2.next;
+    }
+
+    console.log(this.traverse());
     return this;
   }
 

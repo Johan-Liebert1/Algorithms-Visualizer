@@ -15,7 +15,7 @@
           </h1>
 
           <div
-            v-if="selectedMainDsAlgo.name === allDsAlgosObject.HEAP.name"
+            v-if="isHeapSelected"
             class="is-flex"
             style="justify-content: center; margin-bottom: 1rem"
           >
@@ -66,10 +66,7 @@
           </div>
         </div>
 
-        <div
-          v-if="selectedMainDsAlgo.name !== allDsAlgosObject.HEAP.name"
-          style="margin-top: 3rem"
-        >
+        <div v-if="!isHeapSelected" style="margin-top: 3rem">
           <p style="margin-left: 10%">Delete Node</p>
           <div class="is-flex" style="align-items: center; justify-content: space-evenly">
             <input
@@ -131,7 +128,9 @@ import {
   ARROW_LENGTH,
   ARROW_NODE_MARGIN,
   ARROW_TRIANGLE_RADIUS,
+  backgroundColor,
   headPointerColor,
+  nodeDeleteColor,
   nodeHoverColor,
   nodeStrokeColor,
   NODE_SIZE,
@@ -225,7 +224,7 @@ export default defineComponent({
 
   data() {
     return {
-      selectedMainDsAlgo: allDsAlgosObject.HEAP,
+      selectedMainDsAlgo: allDsAlgosObject.LINKED_LIST,
       addNewNodeValue: 0 as numStr,
       deleteNodeValue: 0 as numStr,
       animationSpeed: 500,
@@ -263,22 +262,17 @@ export default defineComponent({
 
   methods: {
     algorithmChanged(value: string) {
-      this.clearCanvas();
-
       switch (value) {
         case allDsAlgosObject.LINKED_LIST.name:
           this.selectedMainDsAlgo = allDsAlgosObject.LINKED_LIST;
-          this.createNewLinkedList();
           break;
 
         case allDsAlgosObject.BINARY_TREES.name:
           this.selectedMainDsAlgo = allDsAlgosObject.BINARY_TREES;
-          this.createNewBinaryTree();
           break;
 
         case allDsAlgosObject.HEAP.name:
           this.selectedMainDsAlgo = allDsAlgosObject.HEAP;
-          this.createNewHeap();
           break;
 
         default:
@@ -311,8 +305,8 @@ export default defineComponent({
           this.myBinaryTree.deleteNode(Number(this.deleteNodeValue));
           break;
 
-        case allDsAlgosObject.HEAP.name:
-          this.addNodeToHeap();
+        case allDsAlgosObject.LINKED_LIST.name:
+          this.myLinkedList.delete(this.deleteNodeValue);
           break;
 
         default:
@@ -349,7 +343,7 @@ export default defineComponent({
         new paper.Point(0, 0),
         new paper.Size(canvas.width, canvas.height)
       );
-      rect.fillColor = new paper.Color(0);
+      rect.fillColor = backgroundColor.paperColor;
     },
 
     putTextOnCanvas(text: string, x?: number, y?: number) {
@@ -469,28 +463,31 @@ export default defineComponent({
         this.drawPointerOnNode,
         this.translatePointer,
         this.rotateArrow,
-        this.toggleArrowVisibility
+        this.toggleArrowVisibility,
+        this.animateLinkedListNodeDeletion
       );
 
       this.drawLinkedList(this.myLinkedList.start);
     },
 
     addNodeToLinkedList() {
-      this.myLinkedList.insert(this.addNewNodeValue);
-      this.clearCanvas();
+      let array;
 
-      this.drawLinkedList(this.myLinkedList.start);
-    },
+      if (
+        typeof this.addNewNodeValue === "string" &&
+        this.addNewNodeValue.includes(",")
+      ) {
+        array = this.addNewNodeValue.split(",").map(Number);
+      } else {
+        array = [this.addNewNodeValue];
+      }
 
-    constrainValue(min: number, max: number) {
-      // console.log(value, isNaN(value));
-      // if (isNaN(value)) {
-      //   this.addNewNodeValue = 0;
-      //   return;
-      // }
-      // value = parseInt(value);
-      // if (value < min || value > max) return;
-      // this.addNewNodeValue = value;
+      array.forEach(element => {
+        this.myLinkedList.insert(element);
+        this.clearCanvas();
+
+        this.drawLinkedList(this.myLinkedList.start);
+      });
     },
 
     reverseLinkedList() {
@@ -545,7 +542,11 @@ export default defineComponent({
     ): void {
       if (!color) color = pointerColor1.paperColor;
 
-      const { node } = this.linkedListNodes[index];
+      let linkedListNodeObject: linkedListNodesList;
+
+      linkedListNodeObject = this.linkedListNodes[index];
+
+      const node = linkedListNodeObject ? linkedListNodeObject.node : this.nullNode;
 
       const getValuesFrom = top
         ? node.rect.handleBounds.topRight
@@ -558,26 +559,29 @@ export default defineComponent({
       arrow.position.x -= NODE_SIZE / 2;
 
       if (!top) {
-        arrow.position.y +=
-          ARROW_NODE_MARGIN + this.linkedListNodes[index].pointers.length * ARROW_LENGTH;
+        arrow.position.y += ARROW_NODE_MARGIN; //+ this.linkedListNodes[index].pointers.length * ARROW_LENGTH;
         arrow.rotate(180);
       } else {
         arrow.position.y -= arrow.handleBounds.height + ARROW_NODE_MARGIN;
       }
 
-      if (!this.linkedListNodes[index].pointers) {
-        this.linkedListNodes[index].pointers = [];
-      }
+      // only add the pointer to the pointers list if the node is not a null node
 
-      // we won't be adding the start pointer to a node's pointers list
-      if (add) {
-        this.linkedListNodes[index].pointers.push(arrow);
-      } else {
-        // it's a start pointer
-        this.linkedListStartPointer = {
-          pointer: arrow,
-          index
-        };
+      if (node !== this.nullNode) {
+        if (!this.linkedListNodes[index].pointers) {
+          this.linkedListNodes[index].pointers = [];
+        }
+
+        // we won't be adding the start pointer to a node's pointers list
+        if (add) {
+          this.linkedListNodes[index].pointers.push(arrow);
+        } else {
+          // it's a start pointer
+          this.linkedListStartPointer = {
+            pointer: arrow,
+            index
+          };
+        }
       }
     },
 
@@ -588,7 +592,10 @@ export default defineComponent({
     /**
      * @param fromIdx Pointer of the node to be translated
      * @param toIdx Translate pointer to which node
-     * @param startPointer if it's a start pointer, draw it on the top
+     * @param startPointer If it's a start pointer, draw it on the top
+     *
+     * if toIdx is within bound of the array, the pointer is translated to the
+     * corresponding node, else it's translated to the NULL node
      */
     translatePointer(
       fromIdx: number,
@@ -606,7 +613,7 @@ export default defineComponent({
       const { x: fromX, y: fromY } = pointer.position;
 
       let toX: number;
-      let withinBounds = toIdx < this.linkedListNodes.length;
+      let withinBounds = toIdx < this.linkedListNodes.length && toIdx !== -1;
 
       if (!withinBounds) {
         toX = this.nullNode.rect.handleBounds.center.x;
@@ -645,6 +652,120 @@ export default defineComponent({
       return new Promise(r => setTimeout(r, time * 2 * intervals));
     },
 
+    removePaperJsNode(
+      nodeToRemove: paperJsNode,
+      objectsToRemove?: { [key: string]: paper.Path | paper.Group }
+    ) {
+      nodeToRemove.rect.remove();
+      nodeToRemove.text.remove();
+
+      if (objectsToRemove)
+        Object.values(objectsToRemove).forEach(paperObject => paperObject.remove());
+    },
+
+    async animateLinkedListNodeDeletion(indexToDelete: number): Promise<void> {
+      /*
+        1. Take the pointer of the node previous to this node, then
+        point it to the next node
+        2. Delete the current node's pointer
+      */
+
+      const previousNode = this.linkedListNodes[indexToDelete - 1];
+
+      const nodeToDelete = this.linkedListNodes[indexToDelete];
+
+      let nextNode: linkedListNodesList | paperJsNode = this.linkedListNodes[
+        indexToDelete + 1
+      ];
+      nextNode = nextNode ? nextNode : this.nullNode;
+
+      // edge cases, start node deleted
+      if (!previousNode) {
+        nodeToDelete.arrowNext.visible = false;
+        nodeToDelete.node.rect.fillColor = nodeDeleteColor.paperColor;
+        nodeToDelete.node.text.fillColor = backgroundColor.paperColor;
+        nodeToDelete.node.text.bringToFront();
+
+        setTimeout(() => {
+          this.linkedListNodes = this.linkedListNodes.filter(
+            node => node !== nodeToDelete
+          );
+
+          this.removePaperJsNode(nodeToDelete.node, {
+            arrowNext: nodeToDelete.arrowNext
+          });
+        }, this.animationSpeed);
+
+        return;
+      }
+
+      // edge case, end node deleted
+
+      // middle node deleted
+      /*
+       1. Hide previous node's arrow
+       2. Delete arrow of current node
+       3. Delete the current node
+       4. Translate all the right nodes to the left
+       5. Visibilize previous node's arrow
+      */
+      previousNode.arrowNext.tween({ opacity: 1 }, { opacity: 0 }, this.animationSpeed);
+      nodeToDelete.arrowNext.tween({ opacity: 1 }, { opacity: 0 }, this.animationSpeed);
+
+      const deltedNodeX =
+        nodeToDelete.node.rect.position.x +
+        nodeToDelete.arrowNext.handleBounds.width +
+        NODE_SIZE +
+        ARROW_NODE_MARGIN;
+
+      setTimeout(() => {
+        this.linkedListNodes = this.linkedListNodes.filter(node => node !== nodeToDelete);
+
+        const group = new paper.Group([nodeToDelete.node.rect, nodeToDelete.node.text]);
+
+        group
+          .tween({ opacity: 1 }, { opacity: 0 }, { duration: this.animationSpeed })
+          .then(() => {
+            this.removePaperJsNode(nodeToDelete.node, {
+              arrowNext: nodeToDelete.arrowNext
+            });
+
+            const list = this.linkedListNodes.slice(indexToDelete);
+            const newGroup = new paper.Group();
+
+            let i = 0;
+            for (const obj of list) {
+              newGroup.insertChild(i, obj.node.rect);
+              newGroup.insertChild(i + 1, obj.node.text);
+              newGroup.insertChild(i + 2, obj.arrowNext);
+              i += 2;
+            }
+
+            newGroup.insertChild(i, this.nullNode.rect);
+            newGroup.insertChild(i + 1, this.nullNode.text);
+
+            newGroup
+              .tween(
+                { position: { x: newGroup.position.x, y: newGroup.position.y } },
+                {
+                  position: {
+                    x: deltedNodeX,
+                    y: newGroup.position.y
+                  }
+                },
+                { duration: this.animationSpeed }
+              )
+              .then(() => {
+                previousNode.arrowNext.tween(
+                  { opacity: 0 },
+                  { opacity: 1 },
+                  this.animationSpeed
+                );
+              });
+          });
+      }, this.animationSpeed);
+    },
+
     drawLinkedList(startPtr: llNodeNull) {
       let ptr = startPtr;
       let x = 100,
@@ -654,21 +775,6 @@ export default defineComponent({
 
       do {
         drawnNode = this.drawNode(ptr, x, y);
-
-        const mouseEnter = () => {
-          drawnNode.rect.strokeColor = nodeHoverColor.paperColor;
-          drawnNode.rect.fillColor = nodeHoverColor.paperColor;
-          // text.bringToFront();
-        };
-
-        const mouseLeave = () => {
-          drawnNode.rect.strokeColor = nodeStrokeColor;
-          drawnNode.rect.fillColor = transparent;
-          // text.bringToFront();
-        };
-
-        drawnNode.rect.onMouseEnter = mouseEnter;
-        drawnNode.rect.onMouseLeave = mouseLeave;
 
         x += drawnNode.rect.handleBounds.width + ARROW_LENGTH + 20;
 
@@ -697,6 +803,19 @@ export default defineComponent({
 
       // draw the start pointer
       this.drawPointerOnNode(0, headPointerColor.paperColor, true, false, "START");
+
+      // testing curves
+      const handleOut = new paper.Point(100, 200);
+
+      const firstPoint = new paper.Point(100, 50);
+      const firstSegment = new paper.Segment(firstPoint, undefined, handleOut);
+
+      const secondPoint = new paper.Point(500, 50);
+      const secondSegment = new paper.Segment(secondPoint, undefined, undefined);
+
+      const path = new paper.Path([firstSegment, secondSegment]);
+      path.strokeColor = new paper.Color("white");
+      path.strokeWidth = 3;
     },
 
     // ============================== TREES START ================================
@@ -1019,6 +1138,51 @@ export default defineComponent({
         this.highlightNode
       );
       this.drawBinaryTreeRoot(null, false, true);
+    },
+
+    runOnMount(newSelectionValue: { name: string; algos: string[] } | undefined) {
+      if (!newSelectionValue) newSelectionValue = this.selectedMainDsAlgo;
+
+      this.clearCanvas();
+
+      this.myHeap = {} as Heap;
+      this.myBinaryTree = {} as BinaryTree;
+      this.myLinkedList = {} as LinkedList;
+
+      switch (newSelectionValue.name) {
+        case this.allDsAlgosObject.LINKED_LIST.name:
+          this.createNewLinkedList();
+          break;
+
+        case this.allDsAlgosObject.BINARY_TREES.name:
+          this.createNewBinaryTree();
+          break;
+
+        case this.allDsAlgosObject.HEAP.name:
+          this.createNewHeap();
+          break;
+
+        default:
+          break;
+      }
+    }
+  },
+
+  watch: {
+    selectedMainDsAlgo(newSelection: { name: string; algos: string[] }) {
+      this.runOnMount(newSelection);
+    }
+  },
+
+  computed: {
+    isLinkedListSelected(): boolean {
+      return this.selectedMainDsAlgo.name === this.allDsAlgosObject.LINKED_LIST.name;
+    },
+    isTreeSelected(): boolean {
+      return this.selectedMainDsAlgo.name === this.allDsAlgosObject.BINARY_TREES.name;
+    },
+    isHeapSelected(): boolean {
+      return this.selectedMainDsAlgo.name === this.allDsAlgosObject.HEAP.name;
     }
   },
 
@@ -1036,11 +1200,9 @@ export default defineComponent({
       new paper.Point(0, 0),
       new paper.Size(canvas.width, canvas.height)
     );
-    rect.fillColor = new paper.Color(0);
+    rect.fillColor = backgroundColor.paperColor;
 
-    // this.createNewLinkedList();
-    // this.createNewBinaryTree();
-    this.createNewHeap();
+    this.runOnMount(undefined);
   },
 
   created() {
