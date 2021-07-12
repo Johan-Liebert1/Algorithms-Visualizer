@@ -122,34 +122,27 @@ import paper from "paper";
 import AlgoNavBar from "@/components/AlgoNavBar.vue";
 import SVG from "@/components/Svg.vue";
 
-import { drawArrow, drawNode, putTextOnCanvas } from "@/components/dsAlgo/globalHelpers";
+// canvas helpers
+import { highlightNode, putTextOnCanvas } from "@/components/dsAlgo/globalHelpers";
 import {
   animateLinkedListNodeDeletion,
   drawLinkedList,
   drawPointerOnNode,
   translatePointer
 } from "@/components/dsAlgo/linkedListHelper";
+import { drawBinaryTreeNode, drawTreeRoot } from "@/components/dsAlgo/treeHelpers";
+import { swapHeapNodes } from "@/components/dsAlgo/heapHelpers";
 
 // constants
 import {
   allDsAlgosObject,
-  ARROW_LENGTH,
-  ARROW_NODE_MARGIN,
-  ARROW_TRIANGLE_RADIUS,
   backgroundColor,
   headPointerColor,
-  nodeDeleteColor,
   nodeHoverColor,
-  nodeStrokeColor,
-  NODE_SIZE,
   pointerColor1,
   pointerColor2,
   pointerColor3,
-  textStrokeColor,
-  transparent,
-  treeTraversalTypes,
-  TREE_ARROW_ANGLE,
-  TREE_ARROW_LENGTH
+  treeTraversalTypes
 } from "@/constants/dsAlgoConstants";
 
 // dataStructures
@@ -169,9 +162,6 @@ import {
   typeLinkedListStartPointer,
   paperJsNode
 } from "@/types/dsAlgo";
-
-// helpers
-import { sleep } from "@/helpers/helper";
 
 export default defineComponent({
   components: { AlgoNavBar, SVG },
@@ -539,11 +529,10 @@ export default defineComponent({
       }
     },
 
-    highlightNode(uuid: string | number, color?: string | paper.Color): Promise<void> {
-      if (!color) color = nodeHoverColor.paperColor;
-
-      if (typeof color === "string") color = new paper.Color(color);
-
+    async highlightNode(
+      uuid: string | number,
+      color?: string | paper.Color
+    ): Promise<void> {
       let node: paperJsNode;
 
       if (typeof uuid === "string") {
@@ -554,15 +543,7 @@ export default defineComponent({
         node = this.heapNodesList[uuid].node;
       }
 
-      node.rect.fillColor = color;
-      node.text.bringToFront();
-
-      return new Promise(r =>
-        setTimeout(() => {
-          node.rect.fillColor = transparent;
-          r();
-        }, this.animationSpeed)
-      );
+      await highlightNode(node, this.animationSpeed, color);
     },
 
     checkNodeHit() {
@@ -579,144 +560,36 @@ export default defineComponent({
       side: "leftArrow" | "rightArrow",
       depth: number
     ) {
-      let x = 0;
-      let y = 0;
+      const { binaryTreeNodesList, heapNodesList } = drawBinaryTreeNode(
+        this.binaryTreeNodesList,
+        this.heapNodesList,
+        parentNode,
+        newNode,
+        side,
+        depth
+      );
 
-      // if parent node is a TreeNode then we're adding a Binary Tree Node,
-      // else we're adding a heap node
-      const isForTree = parentNode instanceof TreeNode;
-
-      if (parentNode instanceof TreeNode) {
-        // center of the new node is at the end of the tip of the arrow
-        // of the parent node
-        const { x: a, y: b } = this.binaryTreeNodesList[parentNode.uuid][
-          side
-        ].children[1].position;
-        x = a;
-        y = b;
-        // make parent's arrow visible
-        this.binaryTreeNodesList[parentNode.uuid][side].visible = true;
-      } else {
-        // it's a heap node
-        const { x: a, y: b } = this.heapNodesList[parentNode][side].children[1].position;
-        x = a;
-        y = b;
-
-        // make parent's arrow visible
-        this.heapNodesList[parentNode][side].visible = true;
-      }
-
-      y += ARROW_TRIANGLE_RADIUS;
-
-      if (side === "leftArrow") x -= NODE_SIZE;
-
-      if (!(newNode instanceof TreeNode)) {
-        newNode = new TreeNode(newNode);
-      }
-
-      const drawnNode = drawNode(newNode, x, y);
-
-      const { x: lx, y: ly } = drawnNode.rect.handleBounds.bottomLeft;
-      const { x: rx, y: ry } = drawnNode.rect.handleBounds.bottomRight;
-
-      const leftArrow = drawArrow(lx, ly, TREE_ARROW_LENGTH / depth);
-      const rightArrow = drawArrow(rx, ry, TREE_ARROW_LENGTH / depth);
-
-      if (isForTree) {
-        this.binaryTreeNodesList[newNode.uuid] = {
-          node: drawnNode,
-          leftArrow,
-          rightArrow
-        };
-      } else {
-        const pNodeIdx = parentNode as number;
-        const childNodeNum = side === "leftArrow" ? 2 * pNodeIdx : 2 * pNodeIdx + 1;
-        // console.log("adding a new node to heap", { childNodeNum });
-
-        this.heapNodesList[childNodeNum] = {
-          treeNode: newNode,
-          node: drawnNode,
-          leftArrow,
-          rightArrow
-        };
-      }
-
-      leftArrow.rotate(TREE_ARROW_ANGLE / (depth / 1.5), new paper.Point(lx, ly));
-      rightArrow.rotate(-TREE_ARROW_ANGLE / (depth / 1.5), new paper.Point(rx, ry));
-
-      // hide the arrows and only show them once a child is added
-      leftArrow.visible = false;
-      rightArrow.visible = false;
-
-      this.checkNodeHit();
+      this.binaryTreeNodesList = binaryTreeNodesList;
+      this.heapNodesList = heapNodesList;
     },
 
     /**
      * Draws the root node for a heap or a binary tree
      */
     drawBinaryTreeRoot(root: TreeNode | null, isTree = true, isHeap = false) {
-      if (!this.canvas) return;
-
-      let x = this.canvas.width / 2.5;
-      let y = 50;
-
-      const drawnNode = drawNode(root, x, y);
-
-      const arrow = drawArrow(
-        drawnNode.rect.handleBounds.topRight.x + 10,
-        drawnNode.rect.handleBounds.topRight.y + NODE_SIZE / 2,
-        40,
-        headPointerColor.paperColor,
-        "ROOT"
+      const { binaryTreeNodesList, heapNodesList } = drawTreeRoot(
+        this.canvas,
+        this.binaryTreeNodesList,
+        this.heapNodesList,
+        this.myBinaryTree,
+        this.myHeap,
+        root,
+        isTree,
+        isHeap
       );
 
-      // if a root actually exists, draw it's arrows and value
-      // console.log(this.myHeap.heap);
-      if (this.myBinaryTree.root || this.myHeap?.heap?.length > 0) {
-        // console.log("INSIDE IF");
-        const { x: lx, y: ly } = drawnNode.rect.handleBounds.bottomLeft;
-        const { x: rx, y: ry } = drawnNode.rect.handleBounds.bottomRight;
-
-        const leftArrow = drawArrow(lx, ly, TREE_ARROW_LENGTH);
-        const rightArrow = drawArrow(rx, ry, TREE_ARROW_LENGTH);
-
-        leftArrow.rotate(TREE_ARROW_ANGLE, new paper.Point(lx, ly));
-        rightArrow.rotate(-TREE_ARROW_ANGLE, new paper.Point(rx, ry));
-
-        leftArrow.visible = false;
-        rightArrow.visible = false;
-
-        if (isTree) {
-          // console.log("is tree pushing");
-
-          this.binaryTreeNodesList[(this.myBinaryTree.root as TreeNode).uuid] = {
-            node: drawnNode,
-            leftArrow,
-            rightArrow
-          };
-        } else if (isHeap) {
-          // console.log("is heap pushing");
-          this.heapNodesList[1] = {
-            treeNode: root,
-            node: drawnNode,
-            leftArrow,
-            rightArrow
-          };
-        }
-      }
-
-      /*
-        arrow is drawn with head pointing downwards. Bring the head to the center
-        of the node and rotate the whole thing about its head
-      */
-      arrow.rotate(90, new paper.Point(arrow.position.x, arrow.position.y));
-
-      // now the arrow is at the bottom of the node
-      arrow.position.y = drawnNode.rect.handleBounds.center.y;
-      arrow.position.x =
-        drawnNode.rect.handleBounds.center.x + 30 + arrow.handleBounds.width / 2;
-
-      arrow.children[2].rotate(90);
+      this.binaryTreeNodesList = binaryTreeNodesList;
+      this.heapNodesList = heapNodesList;
     },
 
     // ============================== HEAPS START =================================
@@ -729,53 +602,10 @@ export default defineComponent({
     async swapNodes(i: number, j: number): Promise<void> {
       i++; // heap index starts from 1, but we send the swap index by decrementing by 1
       j++; // heap index starts from 1, but we send the swap index by decrementing by 1
-
-      // console.log("swap nodes, ", i, j, { heapNodesList: this.heapNodesList });
-      /*
-        1. Highlight nodes to be swapped
-        2. Swap nodes in heap array
-        3. Swap the values of node's text for displaying as the state is not reactive
-      */
-
-      const node1 = this.heapNodesList[i];
-      const node2 = this.heapNodesList[j];
-
-      node1.node.rect.fillColor = pointerColor1.paperColor;
-      node1.node.text.bringToFront();
-
-      node2.node.rect.fillColor = pointerColor1.paperColor;
-      node2.node.text.bringToFront();
-
-      await sleep(1000);
-
-      node1.node.rect.fillColor = pointerColor2.paperColor;
-      node1.node.text.bringToFront();
-
-      node2.node.rect.fillColor = pointerColor2.paperColor;
-      node2.node.text.bringToFront();
-
-      return new Promise(r =>
-        setTimeout(() => {
-          const temp = node1.treeNode?.value as number;
-          (node1.treeNode as TreeNode).value = node2.treeNode?.value as number;
-          (node2.treeNode as TreeNode).value = temp;
-
-          node1.node.text.content = (node1.treeNode as TreeNode).value.toString();
-          node2.node.text.content = (node2.treeNode as TreeNode).value.toString();
-
-          node1.node.rect.fillColor = transparent;
-          node1.node.text.bringToFront();
-
-          node2.node.rect.fillColor = transparent;
-          node2.node.text.bringToFront();
-
-          r();
-        }, this.animationSpeed)
-      );
+      await swapHeapNodes(this.heapNodesList, i, j, this.animationSpeed);
     },
 
     async addNodeToHeap() {
-      // console.log("this.heapNodesList", this.heapNodesList);
       if (!this.heapNodesList[1]) {
         this.myHeap.heap.push(Infinity, Number(this.addNewNodeValue));
         this.clearCanvas();

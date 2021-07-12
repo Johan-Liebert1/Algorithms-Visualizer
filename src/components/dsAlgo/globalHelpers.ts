@@ -7,7 +7,8 @@ import {
   nodeStrokeColor,
   NODE_SIZE,
   pointerColor2,
-  textStrokeColor
+  textStrokeColor,
+  transparent
 } from "@/constants/dsAlgoConstants";
 import { paperJsNode } from "@/types/dsAlgo";
 
@@ -131,4 +132,32 @@ export const drawNode = (
   rect.addChild(text);
 
   return { rect, text };
+};
+
+export const highlightNode = (
+  node: paperJsNode,
+  animationSpeed: number,
+  color?: string | paper.Color
+): Promise<void> => {
+  if (!color) color = nodeHoverColor.paperColor;
+
+  if (typeof color === "string") color = new paper.Color(color);
+
+  // if (typeof uuid === "string") {
+  //   // binary tree is stored as an object
+  //   node = this.binaryTreeNodesList[uuid].node;
+  // } else {
+  //   // heap is stored as an array
+  //   node = this.heapNodesList[uuid].node;
+  // }
+
+  node.rect.fillColor = color;
+  node.text.bringToFront();
+
+  return new Promise(r =>
+    setTimeout(() => {
+      node.rect.fillColor = transparent;
+      r();
+    }, animationSpeed)
+  );
 };
