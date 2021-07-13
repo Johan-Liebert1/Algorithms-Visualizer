@@ -3,6 +3,6 @@ module.exports = {
     port: 3000
   },
   configureWebpack: {
-    devtool: "eval-source-map"
+    devtool: "source-map"
   }
 };

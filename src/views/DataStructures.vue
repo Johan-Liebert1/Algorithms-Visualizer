@@ -130,7 +130,11 @@ import {
   drawPointerOnNode,
   translatePointer
 } from "@/components/dsAlgo/linkedListHelper";
-import { drawBinaryTreeNode, drawTreeRoot } from "@/components/dsAlgo/treeHelpers";
+import {
+  animateTreeNodeDeletion,
+  drawBinaryTreeNode,
+  drawTreeRoot
+} from "@/components/dsAlgo/treeHelpers";
 import { swapHeapNodes } from "@/components/dsAlgo/heapHelpers";
 
 // constants
@@ -160,8 +164,10 @@ import {
   heapNode,
   linkedListNodesList,
   typeLinkedListStartPointer,
-  paperJsNode
+  paperJsNode,
+  arrowName
 } from "@/types/dsAlgo";
+import { sleep } from "@/helpers/helper";
 
 export default defineComponent({
   components: { AlgoNavBar, SVG },
@@ -231,7 +237,7 @@ export default defineComponent({
       navbarButtons: {
         [allDsAlgosObject.LINKED_LIST.name]: [
           {
-            name: "Reversing a Linked List",
+            name: "Reverse the Linked List",
             handler: this.reverseLinkedList
           }
         ],
@@ -337,10 +343,11 @@ export default defineComponent({
 
       this.linkedListNodes = [];
 
-      const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+      if (!this.canvas) return;
+
       const rect = new paper.Path.Rectangle(
         new paper.Point(0, 0),
-        new paper.Size(canvas.width, canvas.height)
+        new paper.Size(this.canvas.width, this.canvas.height)
       );
       rect.fillColor = backgroundColor.paperColor;
     },
@@ -427,7 +434,17 @@ export default defineComponent({
       });
     },
 
-    reverseLinkedList() {
+    async reverseLinkedList() {
+      if (this.myLinkedList.length < 2) return;
+
+      // delete all previous pointers
+      for (const node of this.linkedListNodes) {
+        for (const ptr of node.pointers) {
+          ptr.remove();
+        }
+        node.pointers = [];
+      }
+
       this.myLinkedList.reverse();
     },
 
@@ -513,14 +530,21 @@ export default defineComponent({
       this.drawBinaryTreeRoot(this.myBinaryTree.root);
     },
 
-    addNodeToBinaryTree() {
+    async addNodeToBinaryTree() {
       if (this.addNewNodeValue.toString().includes(",")) {
-        this.addNewNodeValue
-          .toString()
-          .split(",")
-          .forEach(spl => this.myBinaryTree.insert(Number(spl)));
+        let nodesToBeInserted = this.addNewNodeValue.toString().split(",");
+
+        if (!this.myBinaryTree.root) {
+          await this.myBinaryTree.insert(Number(nodesToBeInserted[0]));
+          this.drawBinaryTreeRoot(this.myBinaryTree.root);
+          nodesToBeInserted = nodesToBeInserted.slice(1);
+        }
+
+        for (const value of nodesToBeInserted) {
+          await this.myBinaryTree.insert(Number(value));
+        }
       } else {
-        this.myBinaryTree.insert(Number(this.addNewNodeValue));
+        await this.myBinaryTree.insert(Number(this.addNewNodeValue));
       }
 
       if (!this.myBinaryTree.root?.leftChild && !this.myBinaryTree.root?.rightChild) {
@@ -557,7 +581,7 @@ export default defineComponent({
     drawBinaryTreeNode(
       parentNode: TreeNode | number,
       newNode: TreeNode | number,
-      side: "leftArrow" | "rightArrow",
+      side: arrowName,
       depth: number
     ) {
       const { binaryTreeNodesList, heapNodesList } = drawBinaryTreeNode(
@@ -615,26 +639,26 @@ export default defineComponent({
 
       // adding multiple heap nodes at once
       if (this.addNewNodeValue.toString().includes(",")) {
-        this.addNewNodeValue
-          .toString()
-          .split(",")
-          .forEach((spl, idx) => {
-            const parentNodeIndex = Math.floor(
-              (Object.keys(this.heapNodesList).length + idx) / 2
-            );
-            const side = this.heapNodesList[parentNodeIndex * 2]
-              ? "rightArrow"
-              : "leftArrow";
+        const nodesToBeAdded = this.addNewNodeValue.toString().split(",");
 
-            this.drawBinaryTreeNode(parentNodeIndex, Number(spl), side, 3);
+        for (let idx = 0; idx < nodesToBeAdded.length; idx++) {
+          const value = nodesToBeAdded[idx];
 
-            this.myHeap.insert(Number(spl));
-          });
+          const end = Object.keys(this.heapNodesList).length + 1;
+
+          const parentNodeIndex = Math.floor(end / 2);
+
+          const side = this.heapNodesList[parentNodeIndex * 2]
+            ? "rightArrow"
+            : "leftArrow";
+
+          this.drawBinaryTreeNode(parentNodeIndex, Number(value), side, 3);
+
+          await this.myHeap.insert(Number(value));
+        }
       } else {
         const end = Object.keys(this.heapNodesList).length + 1;
-
         const parentNodeIndex = Math.floor(end / 2);
-
         const side = this.heapNodesList[parentNodeIndex * 2] ? "rightArrow" : "leftArrow";
 
         this.drawBinaryTreeNode(parentNodeIndex, Number(this.addNewNodeValue), side, 3);
@@ -643,10 +667,23 @@ export default defineComponent({
       }
     },
 
-    deleteFromHeap() {
+    async deleteFromHeap() {
       if (!this.myHeap || this.myHeap.heap.length < 1) return;
 
-      this.myHeap.deleteFromHeap(this.myHeap.heap.length - 1);
+      await this.myHeap.deleteFromHeap(this.myHeap.heap.length - 1);
+
+      const nodes = Object.values(this.heapNodesList);
+
+      const child = this.heapNodesList[nodes.length];
+      const parentIdx = Math.floor(nodes.length / 2);
+      const parent = this.heapNodesList[parentIdx];
+
+      const side: arrowName =
+        this.heapNodesList[parentIdx * 2] === child ? "leftArrow" : "rightArrow";
+
+      await animateTreeNodeDeletion(child, parent, side, this.animationSpeed);
+
+      delete this.heapNodesList[nodes.length];
     },
 
     createNewHeap() {
@@ -656,6 +693,7 @@ export default defineComponent({
         this.swapNodes,
         this.highlightNode
       );
+
       this.drawBinaryTreeRoot(null, false, true);
     },
 
@@ -671,6 +709,8 @@ export default defineComponent({
       switch (newSelectionValue.name) {
         case this.allDsAlgosObject.LINKED_LIST.name:
           this.createNewLinkedList();
+          this.addNewNodeValue = "1,2,3,4,5,6";
+          this.addNodeToLinkedList();
           break;
 
         case this.allDsAlgosObject.BINARY_TREES.name:

@@ -14,7 +14,7 @@ import {
   typeLinkedListStartPointer,
   paperJsNode
 } from "@/types/dsAlgo";
-import { drawArrow, drawNode } from "./globalHelpers";
+import { drawArrow, drawNode, removePaperJsNode } from "./globalHelpers";
 
 type pointersReturnType = {
   linkedListNodes: linkedListNodesList[];
@@ -103,6 +103,12 @@ export const translatePointer = (
 ): Promise<pointersReturnType> => {
   let pointer: paper.Group;
 
+  // console.log({
+  //   fromIdx,
+  //   number: linkedListNodes[fromIdx].node.text.content,
+  //   pointers: linkedListNodes[fromIdx].pointers
+  // });
+
   if (!startPointer) {
     pointer = linkedListNodes[fromIdx].pointers[0];
   } else {
@@ -121,10 +127,6 @@ export const translatePointer = (
   }
 
   const toY = pointer.position.y;
-
-  // if (!startPointer) {
-  //   toY += this.linkedListNodes[toIdx].pointers.length * ARROW_LENGTH;
-  // }
 
   const intervals = 100;
 
@@ -195,7 +197,7 @@ export const drawLinkedList = (
   if (myLinkedList.length > 0) nullNode = drawNode(null, x, y);
 
   // draw the start pointer
-  drawPointerOnNode(
+  const value = drawPointerOnNode(
     linkedListNodes,
     nullNode,
     0,
@@ -206,31 +208,24 @@ export const drawLinkedList = (
     "START"
   );
 
+  const linkedListStartPointer = value.linkedListStartPointer;
+  linkedListNodes = value.linkedListNodes;
+  nullNode = value.nullNode;
+
   // testing curves
-  const handleOut = new paper.Point(100, 200);
+  // const handleOut = new paper.Point(100, 200);
 
-  const firstPoint = new paper.Point(100, 50);
-  const firstSegment = new paper.Segment(firstPoint, undefined, handleOut);
+  // const firstPoint = new paper.Point(100, 50);
+  // const firstSegment = new paper.Segment(firstPoint, undefined, handleOut);
 
-  const secondPoint = new paper.Point(500, 50);
-  const secondSegment = new paper.Segment(secondPoint, undefined, undefined);
+  // const secondPoint = new paper.Point(500, 50);
+  // const secondSegment = new paper.Segment(secondPoint, undefined, undefined);
 
-  const path = new paper.Path([firstSegment, secondSegment]);
-  path.strokeColor = new paper.Color("white");
-  path.strokeWidth = 3;
+  // const path = new paper.Path([firstSegment, secondSegment]);
+  // path.strokeColor = new paper.Color("white");
+  // path.strokeWidth = 3;
 
-  return { linkedListNodes, linkedListStartPointer: undefined, nullNode };
-};
-
-const removePaperJsNode = (
-  nodeToRemove: paperJsNode,
-  objectsToRemove?: { [key: string]: paper.Path | paper.Group }
-) => {
-  nodeToRemove.rect.remove();
-  nodeToRemove.text.remove();
-
-  if (objectsToRemove)
-    Object.values(objectsToRemove).forEach(paperObject => paperObject.remove());
+  return { linkedListNodes, linkedListStartPointer, nullNode };
 };
 
 export const animateLinkedListNodeDeletion = async (
@@ -291,7 +286,20 @@ export const animateLinkedListNodeDeletion = async (
 
   return new Promise(resolve =>
     setTimeout(() => {
-      linkedListNodes = linkedListNodes.filter(node => node !== nodeToDelete);
+      linkedListNodes = linkedListNodes.filter(node => {
+        console.log("filtertin");
+        return node !== nodeToDelete;
+      });
+
+      // put the pointers of the deleted node in the arrow of pointers of the
+      // node after that node so that we can remove these pointers from the
+      // canvas
+      linkedListNodes[indexToDelete].pointers.push(...nodeToDelete.pointers);
+
+      console.log({
+        nodeToDelete: nodeToDelete.node.text.content,
+        idx: linkedListNodes[indexToDelete].node.text.content
+      });
 
       const group = new paper.Group([nodeToDelete.node.rect, nodeToDelete.node.text]);
 
@@ -299,7 +307,8 @@ export const animateLinkedListNodeDeletion = async (
         .tween({ opacity: 1 }, { opacity: 0 }, { duration: animationSpeed })
         .then(() => {
           removePaperJsNode(nodeToDelete.node, {
-            arrowNext: nodeToDelete.arrowNext
+            arrowNext: nodeToDelete.arrowNext,
+            pointer: nodeToDelete.pointers[0]
           });
 
           const list = linkedListNodes.slice(indexToDelete);

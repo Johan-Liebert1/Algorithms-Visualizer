@@ -1,5 +1,6 @@
 import { treeTraversalTypes } from "@/constants/dsAlgoConstants";
 import { arrayToListRepr } from "@/helpers/helper";
+import { arrowName } from "@/types/dsAlgo";
 import TreeNode from "./TreeNode";
 
 // 75,100,60,25,12,30
@@ -12,7 +13,7 @@ class BinaryTree {
   drawBinaryTreeNode: (
     parentNode: TreeNode,
     newNode: TreeNode,
-    side: "leftArrow" | "rightArrow",
+    side: arrowName,
     depth: number
   ) => void;
   putTextOnCanvas: (text: string, x?: number, y?: number) => void;
@@ -22,7 +23,7 @@ class BinaryTree {
     drawBinaryTreeNode: (
       parentNode: TreeNode,
       newNode: TreeNode,
-      side: "leftArrow" | "rightArrow",
+      side: arrowName,
       depth: number
     ) => void,
     putTextOnCanvas: (text: string, x?: number, y?: number) => void

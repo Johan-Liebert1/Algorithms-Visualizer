@@ -66,9 +66,9 @@ class Heap {
     swap(this.heap, 1, heapEnd);
     await this.swapElements(0, heapEnd - 1);
 
-    await this.colorElement(heapEnd - 1, "#345");
+    // await this.colorElement(heapEnd - 1, "#345");
 
-    await sleep(10000);
+    await sleep(2000);
 
     let index = 1;
 

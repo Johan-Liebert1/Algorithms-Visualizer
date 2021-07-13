@@ -143,14 +143,6 @@ export const highlightNode = (
 
   if (typeof color === "string") color = new paper.Color(color);
 
-  // if (typeof uuid === "string") {
-  //   // binary tree is stored as an object
-  //   node = this.binaryTreeNodesList[uuid].node;
-  // } else {
-  //   // heap is stored as an array
-  //   node = this.heapNodesList[uuid].node;
-  // }
-
   node.rect.fillColor = color;
   node.text.bringToFront();
 
@@ -160,4 +152,15 @@ export const highlightNode = (
       r();
     }, animationSpeed)
   );
+};
+
+export const removePaperJsNode = (
+  nodeToRemove: paperJsNode,
+  objectsToRemove?: { [key: string]: paper.Path | paper.Group }
+) => {
+  nodeToRemove.rect.remove();
+  nodeToRemove.text.remove();
+
+  if (objectsToRemove)
+    Object.values(objectsToRemove).forEach(paperObject => paperObject.remove());
 };

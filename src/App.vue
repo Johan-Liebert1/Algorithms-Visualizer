@@ -56,4 +56,24 @@ input[type="range"]::-moz-range-thumb {
   background: #4eb380; /* Green background */
   border-radius: 50%;
 }
+
+/* width */
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #a8a8a8;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #4eb380;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
 </style>

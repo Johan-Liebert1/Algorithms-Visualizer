@@ -101,6 +101,8 @@ class LinkedList {
       return this;
     }
 
+    let ptr3: llNodeNull;
+
     while (ptr2 && ptr1) {
       if (ptr2.value == value) {
         // found the node to delete
@@ -115,6 +117,16 @@ class LinkedList {
 
       ptr1 = ptr1.next;
       ptr2 = ptr2.next;
+    }
+
+    if (ptr1?.next) {
+      ptr1 = ptr1.next;
+      // decrease all the indices of all the nodes to the right of ptr2, including ptr2
+      while (ptr1) {
+        console.log(ptr1.value, ptr1.index);
+        ptr1.index -= 1;
+        ptr1 = ptr1.next;
+      }
     }
 
     console.log(this.traverse());

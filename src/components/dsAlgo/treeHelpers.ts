@@ -3,12 +3,15 @@ import Heap from "@/algos/dataStructures/Heap";
 import TreeNode from "@/algos/dataStructures/TreeNode";
 import {
   ARROW_TRIANGLE_RADIUS,
+  backgroundColor,
   headPointerColor,
+  nodeStrokeColor,
   NODE_SIZE,
   TREE_ARROW_ANGLE,
   TREE_ARROW_LENGTH
 } from "@/constants/dsAlgoConstants";
-import { binaryTreeNode, heapNode } from "@/types/dsAlgo";
+import { sleep } from "@/helpers/helper";
+import { arrowName, binaryTreeNode, heapNode } from "@/types/dsAlgo";
 import { drawArrow, drawNode } from "./globalHelpers";
 
 export const drawBinaryTreeNode = (
@@ -16,7 +19,7 @@ export const drawBinaryTreeNode = (
   heapNodesList: heapNode,
   parentNode: TreeNode | number,
   newNode: TreeNode | number,
-  side: "leftArrow" | "rightArrow",
+  side: arrowName,
   depth: number
 ) => {
   let x = 0;
@@ -160,4 +163,30 @@ export const drawTreeRoot = (
   arrow.children[2].rotate(90);
 
   return { binaryTreeNodesList, heapNodesList };
+};
+
+export const animateTreeNodeDeletion = async (
+  childNode: binaryTreeNode,
+  parentNode: binaryTreeNode,
+  arrowToDelete: arrowName,
+  animationSpeed: number
+) => {
+  /*  
+    1. Delete the child node which will always be a leaf node
+    2. Delete it's parent's arrow
+  */
+
+  // color the child node white to indicate it's going to be deleted
+  childNode.node.rect.fillColor = nodeStrokeColor;
+  childNode.node.text.strokeColor = backgroundColor.paperColor;
+  childNode.node.text.bringToFront();
+
+  await sleep(1500);
+
+  const childGroup = new paper.Group([childNode.node.rect, childNode.node.text]);
+
+  childGroup.tween({ opacity: 1 }, { opacity: 0 }, animationSpeed);
+  parentNode[arrowToDelete].tween({ opacity: 1 }, { opacity: 0 }, animationSpeed);
+
+  return new Promise(r => setTimeout(r, animationSpeed));
 };
