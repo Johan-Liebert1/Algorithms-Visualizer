@@ -140,6 +140,7 @@ export const drawTreeRoot = (
 
     if (isTree) {
       binaryTreeNodesList[(myBinaryTree.root as TreeNode).uuid] = {
+        treeNode: root,
         node: drawnNode,
         leftArrow,
         rightArrow

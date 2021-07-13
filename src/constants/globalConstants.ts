@@ -4,5 +4,6 @@ export const svgNames = Object.freeze({
   checkbox: "checkbox",
   plus: "plus",
   cross: "cross",
-  delete: "delete"
+  delete: "delete",
+  search: "search"
 });

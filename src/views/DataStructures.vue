@@ -68,7 +68,7 @@
           </div>
         </div>
 
-        <div v-if="!isHeapSelected" style="margin-top: 3rem">
+        <div v-if="!isHeapSelected" style="margin-top: 1rem">
           <p style="margin-left: 10%">Delete Node</p>
           <div class="is-flex" style="align-items: center; justify-content: space-evenly">
             <input
@@ -78,6 +78,20 @@
             />
             <button class="button is-danger is-small" @click="deleteNode">
               <span class="is-size-4"><SVG :name="svgNames.delete"/></span>
+            </button>
+          </div>
+        </div>
+
+        <div v-if="isTreeSelected" style="margin-top: 1rem">
+          <p style="margin-left: 10%">Search Node</p>
+          <div class="is-flex" style="align-items: center; justify-content: space-evenly">
+            <input
+              type="text"
+              v-model="searchNodeValue"
+              @keydown="$event.key === 'Enter' ? searchNode() : ''"
+            />
+            <button class="button is-info is-small" @click="searchNode">
+              <span class="is-size-4"><SVG :name="svgNames.search"/></span>
             </button>
           </div>
         </div>
@@ -128,6 +142,7 @@ import SVG from "@/components/Svg.vue";
 import {
   highlightNode,
   putTextOnCanvas,
+  removePaperJsNode,
   translatePaperItem,
   tweenOpacity
 } from "@/components/dsAlgo/globalHelpers";
@@ -239,6 +254,7 @@ export default defineComponent({
       selectedMainDsAlgo: allDsAlgosObject.BINARY_TREES,
       addNewNodeValue: 0 as numStr,
       deleteNodeValue: 0 as numStr,
+      searchNodeValue: 0 as numStr,
       animationSpeed: 500,
       typeOfHeap: "Maximum" as "Minimum" | "Maximum",
       navbarButtons: {
@@ -333,6 +349,7 @@ export default defineComponent({
 
     // ================================= GLOBAL DRAWING STUFF ========================
     clearCanvas() {
+      // remove all linked list related stuff
       if (this.linkedListStartPointer.pointer instanceof paper.Group) {
         this.linkedListStartPointer.pointer.remove();
       }
@@ -344,9 +361,7 @@ export default defineComponent({
       }
 
       for (const obj of this.linkedListNodes) {
-        obj.node.rect.remove();
-        obj.node.text.remove();
-        obj.arrowNext.remove();
+        removePaperJsNode(obj.node, { arrowNext: obj.arrowNext });
 
         for (const ptr of obj.pointers) {
           ptr.remove();
@@ -354,6 +369,20 @@ export default defineComponent({
       }
 
       this.linkedListNodes = [];
+
+      // remove binary tree related stuff
+      for (const obj of Object.values(this.binaryTreeNodesList)) {
+        removePaperJsNode(obj.node, { r: obj.rightArrow, l: obj.leftArrow });
+      }
+
+      this.binaryTreeNodesList = {};
+
+      // remove heap related stuff
+      for (const obj of Object.values(this.heapNodesList)) {
+        removePaperJsNode(obj.node, { r: obj.rightArrow, l: obj.leftArrow });
+      }
+
+      this.heapNodesList = {};
 
       if (!this.canvas) return;
 
@@ -527,6 +556,9 @@ export default defineComponent({
     },
 
     // ============================== TREES START ================================
+    searchNode() {
+      console.log("searching", this.searchNodeValue);
+    },
 
     traverseBinaryTree(traversalType: treeTraversalTypes) {
       const list: number[] = [];

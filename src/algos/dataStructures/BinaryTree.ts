@@ -64,10 +64,23 @@ class BinaryTree {
 
     for (;;) {
       // node is leaf node
-      if (!currentNode || (!currentNode.leftChild && !currentNode.rightChild)) break;
+      if (!currentNode || !currentNode.rightChild) break;
 
-      if (currentNode.rightChild) currentNode = currentNode.rightChild;
-      else if (currentNode.leftChild) currentNode = currentNode.leftChild;
+      currentNode = currentNode.rightChild;
+    }
+
+    return currentNode || node;
+  }
+
+  findSmallestRightChild(node: TreeNode): TreeNode {
+    // find the leftmost node of the right sub-tree
+    let currentNode = node.rightChild;
+
+    for (;;) {
+      // node is leaf node
+      if (!currentNode || !currentNode.leftChild) break;
+
+      currentNode = currentNode.leftChild;
     }
 
     return currentNode || node;
@@ -105,37 +118,70 @@ class BinaryTree {
   }
 
   async deleteNode(value: number) {
-    const nodeToDelete = this.search(value);
+    let nodeToDelete = this.search(value);
 
-    if (!nodeToDelete) return null;
+    for (;;) {
+      if (!nodeToDelete) return null;
 
-    // the largestLeftChild will be larger than all numbers to the left of the nodeToDelete
-    // and will be smaller than all the numbers to the right of the nodeToDelete
-    const largestLeftChild = this.findLargestLeftChild(nodeToDelete);
+      // the largestLeftChild will be larger than all numbers to the left of the nodeToDelete
+      // and will be smaller than all the numbers to the right of the nodeToDelete
+      let childToReplaceWith: TreeNode = nodeToDelete;
 
-    // swap the nodeToDelete with the largestLeftChild, then delete the largestLeftChild
-    // will be easy as it's a leaf node
-    const temp = nodeToDelete.value;
-    nodeToDelete.value = largestLeftChild.value;
-    largestLeftChild.value = temp;
+      if (nodeToDelete.leftChild) {
+        const largestLeftChild = this.findLargestLeftChild(nodeToDelete);
+        childToReplaceWith = largestLeftChild;
+      } else if (nodeToDelete.rightChild) {
+        const smallestRightChild = this.findSmallestRightChild(nodeToDelete);
+        childToReplaceWith = smallestRightChild;
+      }
 
-    await this.swapNodes(nodeToDelete.uuid, largestLeftChild.uuid);
+      // swap the nodeToDelete with the largestLeftChild, then delete the largestLeftChild
+      // will be easy as it's a leaf node
+      const temp = nodeToDelete.value;
+      nodeToDelete.value = childToReplaceWith.value;
+      childToReplaceWith.value = temp;
 
-    await this.deleteNodeFromBinaryTree(
-      largestLeftChild.uuid,
-      (largestLeftChild.parent as TreeNode).uuid
-    );
+      await this.swapNodes(nodeToDelete.uuid, childToReplaceWith.uuid);
 
-    // break the connection between the largestLeftChild and it's parentNode
-    if (largestLeftChild.parent?.leftChild === largestLeftChild) {
-      largestLeftChild.parent.leftChild = null;
+      // keep swapping until the node to delete is a leaf node
+      // helps with the animation
+      if (!childToReplaceWith.isLeaf()) {
+        nodeToDelete = childToReplaceWith;
+        continue;
+      }
+
+      // the node to delete is a leaf node now, so just delete it
+
+      await this.deleteNodeFromBinaryTree(
+        childToReplaceWith.uuid,
+        (childToReplaceWith.parent as TreeNode).uuid
+      );
+
+      // break the connection between the largestLeftChild and it's parentNode
+      if (childToReplaceWith.parent?.leftChild === childToReplaceWith) {
+        // if the replaced child has a left or right subtree
+        if (childToReplaceWith.leftChild) {
+          childToReplaceWith.parent.leftChild = childToReplaceWith.leftChild;
+        } else if (childToReplaceWith.rightChild) {
+          childToReplaceWith.parent.leftChild = childToReplaceWith.rightChild;
+        } else {
+          childToReplaceWith.parent.leftChild = null;
+        }
+      }
+
+      if (childToReplaceWith.parent?.rightChild === childToReplaceWith) {
+        // if the replaced child has a left or right subtree
+        if (childToReplaceWith.leftChild) {
+          childToReplaceWith.parent.rightChild = childToReplaceWith.leftChild;
+        } else if (childToReplaceWith.rightChild) {
+          childToReplaceWith.parent.rightChild = childToReplaceWith.rightChild;
+        } else {
+          childToReplaceWith.parent.rightChild = null;
+        }
+      }
+
+      break;
     }
-
-    if (largestLeftChild.parent?.rightChild === largestLeftChild) {
-      largestLeftChild.parent.rightChild = null;
-    }
-
-    console.log(this);
   }
 
   async treeTraversal(

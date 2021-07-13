@@ -17,6 +17,14 @@ class TreeNode {
     this.uuid = randomId();
   }
 
+  isLeaf() {
+    return !this.leftChild && !this.rightChild;
+  }
+
+  isRoot() {
+    return !this.parent;
+  }
+
   repr(): string {
     return this.value.toString();
   }
