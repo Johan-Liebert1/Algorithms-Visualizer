@@ -20,6 +20,7 @@ class BinaryTree {
   putTextOnCanvas: (text: string, x?: number, y?: number) => void;
   swapNodes: (id1: string, id2: string) => Promise<void>;
   deleteNodeFromBinaryTree: (nodeToDeleteId: string, parentUuid: string) => Promise<void>;
+  animateBinaryTreeInversion: (id1: string, id2: string) => Promise<void>;
 
   constructor(
     highlightNode: (uuid: string) => Promise<void>,
@@ -34,7 +35,8 @@ class BinaryTree {
     deleteNodeFromBinaryTree: (
       nodeToDeleteId: string,
       parentUuid: string
-    ) => Promise<void>
+    ) => Promise<void>,
+    animateBinaryTreeInversion: (id1: string, id2: string) => Promise<void>
   ) {
     this.root = null;
     this.highlightNode = highlightNode;
@@ -42,6 +44,7 @@ class BinaryTree {
     this.putTextOnCanvas = putTextOnCanvas;
     this.swapNodes = swapNodes;
     this.deleteNodeFromBinaryTree = deleteNodeFromBinaryTree;
+    this.animateBinaryTreeInversion = animateBinaryTreeInversion;
   }
 
   search(value: number, currentNode = this.root): TreeNode | null {
@@ -72,7 +75,7 @@ class BinaryTree {
 
   async insert(value: number, currentNode = this.root, depth = 2): Promise<BinaryTree> {
     if (!this.root) {
-      this.root = new TreeNode(value);
+      this.root = new TreeNode(value, 1);
       return this;
     }
 
@@ -82,13 +85,13 @@ class BinaryTree {
       value >= currentNode.value ? currentNode.rightChild : currentNode.leftChild;
 
     if (!currentNode.leftChild && value < currentNode.value) {
-      const newNode = new TreeNode(value);
+      const newNode = new TreeNode(value, depth);
       currentNode.leftChild = newNode;
       newNode.parent = currentNode;
       await this.highlightNode(currentNode.uuid);
       this.drawBinaryTreeNode(currentNode, newNode, "leftArrow", depth);
     } else if (!currentNode.rightChild && value >= currentNode.value) {
-      const newNode = new TreeNode(value);
+      const newNode = new TreeNode(value, depth);
       currentNode.rightChild = newNode;
       newNode.parent = currentNode;
 
@@ -169,6 +172,31 @@ class BinaryTree {
     }
 
     return array;
+  }
+
+  async invertBinaryTree(currentNode = this.root) {
+    if (!currentNode || (!currentNode.leftChild && !currentNode.rightChild)) return;
+
+    if (currentNode.leftChild && !currentNode.rightChild) {
+      this.insert(currentNode.leftChild.value, currentNode, currentNode.depth + 1);
+    }
+
+    if (currentNode.rightChild && !currentNode.leftChild) {
+      this.insert(currentNode.rightChild.value, currentNode, currentNode.depth + 1);
+    }
+
+    // swap nodes
+    const temp = currentNode.leftChild;
+    currentNode.leftChild = currentNode.rightChild;
+    currentNode.rightChild = temp;
+
+    await this.animateBinaryTreeInversion(
+      <string>currentNode.leftChild?.uuid,
+      <string>currentNode.rightChild?.uuid
+    );
+
+    await this.invertBinaryTree(currentNode.leftChild);
+    await this.invertBinaryTree(currentNode.rightChild);
   }
 }
 

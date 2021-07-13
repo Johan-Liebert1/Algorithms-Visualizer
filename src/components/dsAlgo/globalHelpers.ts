@@ -12,6 +12,11 @@ import {
 } from "@/constants/dsAlgoConstants";
 import { paperJsNode } from "@/types/dsAlgo";
 
+interface position {
+  x: number;
+  y: number;
+}
+
 /*  
   apply opacity change on a paperObject
 */
@@ -22,6 +27,40 @@ export const tweenOpacity = (
   duration: number
 ) => {
   paperObj.tween({ opacity: from }, { opacity: to }, { duration });
+};
+
+export const translatePaperItem = (
+  paperObj: paper.Item,
+  fromPosition: position,
+  toPosition: position,
+  animationSpeed: number,
+  animate = true,
+  intervals = 100
+): Promise<void> => {
+  const dx = (toPosition.x - fromPosition.x) / intervals;
+  const dy = (toPosition.y - fromPosition.y) / intervals;
+
+  const time = animationSpeed / 50;
+
+  let i = 0;
+
+  if (animate) {
+    const sInterval = setInterval(() => {
+      if (i === intervals) clearInterval(sInterval);
+
+      paperObj.position.x += dx;
+      paperObj.position.y += dy;
+
+      i++;
+    }, time);
+  } else {
+    paperObj.position.x = toPosition.x;
+    paperObj.position.y = toPosition.y;
+
+    return new Promise(r => r());
+  }
+
+  return new Promise(resolve => setTimeout(resolve, time * intervals * 2));
 };
 
 export const putTextOnCanvas = (
@@ -150,7 +189,8 @@ export const drawNode = (
 export const highlightNode = (
   node: paperJsNode,
   animationSpeed: number,
-  color?: string | paper.Color
+  color?: string | paper.Color,
+  unhighlight = true
 ): Promise<void> => {
   if (!color) color = nodeHoverColor.paperColor;
 
@@ -159,12 +199,16 @@ export const highlightNode = (
   node.rect.fillColor = color;
   node.text.bringToFront();
 
-  return new Promise(r =>
-    setTimeout(() => {
-      node.rect.fillColor = transparent;
-      r();
-    }, animationSpeed)
-  );
+  if (unhighlight) {
+    return new Promise(r =>
+      setTimeout(() => {
+        node.rect.fillColor = transparent;
+        r();
+      }, animationSpeed)
+    );
+  }
+
+  return new Promise(r => setTimeout(r, animationSpeed));
 };
 
 export const removePaperJsNode = (

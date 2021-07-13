@@ -74,6 +74,6 @@ input[type="range"]::-moz-range-thumb {
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #19b467;
 }
 </style>

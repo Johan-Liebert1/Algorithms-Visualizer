@@ -14,7 +14,13 @@ import {
   typeLinkedListStartPointer,
   paperJsNode
 } from "@/types/dsAlgo";
-import { drawArrow, drawNode, removePaperJsNode, tweenOpacity } from "./globalHelpers";
+import {
+  drawArrow,
+  drawNode,
+  removePaperJsNode,
+  translatePaperItem,
+  tweenOpacity
+} from "./globalHelpers";
 
 type pointersReturnType = {
   linkedListNodes: linkedListNodesList[];
@@ -92,7 +98,7 @@ export const drawPointerOnNode = (
  * if toIdx is within bound of the array, the pointer is translated to the
  * corresponding node, else it's translated to the NULL node
  */
-export const translatePointer = (
+export const translatePointer = async (
   linkedListNodes: linkedListNodesList[],
   nullNode: paperJsNode,
   linkedListStartPointer: typeLinkedListStartPointer,
@@ -128,34 +134,21 @@ export const translatePointer = (
 
   const toY = pointer.position.y;
 
-  const intervals = 100;
-
-  const dx = (toX - fromX) / intervals;
-  const dy = (toY - fromY) / intervals;
-  let i = 0;
-
-  const time = animationSpeed / 50;
-
-  const sInterval = setInterval(() => {
-    if (i === intervals) clearInterval(sInterval);
-
-    pointer.position.x += dx;
-    pointer.position.y += dy;
-
-    i++;
-  }, time);
+  await translatePaperItem(
+    pointer,
+    { x: fromX, y: fromY },
+    { x: toX, y: toY },
+    animationSpeed,
+    true,
+    100
+  );
 
   if (withinBounds) {
     linkedListNodes[fromIdx].pointers.shift();
     linkedListNodes[toIdx].pointers.push(pointer);
   }
 
-  return new Promise(r =>
-    setTimeout(
-      () => r({ linkedListNodes, nullNode, linkedListStartPointer }),
-      time * 2 * intervals
-    )
-  );
+  return new Promise(r => r({ linkedListNodes, nullNode, linkedListStartPointer }));
 };
 
 export const drawLinkedList = (

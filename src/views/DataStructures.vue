@@ -39,17 +39,19 @@
           </div>
         </div>
 
-        <div
-          class="left-panel-algos"
-          v-for="(algo, index) in navbarButtons[selectedMainDsAlgo.name]"
-          :key="index"
-          @click="algo.handler"
-        >
-          {{
-            algo.name === "delete_from_heap"
-              ? `Take out ${typeOfHeap} element`
-              : algo.name
-          }}
+        <div style="border-top: 1px solid #4eb380; border-bottom: 1px solid #4eb380;">
+          <div
+            class="left-panel-algos"
+            v-for="(algo, index) in navbarButtons[selectedMainDsAlgo.name]"
+            :key="index"
+            @click="algo.handler"
+          >
+            {{
+              algo.name === "delete_from_heap"
+                ? `Take out ${typeOfHeap} element`
+                : algo.name
+            }}
+          </div>
         </div>
 
         <div style="margin-top: 3rem">
@@ -123,7 +125,12 @@ import AlgoNavBar from "@/components/AlgoNavBar.vue";
 import SVG from "@/components/Svg.vue";
 
 // canvas helpers
-import { highlightNode, putTextOnCanvas } from "@/components/dsAlgo/globalHelpers";
+import {
+  highlightNode,
+  putTextOnCanvas,
+  translatePaperItem,
+  tweenOpacity
+} from "@/components/dsAlgo/globalHelpers";
 import {
   animateLinkedListNodeDeletion,
   drawLinkedList,
@@ -133,7 +140,8 @@ import {
 import {
   animateTreeNodeDeletion,
   drawBinaryTreeNode,
-  drawTreeRoot
+  drawTreeRoot,
+  groupAllNodes
 } from "@/components/dsAlgo/treeHelpers";
 import { swapHeapNodes } from "@/components/dsAlgo/heapHelpers";
 
@@ -252,6 +260,10 @@ export default defineComponent({
           {
             name: "Postorder Traversal",
             handler: () => this.traverseBinaryTree("postorder")
+          },
+          {
+            name: "Invert Binary Tree",
+            handler: this.invertBinaryTree
           }
         ],
         [allDsAlgosObject.HEAP.name]: [
@@ -529,7 +541,8 @@ export default defineComponent({
           this.canvasText = putTextOnCanvas(this.canvas, this.canvasText, text, x, y);
         },
         this.swapTreeNodes,
-        this.deleteNodeFromBinaryTree
+        this.deleteNodeFromBinaryTree,
+        this.animateBinaryTreeInversion
       );
       this.drawBinaryTreeRoot(this.myBinaryTree.root);
     },
@@ -641,6 +654,67 @@ export default defineComponent({
       );
     },
 
+    async animateBinaryTreeInversion(id1: string, id2: string): Promise<void> {
+      let array = [new paper.Group()];
+
+      const groupLeft = groupAllNodes(
+        this.binaryTreeNodesList,
+        id1,
+        array,
+        true,
+        pointerColor2.paperColor
+      );
+
+      array = [new paper.Group()];
+
+      const groupRight = groupAllNodes(
+        this.binaryTreeNodesList,
+        id2,
+        array,
+        true,
+        pointerColor1.paperColor
+      );
+
+      const { x: leftChildX, y: leftChildY } = this.binaryTreeNodesList[
+        id1
+      ].node.rect.position;
+      const { x: rightChildX, y: rightChildY } = this.binaryTreeNodesList[
+        id2
+      ].node.rect.position;
+
+      // 1. Hide right child
+      tweenOpacity(groupRight, 1, 0, this.animationSpeed * 2);
+
+      // 2. Translate left child to the position of right child
+      await translatePaperItem(
+        groupLeft,
+        { x: leftChildX, y: leftChildY },
+        { x: rightChildX, y: rightChildY },
+        this.animationSpeed,
+        true,
+        100
+      );
+
+      // 3. Show right child
+      tweenOpacity(groupRight, 0, 1, this.animationSpeed * 2);
+
+      // 4. Translate right child to position of left child
+      await translatePaperItem(
+        groupRight,
+        { x: rightChildX, y: rightChildY },
+        { x: leftChildX, y: leftChildY },
+        this.animationSpeed,
+        true,
+        100
+      );
+
+      return new Promise(resolve => setTimeout(resolve, this.animationSpeed * 2));
+    },
+
+    invertBinaryTree() {
+      this.myBinaryTree.invertBinaryTree();
+    },
+
     // ============================== HEAPS START =================================
     changeTypeOfHeap(minMax: "Minimum" | "Maximum") {
       this.typeOfHeap = minMax;
@@ -662,7 +736,11 @@ export default defineComponent({
       if (!this.heapNodesList[1]) {
         this.myHeap.heap.push(Infinity, Number(this.addNewNodeValue));
         this.clearCanvas();
-        this.drawBinaryTreeRoot(new TreeNode(Number(this.addNewNodeValue)), false, true);
+        this.drawBinaryTreeRoot(
+          new TreeNode(Number(this.addNewNodeValue), 1),
+          false,
+          true
+        );
         return;
       }
 
@@ -820,6 +898,8 @@ export default defineComponent({
   height: 100%;
   width: 20vw;
   background-color: #02203c;
+  overflow: auto;
+  padding-bottom: 3rem;
 }
 
 .left-panel-algos {

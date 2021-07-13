@@ -7,12 +7,14 @@ import {
   headPointerColor,
   nodeStrokeColor,
   NODE_SIZE,
+  pointerColor1,
+  pointerColor2,
   TREE_ARROW_ANGLE,
   TREE_ARROW_LENGTH
 } from "@/constants/dsAlgoConstants";
 import { sleep } from "@/helpers/helper";
 import { arrowName, binaryTreeNode, heapNode } from "@/types/dsAlgo";
-import { drawArrow, drawNode, tweenOpacity } from "./globalHelpers";
+import { drawArrow, drawNode, highlightNode, tweenOpacity } from "./globalHelpers";
 
 export const drawBinaryTreeNode = (
   binaryTreeNodesList: { [uuid: string]: binaryTreeNode },
@@ -56,7 +58,7 @@ export const drawBinaryTreeNode = (
   if (side === "leftArrow") x -= NODE_SIZE;
 
   if (!(newNode instanceof TreeNode)) {
-    newNode = new TreeNode(newNode);
+    newNode = new TreeNode(newNode, depth);
   }
 
   const drawnNode = drawNode(newNode, x, y);
@@ -199,4 +201,40 @@ export const animateTreeNodeDeletion = async (
   tweenOpacity(parentNode[arrowToDelete], 1, 0, animationSpeed);
 
   return new Promise(r => setTimeout(r, animationSpeed));
+};
+
+export const groupAllNodes = (
+  binaryTreeNodes: { [uuid: string]: binaryTreeNode },
+  uuid: string,
+  array: paper.Group[],
+  colorNode = true,
+  color?: string | paper.Color
+): paper.Group => {
+  const node = binaryTreeNodes[uuid];
+
+  if (colorNode) highlightNode(node.node, 100, color, false);
+
+  array[0].addChildren([node.node.rect, node.node.text, node.leftArrow, node.rightArrow]);
+
+  if (node.treeNode) {
+    if (node.treeNode.leftChild)
+      groupAllNodes(
+        binaryTreeNodes,
+        node.treeNode.leftChild.uuid,
+        array,
+        colorNode,
+        color
+      );
+
+    if (node.treeNode.rightChild)
+      groupAllNodes(
+        binaryTreeNodes,
+        node.treeNode?.rightChild?.uuid,
+        array,
+        colorNode,
+        color
+      );
+  }
+
+  return array[0];
 };

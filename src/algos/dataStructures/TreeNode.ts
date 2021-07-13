@@ -6,12 +6,14 @@ class TreeNode {
   rightChild: TreeNode | null;
   parent: TreeNode | null;
   uuid: string;
+  depth: number;
 
-  constructor(value: number) {
+  constructor(value: number, depth: number) {
     this.value = value;
     this.leftChild = null;
     this.rightChild = null;
     this.parent = null;
+    this.depth = depth;
     this.uuid = randomId();
   }
 
