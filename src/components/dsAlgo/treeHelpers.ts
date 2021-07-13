@@ -12,7 +12,7 @@ import {
 } from "@/constants/dsAlgoConstants";
 import { sleep } from "@/helpers/helper";
 import { arrowName, binaryTreeNode, heapNode } from "@/types/dsAlgo";
-import { drawArrow, drawNode } from "./globalHelpers";
+import { drawArrow, drawNode, tweenOpacity } from "./globalHelpers";
 
 export const drawBinaryTreeNode = (
   binaryTreeNodesList: { [uuid: string]: binaryTreeNode },
@@ -39,6 +39,7 @@ export const drawBinaryTreeNode = (
     y = b;
     // make parent's arrow visible
     binaryTreeNodesList[parentNode.uuid][side].visible = true;
+    tweenOpacity(binaryTreeNodesList[parentNode.uuid][side], 0, 1, 300);
   } else {
     // it's a heap node
     const { x: a, y: b } = heapNodesList[parentNode][side].children[1].position;
@@ -47,6 +48,7 @@ export const drawBinaryTreeNode = (
 
     // make parent's arrow visible
     heapNodesList[parentNode][side].visible = true;
+    tweenOpacity(heapNodesList[parentNode][side], 0, 1, 300);
   }
 
   y += ARROW_TRIANGLE_RADIUS;
@@ -67,6 +69,7 @@ export const drawBinaryTreeNode = (
 
   if (isForTree) {
     binaryTreeNodesList[newNode.uuid] = {
+      treeNode: newNode,
       node: drawnNode,
       leftArrow,
       rightArrow
@@ -165,12 +168,19 @@ export const drawTreeRoot = (
   return { binaryTreeNodesList, heapNodesList };
 };
 
+/**
+ * Delete the paper object associated with a tree node
+ * @param childNode Tree Node to be deleted
+ * @param parentNode parent of childNode
+ * @param arrowToDelete whether to delete the parent's right or left arrow
+ * @param animationSpeed animationSpeed
+ */
 export const animateTreeNodeDeletion = async (
   childNode: binaryTreeNode,
   parentNode: binaryTreeNode,
   arrowToDelete: arrowName,
   animationSpeed: number
-) => {
+): Promise<void> => {
   /*  
     1. Delete the child node which will always be a leaf node
     2. Delete it's parent's arrow
@@ -185,8 +195,8 @@ export const animateTreeNodeDeletion = async (
 
   const childGroup = new paper.Group([childNode.node.rect, childNode.node.text]);
 
-  childGroup.tween({ opacity: 1 }, { opacity: 0 }, animationSpeed);
-  parentNode[arrowToDelete].tween({ opacity: 1 }, { opacity: 0 }, animationSpeed);
+  tweenOpacity(childGroup, 1, 0, animationSpeed);
+  tweenOpacity(parentNode[arrowToDelete], 1, 0, animationSpeed);
 
   return new Promise(r => setTimeout(r, animationSpeed));
 };

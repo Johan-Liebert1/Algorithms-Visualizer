@@ -1,22 +1,19 @@
 import TreeNode from "@/algos/dataStructures/TreeNode";
 import { pointerColor1, pointerColor2, transparent } from "@/constants/dsAlgoConstants";
 import { sleep } from "@/helpers/helper";
-import { heapNode } from "@/types/dsAlgo";
+import { binaryTreeNode } from "@/types/dsAlgo";
 
 export const swapHeapNodes = async (
-  heapNodesList: heapNode,
-  i: number,
-  j: number,
-  animationSpeed: number
+  node1: binaryTreeNode,
+  node2: binaryTreeNode,
+  animationSpeed: number,
+  heap = true
 ): Promise<void> => {
   /*
     1. Highlight nodes to be swapped
     2. Swap nodes in heap array
     3. Swap the values of node's text for displaying as the state is not reactive
   */
-
-  const node1 = heapNodesList[i];
-  const node2 = heapNodesList[j];
 
   node1.node.rect.fillColor = pointerColor1.paperColor;
   node1.node.text.bringToFront();
@@ -34,12 +31,17 @@ export const swapHeapNodes = async (
 
   return new Promise(resolve =>
     setTimeout(() => {
-      const temp = node1.treeNode?.value as number;
-      (node1.treeNode as TreeNode).value = node2.treeNode?.value as number;
-      (node2.treeNode as TreeNode).value = temp;
+      if (heap) {
+        const temp = node1.treeNode?.value as number;
+        (node1.treeNode as TreeNode).value = node2.treeNode?.value as number;
+        (node2.treeNode as TreeNode).value = temp;
 
-      node1.node.text.content = (node1.treeNode as TreeNode).value.toString();
-      node2.node.text.content = (node2.treeNode as TreeNode).value.toString();
+        node1.node.text.content = (node1.treeNode as TreeNode).value.toString();
+        node2.node.text.content = (node2.treeNode as TreeNode).value.toString();
+      } else {
+        node1.node.text.content = (node1.treeNode as TreeNode).value.toString();
+        node2.node.text.content = (node2.treeNode as TreeNode).value.toString();
+      }
 
       node1.node.rect.fillColor = transparent;
       node1.node.text.bringToFront();

@@ -140,9 +140,12 @@ class LinkedList {
     p2 = p1.next as LinkedListNode;
     p3 = p2.next as LinkedListNode;
 
-    this.drawPointerOnNode(0, pointerColor1.paperColor, false, true, "ptr 1");
-    this.drawPointerOnNode(1, pointerColor2.paperColor, false, true, "ptr 2");
-    this.drawPointerOnNode(2, pointerColor3.paperColor, false, true, "ptr 3");
+    const isListReversed = p1.index > p2.index;
+    const nextNodeAdder = isListReversed ? -1 : 1;
+
+    this.drawPointerOnNode(p1.index, pointerColor1.paperColor, false, true, "ptr 1");
+    this.drawPointerOnNode(p2.index, pointerColor2.paperColor, false, true, "ptr 2");
+    this.drawPointerOnNode(p3.index, pointerColor3.paperColor, false, true, "ptr 3");
 
     await sleep(1000);
 
@@ -150,14 +153,14 @@ class LinkedList {
       p2.next = p1;
 
       this.toggleArrowVisibility(p2.index, false);
-      await this.rotateArrow(p1.index, false);
+      await this.rotateArrow(p1.index, true);
       this.toggleArrowVisibility(p1.index, true);
 
-      if (p3) await this.translatePointer(p1.index, p1.index + 1);
+      if (p3) await this.translatePointer(p1.index, p1.index + nextNodeAdder);
 
-      await this.translatePointer(p2.index, p2.index + 1);
+      await this.translatePointer(p2.index, p2.index + nextNodeAdder);
 
-      if (p3) await this.translatePointer(p3.index, p3.index + 1);
+      if (p3) await this.translatePointer(p3.index, p3.index + nextNodeAdder);
 
       if (!p2 || !p3) break;
 

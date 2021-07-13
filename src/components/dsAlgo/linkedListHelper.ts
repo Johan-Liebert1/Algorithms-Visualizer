@@ -14,7 +14,7 @@ import {
   typeLinkedListStartPointer,
   paperJsNode
 } from "@/types/dsAlgo";
-import { drawArrow, drawNode, removePaperJsNode } from "./globalHelpers";
+import { drawArrow, drawNode, removePaperJsNode, tweenOpacity } from "./globalHelpers";
 
 type pointersReturnType = {
   linkedListNodes: linkedListNodesList[];
@@ -275,8 +275,9 @@ export const animateLinkedListNodeDeletion = async (
    4. Translate all the right nodes to the left
    5. Visibilize previous node's arrow
   */
-  previousNode.arrowNext.tween({ opacity: 1 }, { opacity: 0 }, animationSpeed);
-  nodeToDelete.arrowNext.tween({ opacity: 1 }, { opacity: 0 }, animationSpeed);
+
+  tweenOpacity(previousNode.arrowNext, 1, 0, animationSpeed);
+  tweenOpacity(nodeToDelete.arrowNext, 1, 0, animationSpeed);
 
   const deltedNodeX =
     nodeToDelete.node.rect.position.x +
@@ -337,11 +338,7 @@ export const animateLinkedListNodeDeletion = async (
               { duration: animationSpeed }
             )
             .then(() => {
-              previousNode.arrowNext.tween(
-                { opacity: 0 },
-                { opacity: 1 },
-                animationSpeed
-              );
+              tweenOpacity(previousNode.arrowNext, 0, 1, animationSpeed);
               return resolve({
                 linkedListNodes,
                 nullNode,

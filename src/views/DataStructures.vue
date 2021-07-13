@@ -167,7 +167,6 @@ import {
   paperJsNode,
   arrowName
 } from "@/types/dsAlgo";
-import { sleep } from "@/helpers/helper";
 
 export default defineComponent({
   components: { AlgoNavBar, SVG },
@@ -229,7 +228,7 @@ export default defineComponent({
 
   data() {
     return {
-      selectedMainDsAlgo: allDsAlgosObject.LINKED_LIST,
+      selectedMainDsAlgo: allDsAlgosObject.BINARY_TREES,
       addNewNodeValue: 0 as numStr,
       deleteNodeValue: 0 as numStr,
       animationSpeed: 500,
@@ -311,6 +310,7 @@ export default defineComponent({
           break;
 
         case allDsAlgosObject.LINKED_LIST.name:
+          this.deleteAllLinkedListNodePointers();
           this.myLinkedList.delete(this.deleteNodeValue);
           break;
 
@@ -434,9 +434,7 @@ export default defineComponent({
       });
     },
 
-    async reverseLinkedList() {
-      if (this.myLinkedList.length < 2) return;
-
+    deleteAllLinkedListNodePointers() {
       // delete all previous pointers
       for (const node of this.linkedListNodes) {
         for (const ptr of node.pointers) {
@@ -444,7 +442,11 @@ export default defineComponent({
         }
         node.pointers = [];
       }
+    },
 
+    async reverseLinkedList() {
+      if (this.myLinkedList.length < 2) return;
+      this.deleteAllLinkedListNodePointers();
       this.myLinkedList.reverse();
     },
 
@@ -525,7 +527,9 @@ export default defineComponent({
         this.drawBinaryTreeNode,
         (text: string, x?: number, y?: number) => {
           this.canvasText = putTextOnCanvas(this.canvas, this.canvasText, text, x, y);
-        }
+        },
+        this.swapTreeNodes,
+        this.deleteNodeFromBinaryTree
       );
       this.drawBinaryTreeRoot(this.myBinaryTree.root);
     },
@@ -551,6 +555,18 @@ export default defineComponent({
         this.clearCanvas();
         this.drawBinaryTreeRoot(this.myBinaryTree.root);
       }
+    },
+
+    async deleteNodeFromBinaryTree(nodeToDeleteId: string, parentUuid: string) {
+      let side: arrowName;
+
+      const parent = this.binaryTreeNodesList[parentUuid];
+      const child = this.binaryTreeNodesList[nodeToDeleteId];
+
+      if (parent.treeNode?.leftChild === child.treeNode) side = "leftArrow";
+      else side = "rightArrow";
+
+      await animateTreeNodeDeletion(child, parent, side, this.animationSpeed);
     },
 
     async highlightNode(
@@ -616,6 +632,15 @@ export default defineComponent({
       this.heapNodesList = heapNodesList;
     },
 
+    async swapTreeNodes(id1: string, id2: string): Promise<void> {
+      await swapHeapNodes(
+        this.binaryTreeNodesList[id1],
+        this.binaryTreeNodesList[id2],
+        this.animationSpeed,
+        false
+      );
+    },
+
     // ============================== HEAPS START =================================
     changeTypeOfHeap(minMax: "Minimum" | "Maximum") {
       this.typeOfHeap = minMax;
@@ -623,10 +648,14 @@ export default defineComponent({
       this.createNewHeap();
     },
 
-    async swapNodes(i: number, j: number): Promise<void> {
+    async swapHeapNodes(i: number, j: number): Promise<void> {
       i++; // heap index starts from 1, but we send the swap index by decrementing by 1
       j++; // heap index starts from 1, but we send the swap index by decrementing by 1
-      await swapHeapNodes(this.heapNodesList, i, j, this.animationSpeed);
+      await swapHeapNodes(
+        this.heapNodesList[i],
+        this.heapNodesList[j],
+        this.animationSpeed
+      );
     },
 
     async addNodeToHeap() {
@@ -690,14 +719,14 @@ export default defineComponent({
       this.myHeap = new Heap(
         [],
         this.typeOfHeap === "Maximum",
-        this.swapNodes,
+        this.swapHeapNodes,
         this.highlightNode
       );
 
       this.drawBinaryTreeRoot(null, false, true);
     },
 
-    runOnMount(newSelectionValue: { name: string; algos: string[] } | undefined) {
+    async runOnMount(newSelectionValue: { name: string; algos: string[] } | undefined) {
       if (!newSelectionValue) newSelectionValue = this.selectedMainDsAlgo;
 
       this.clearCanvas();
@@ -715,6 +744,10 @@ export default defineComponent({
 
         case this.allDsAlgosObject.BINARY_TREES.name:
           this.createNewBinaryTree();
+          this.addNewNodeValue = "50";
+          await this.addNodeToBinaryTree();
+          this.addNewNodeValue = "25,75,15,30,60,99";
+          this.addNodeToBinaryTree();
           break;
 
         case this.allDsAlgosObject.HEAP.name:

@@ -12,6 +12,18 @@ import {
 } from "@/constants/dsAlgoConstants";
 import { paperJsNode } from "@/types/dsAlgo";
 
+/*  
+  apply opacity change on a paperObject
+*/
+export const tweenOpacity = (
+  paperObj: paper.Item,
+  from: number,
+  to: number,
+  duration: number
+) => {
+  paperObj.tween({ opacity: from }, { opacity: to }, { duration });
+};
+
 export const putTextOnCanvas = (
   canvas: HTMLCanvasElement | undefined,
   canvasText: paper.PointText | undefined,
@@ -129,7 +141,8 @@ export const drawNode = (
 
   text.position.y += NODE_SIZE / 2 + text.handleBounds.height / 4;
 
-  rect.addChild(text);
+  tweenOpacity(rect, 0, 1, 300);
+  tweenOpacity(text, 0, 1, 300);
 
   return { rect, text };
 };

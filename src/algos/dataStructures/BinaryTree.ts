@@ -1,3 +1,4 @@
+import { animateTreeNodeDeletion } from "@/components/dsAlgo/treeHelpers";
 import { treeTraversalTypes } from "@/constants/dsAlgoConstants";
 import { arrayToListRepr } from "@/helpers/helper";
 import { arrowName } from "@/types/dsAlgo";
@@ -17,6 +18,8 @@ class BinaryTree {
     depth: number
   ) => void;
   putTextOnCanvas: (text: string, x?: number, y?: number) => void;
+  swapNodes: (id1: string, id2: string) => Promise<void>;
+  deleteNodeFromBinaryTree: (nodeToDeleteId: string, parentUuid: string) => Promise<void>;
 
   constructor(
     highlightNode: (uuid: string) => Promise<void>,
@@ -26,25 +29,30 @@ class BinaryTree {
       side: arrowName,
       depth: number
     ) => void,
-    putTextOnCanvas: (text: string, x?: number, y?: number) => void
+    putTextOnCanvas: (text: string, x?: number, y?: number) => void,
+    swapNodes: (id1: string, id2: string) => Promise<void>,
+    deleteNodeFromBinaryTree: (
+      nodeToDeleteId: string,
+      parentUuid: string
+    ) => Promise<void>
   ) {
     this.root = null;
     this.highlightNode = highlightNode;
     this.drawBinaryTreeNode = drawBinaryTreeNode;
     this.putTextOnCanvas = putTextOnCanvas;
+    this.swapNodes = swapNodes;
+    this.deleteNodeFromBinaryTree = deleteNodeFromBinaryTree;
   }
 
   search(value: number, currentNode = this.root): TreeNode | null {
     if (!currentNode) return null;
 
-    if (currentNode.value === value) return currentNode;
+    if (currentNode.value == value) return currentNode;
 
     const nextNode =
       value < currentNode.value ? currentNode.leftChild : currentNode.rightChild;
 
-    this.search(value, nextNode);
-
-    return null;
+    return this.search(value, nextNode);
   }
 
   findLargestLeftChild(node: TreeNode): TreeNode {
@@ -76,12 +84,13 @@ class BinaryTree {
     if (!currentNode.leftChild && value < currentNode.value) {
       const newNode = new TreeNode(value);
       currentNode.leftChild = newNode;
-
+      newNode.parent = currentNode;
       await this.highlightNode(currentNode.uuid);
       this.drawBinaryTreeNode(currentNode, newNode, "leftArrow", depth);
     } else if (!currentNode.rightChild && value >= currentNode.value) {
       const newNode = new TreeNode(value);
       currentNode.rightChild = newNode;
+      newNode.parent = currentNode;
 
       await this.highlightNode(currentNode.uuid);
       this.drawBinaryTreeNode(currentNode, newNode, "rightArrow", depth);
@@ -92,10 +101,8 @@ class BinaryTree {
     return this;
   }
 
-  deleteNode(value: number) {
+  async deleteNode(value: number) {
     const nodeToDelete = this.search(value);
-
-    console.log({ nodeToDelete }, nodeToDelete?.value);
 
     if (!nodeToDelete) return null;
 
@@ -103,14 +110,18 @@ class BinaryTree {
     // and will be smaller than all the numbers to the right of the nodeToDelete
     const largestLeftChild = this.findLargestLeftChild(nodeToDelete);
 
-    console.log({ largestLeftChild }, largestLeftChild.value);
-
     // swap the nodeToDelete with the largestLeftChild, then delete the largestLeftChild
     // will be easy as it's a leaf node
-
     const temp = nodeToDelete.value;
+    nodeToDelete.value = largestLeftChild.value;
     largestLeftChild.value = temp;
-    nodeToDelete.value = temp;
+
+    await this.swapNodes(nodeToDelete.uuid, largestLeftChild.uuid);
+
+    await this.deleteNodeFromBinaryTree(
+      largestLeftChild.uuid,
+      (largestLeftChild.parent as TreeNode).uuid
+    );
 
     // break the connection between the largestLeftChild and it's parentNode
     if (largestLeftChild.parent?.leftChild === largestLeftChild) {
