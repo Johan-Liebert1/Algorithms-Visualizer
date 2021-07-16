@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="height: 100vh; overflow: hidden;">
     <AlgoNavBar
       :algorithmsList="ALL_SORTING_ALGORITHM_NAMES"
       :selectedAlgo="chosenSortingAlgorithm"
@@ -132,6 +132,7 @@ import insertionSort from "@/algos/sorting/insertionSort";
 import selectionSort from "@/algos/sorting/selectionSort";
 import mergeSort from "@/algos/sorting/mergeSort";
 import radixSort from "@/algos/sorting/radixSort";
+import bogoSort from "@/algos/sorting/bogoSort";
 import { swap } from "@/algos/sorting/swap";
 
 // constants
@@ -180,14 +181,9 @@ export default defineComponent({
       chosenSortingAlgorithm: allSortingAlgorithms.MERGE_SORT as string,
       navbarButtons: [
         {
-          text: "Sort",
+          text: "Sort Array",
           class: "button is-success",
           handler: this.sortArray
-        },
-        {
-          text: "Stop",
-          class: "button is-danger",
-          handler: this.stopArraySort
         },
         {
           text: "Generate Random Array",
@@ -213,10 +209,6 @@ export default defineComponent({
 
     setNewAlgorithm(newAlgo: string) {
       this.chosenSortingAlgorithm = newAlgo;
-    },
-
-    stopArraySort() {
-      this.stopSorting = true;
     },
 
     sortArray() {
@@ -290,6 +282,14 @@ export default defineComponent({
           );
           break;
 
+        case allSortingAlgorithms.BOGO_SORT:
+          bogoSort(
+            this.array.map(e => e.number),
+            this.setArray,
+            this.iteratingOverElements
+          );
+          break;
+
         default:
           console.log(this.chosenSortingAlgorithm, "not implemented yet");
           break;
@@ -304,6 +304,16 @@ export default defineComponent({
 
     getArrayElement(index: number): sortArrayElement {
       return this.array[index];
+    },
+
+    setArray(newArray: number[], maxElement: number): Promise<void> {
+      this.array = newArray.map(e => ({
+        number: e,
+        barColor: baseBarColor,
+        barHeight: Math.floor(this.MAX_HEIGHT * (e / maxElement))
+      }));
+
+      return new Promise(resolve => setTimeout(resolve, this.sortSpeed));
     },
 
     setArrayElement(
@@ -391,7 +401,7 @@ export default defineComponent({
       let i = 0;
 
       for (; i < this.ARRAY_SIZE; ) {
-        const val = Math.floor(Math.random() * 200) + 10;
+        const val = Math.floor(Math.random() * 900) + 50;
 
         const element = { number: val, barColor: baseBarColor, barHeight: val };
 
@@ -463,7 +473,7 @@ export default defineComponent({
   flex-direction: column;
   align-items: center;
   justify-content: space-evenly;
-  min-height: 90vh;
+  min-height: 93vh;
 }
 
 .bar-container {

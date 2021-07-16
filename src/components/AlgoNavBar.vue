@@ -84,7 +84,7 @@
             <p>Elements: {{ arraySize }}</p>
             <input
               type="range"
-              min="10"
+              min="5"
               max="100"
               step="5"
               class="slider"

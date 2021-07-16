@@ -15,7 +15,7 @@ class HeapSort extends Heap {
     await this.heapify();
 
     for (let i = 1; i < this.heap.length; i++) {
-      await this.deleteFromHeap(this.heap.length - i);
+      await this.deleteFromHeap(this.heap.length - i, true);
     }
   };
 }

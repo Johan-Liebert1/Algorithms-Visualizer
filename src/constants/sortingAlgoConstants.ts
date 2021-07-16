@@ -12,7 +12,8 @@ export const sortingAlgorithms = Object.freeze({
   MERGE_SORT: "Merge Sort",
   QUICK_SORT: "Quick Sort",
   HEAP_SORT: "Heap Sort",
-  RADIX_SORT: "Radix Sort"
+  RADIX_SORT: "Radix Sort",
+  BOGO_SORT: "Bogo Sort :)"
 });
 
 export const TOOLTIPS = Object.freeze({

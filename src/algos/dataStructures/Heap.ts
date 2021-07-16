@@ -57,7 +57,7 @@ class Heap {
     }
   };
 
-  deleteFromHeap = async (heapEnd: number): Promise<void> => {
+  deleteFromHeap = async (heapEnd: number, heapSort = false): Promise<void> => {
     /*  
     1. Swap the root with the last leaf
     2. Bubble down to find the correct place for the new root
@@ -68,7 +68,7 @@ class Heap {
 
     // await this.colorElement(heapEnd - 1, "#345");
 
-    await sleep(2000);
+    if (!heapSort) await sleep(2000);
 
     let index = 1;
 
