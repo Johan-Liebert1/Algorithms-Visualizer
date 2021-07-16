@@ -1,4 +1,3 @@
-import { animateTreeNodeDeletion } from "@/components/dsAlgo/treeHelpers";
 import { treeTraversalTypes } from "@/constants/dsAlgoConstants";
 import { arrayToListRepr } from "@/helpers/helper";
 import { arrowName } from "@/types/dsAlgo";

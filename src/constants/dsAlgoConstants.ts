@@ -1,17 +1,66 @@
 import paperCore from "paper/dist/paper-core";
 
-export const allDsAlgosObject = Object.freeze({
+export type allDsAlgosObjectType = {
+  [dsName: string]: {
+    name: string;
+    algos: {
+      [algoName: string]: {
+        name: string;
+        moreInfo: string;
+      };
+    };
+  };
+};
+
+export type selectedDsAlgoObjectType = {
+  name: string;
+  algos: {
+    [algoName: string]: {
+      name: string;
+      moreInfo: string;
+    };
+  };
+};
+
+export const allDsAlgosObject: allDsAlgosObjectType = Object.freeze({
   LINKED_LIST: {
     name: "Linked Lists",
-    algos: ["Reversing a Linked List"]
+    algos: {
+      REVERSING_LINKED_LIST: {
+        name: "Reverse the Linked List",
+        moreInfo: ""
+      }
+    }
   },
   BINARY_TREES: {
     name: "Binary Trees",
-    algos: ["Reversing a Tree"]
+    algos: {
+      INORDER_TRAVERSAL: {
+        name: "Inorder Traversal",
+        moreInfo: ""
+      },
+      PREORDER_TRAVERSAL: {
+        name: "Inorder Traversal",
+        moreInfo: ""
+      },
+      POSTORDER_TRAVERSAL: {
+        name: "Inorder Traversal",
+        moreInfo: ""
+      },
+      INVERSION_OF_BINARY_TREE: {
+        name: "Inorder Traversal",
+        moreInfo: ""
+      }
+    }
   },
   HEAP: {
     name: "Heaps",
-    algos: ["Reversing a Heap"]
+    algos: {
+      DELETE_FROM_HEAP: {
+        name: "delete_from_heap",
+        moreInfo: ""
+      }
+    }
   }
 });
 
@@ -31,7 +80,7 @@ export const nodeStrokeColor = new paperCore.Color("#fff");
 export const textStrokeColor = new paperCore.Color("#fff");
 export const backgroundColor = {
   hex: "#130f40",
-  paperColor: new paperCore.Color("#000")
+  paperColor: new paperCore.Color("#111")
 };
 export const nodeHoverColor = {
   hex: "#3498db",

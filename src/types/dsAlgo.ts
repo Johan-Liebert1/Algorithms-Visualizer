@@ -23,6 +23,10 @@ export type heapNode = {
   [index: number]: binaryTreeNode;
 };
 
+export type binaryTreeNodesObject = {
+  [uuid: string]: binaryTreeNode;
+};
+
 export type linkedListNodesList = {
   node: paperJsNode;
   arrowNext: paper.Group;

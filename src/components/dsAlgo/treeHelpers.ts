@@ -13,11 +13,22 @@ import {
   TREE_ARROW_LENGTH
 } from "@/constants/dsAlgoConstants";
 import { sleep } from "@/helpers/helper";
-import { arrowName, binaryTreeNode, heapNode } from "@/types/dsAlgo";
-import { drawArrow, drawNode, highlightNode, tweenOpacity } from "./globalHelpers";
+import {
+  arrowName,
+  binaryTreeNode,
+  binaryTreeNodesObject,
+  heapNode
+} from "@/types/dsAlgo";
+import {
+  drawArrow,
+  drawNode,
+  highlightNode,
+  translatePaperItem,
+  tweenOpacity
+} from "./globalHelpers";
 
 export const drawBinaryTreeNode = (
-  binaryTreeNodesList: { [uuid: string]: binaryTreeNode },
+  binaryTreeNodesList: binaryTreeNodesObject,
   heapNodesList: heapNode,
   parentNode: TreeNode | number,
   newNode: TreeNode | number,
@@ -101,7 +112,7 @@ export const drawBinaryTreeNode = (
 /** Draw the root of a binary tree and/or a heap */
 export const drawTreeRoot = (
   canvas: HTMLCanvasElement | undefined,
-  binaryTreeNodesList: { [uuid: string]: binaryTreeNode },
+  binaryTreeNodesList: binaryTreeNodesObject,
   heapNodesList: heapNode,
   myBinaryTree: BinaryTree,
   myHeap: Heap,
@@ -205,7 +216,7 @@ export const animateTreeNodeDeletion = async (
 };
 
 export const groupAllNodes = (
-  binaryTreeNodes: { [uuid: string]: binaryTreeNode },
+  binaryTreeNodes: binaryTreeNodesObject,
   uuid: string,
   array: paper.Group[],
   colorNode = true,
@@ -238,4 +249,64 @@ export const groupAllNodes = (
   }
 
   return array[0];
+};
+
+export const animateBinaryTreeInversion = async (
+  binaryTreeNodesList: binaryTreeNodesObject,
+  id1: string,
+  id2: string,
+  animationSpeed: number
+): Promise<binaryTreeNodesObject> => {
+  let array = [new paper.Group()];
+
+  const groupLeft = groupAllNodes(
+    binaryTreeNodesList,
+    id1,
+    array,
+    true,
+    pointerColor2.paperColor
+  );
+
+  array = [new paper.Group()];
+
+  const groupRight = groupAllNodes(
+    binaryTreeNodesList,
+    id2,
+    array,
+    true,
+    pointerColor1.paperColor
+  );
+
+  const { x: leftChildX, y: leftChildY } = binaryTreeNodesList[id1].node.rect.position;
+  const { x: rightChildX, y: rightChildY } = binaryTreeNodesList[id2].node.rect.position;
+
+  // 1. Hide right child
+  tweenOpacity(groupRight, 1, 0, animationSpeed * 2);
+
+  // 2. Translate left child to the position of right child
+  await translatePaperItem(
+    groupLeft,
+    { x: leftChildX, y: leftChildY },
+    { x: rightChildX, y: rightChildY },
+    animationSpeed,
+    true,
+    100
+  );
+
+  // 3. Show right child
+  tweenOpacity(groupRight, 0, 1, animationSpeed * 2);
+
+  // 4. Translate right child to position of left child
+  await translatePaperItem(
+    groupRight,
+    { x: rightChildX, y: rightChildY },
+    { x: leftChildX, y: leftChildY },
+    animationSpeed,
+    true,
+    100
+  );
+
+  return new Promise(resolve =>
+    setTimeout(() => resolve(binaryTreeNodesList), animationSpeed * 2)
+  );
 };

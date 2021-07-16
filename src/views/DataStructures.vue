@@ -10,9 +10,13 @@
     <div class="algo-container">
       <div class="left-panel">
         <div>
-          <h1 class="is-size-3" style="margin: 1rem 0; text-align: center">
-            {{ selectedMainDsAlgo.name }} Algorithms
-          </h1>
+          <div style="margin: 1rem 0; text-align: center">
+            <h1 class="is-size-3">{{ selectedMainDsAlgo.name }} Algorithms</h1>
+
+            <p style="font-size: 0.7rem">
+              Right Click on Algorithm name to get more info
+            </p>
+          </div>
 
           <div
             v-if="isHeapSelected"
@@ -45,6 +49,7 @@
             v-for="(algo, index) in navbarButtons[selectedMainDsAlgo.name]"
             :key="index"
             @click="algo.handler"
+            @contextmenu="e => getMoreInfoAboutAlgorithm(e, algo.name)"
           >
             {{
               algo.name === "delete_from_heap"
@@ -127,6 +132,12 @@
       </div>
       <canvas id="canvas"></canvas>
     </div>
+    <Modal
+      v-if="showAlgoDescriptionModal"
+      :modalTitle="'ksdf'"
+      :modalInfo="'skjfoir'"
+      @closeModal="showAlgoDescriptionModal = false"
+    />
   </div>
 </template>
 
@@ -142,9 +153,7 @@ import SVG from "@/components/Svg.vue";
 import {
   highlightNode,
   putTextOnCanvas,
-  removePaperJsNode,
-  translatePaperItem,
-  tweenOpacity
+  removePaperJsNode
 } from "@/components/dsAlgo/globalHelpers";
 import {
   animateLinkedListNodeDeletion,
@@ -153,10 +162,10 @@ import {
   translatePointer
 } from "@/components/dsAlgo/linkedListHelper";
 import {
+  animateBinaryTreeInversion,
   animateTreeNodeDeletion,
   drawBinaryTreeNode,
-  drawTreeRoot,
-  groupAllNodes
+  drawTreeRoot
 } from "@/components/dsAlgo/treeHelpers";
 import { swapHeapNodes } from "@/components/dsAlgo/heapHelpers";
 
@@ -169,6 +178,7 @@ import {
   pointerColor1,
   pointerColor2,
   pointerColor3,
+  selectedDsAlgoObjectType,
   treeTraversalTypes
 } from "@/constants/dsAlgoConstants";
 
@@ -183,16 +193,17 @@ import Heap from "@/algos/dataStructures/Heap";
 import { svgNames } from "@/constants/globalConstants";
 import { numStr } from "@/types/global";
 import {
-  binaryTreeNode,
   heapNode,
   linkedListNodesList,
   typeLinkedListStartPointer,
   paperJsNode,
-  arrowName
+  arrowName,
+  binaryTreeNodesObject
 } from "@/types/dsAlgo";
+import Modal from "@/components/Modal.vue";
 
 export default defineComponent({
-  components: { AlgoNavBar, SVG },
+  components: { AlgoNavBar, SVG, Modal },
 
   setup() {
     const allMainDsAlgos = Object.values(allDsAlgosObject).map(v => v.name);
@@ -208,10 +219,7 @@ export default defineComponent({
     let myLinkedList: LinkedList = {} as LinkedList;
 
     // for trees
-    const binaryTreeNodesList: {
-      // uuid will be used to hightlight the node
-      [uuid: string]: binaryTreeNode;
-    } = {};
+    const binaryTreeNodesList: binaryTreeNodesObject = {};
 
     const myBinaryTree: BinaryTree = {} as BinaryTree;
 
@@ -251,40 +259,41 @@ export default defineComponent({
 
   data() {
     return {
-      selectedMainDsAlgo: allDsAlgosObject.BINARY_TREES,
+      selectedMainDsAlgo: allDsAlgosObject.BINARY_TREES as selectedDsAlgoObjectType,
       addNewNodeValue: 0 as numStr,
       deleteNodeValue: 0 as numStr,
       searchNodeValue: 0 as numStr,
       animationSpeed: 500,
       typeOfHeap: "Maximum" as "Minimum" | "Maximum",
+      showAlgoDescriptionModal: false,
       navbarButtons: {
         [allDsAlgosObject.LINKED_LIST.name]: [
           {
-            name: "Reverse the Linked List",
+            name: allDsAlgosObject.LINKED_LIST.algos.REVERSING_LINKED_LIST.name,
             handler: this.reverseLinkedList
           }
         ],
         [allDsAlgosObject.BINARY_TREES.name]: [
           {
-            name: "Inorder Traversal",
+            name: allDsAlgosObject.BINARY_TREES.algos.INORDER_TRAVERSAL.name,
             handler: () => this.traverseBinaryTree("inorder")
           },
           {
-            name: "Preorder Traversal",
+            name: allDsAlgosObject.BINARY_TREES.algos.PREORDER_TRAVERSAL.name,
             handler: () => this.traverseBinaryTree("preorder")
           },
           {
-            name: "Postorder Traversal",
+            name: allDsAlgosObject.BINARY_TREES.algos.POSTORDER_TRAVERSAL.name,
             handler: () => this.traverseBinaryTree("postorder")
           },
           {
-            name: "Invert Binary Tree",
+            name: allDsAlgosObject.BINARY_TREES.algos.INVERSION_OF_BINARY_TREE.name,
             handler: this.invertBinaryTree
           }
         ],
         [allDsAlgosObject.HEAP.name]: [
           {
-            name: "delete_from_heap",
+            name: allDsAlgosObject.HEAP.algos.DELETE_FROM_HEAP.name,
             handler: () => this.deleteFromHeap()
           }
         ]
@@ -293,6 +302,12 @@ export default defineComponent({
   },
 
   methods: {
+    getMoreInfoAboutAlgorithm(event: Event, algo: string) {
+      event.preventDefault();
+      this.showAlgoDescriptionModal = true;
+      console.log("getting more info about", algo);
+    },
+
     algorithmChanged(value: string) {
       switch (value) {
         case allDsAlgosObject.LINKED_LIST.name:
@@ -687,60 +702,12 @@ export default defineComponent({
     },
 
     async animateBinaryTreeInversion(id1: string, id2: string): Promise<void> {
-      let array = [new paper.Group()];
-
-      const groupLeft = groupAllNodes(
+      this.binaryTreeNodesList = await animateBinaryTreeInversion(
         this.binaryTreeNodesList,
         id1,
-        array,
-        true,
-        pointerColor2.paperColor
-      );
-
-      array = [new paper.Group()];
-
-      const groupRight = groupAllNodes(
-        this.binaryTreeNodesList,
         id2,
-        array,
-        true,
-        pointerColor1.paperColor
+        this.animationSpeed
       );
-
-      const { x: leftChildX, y: leftChildY } = this.binaryTreeNodesList[
-        id1
-      ].node.rect.position;
-      const { x: rightChildX, y: rightChildY } = this.binaryTreeNodesList[
-        id2
-      ].node.rect.position;
-
-      // 1. Hide right child
-      tweenOpacity(groupRight, 1, 0, this.animationSpeed * 2);
-
-      // 2. Translate left child to the position of right child
-      await translatePaperItem(
-        groupLeft,
-        { x: leftChildX, y: leftChildY },
-        { x: rightChildX, y: rightChildY },
-        this.animationSpeed,
-        true,
-        100
-      );
-
-      // 3. Show right child
-      tweenOpacity(groupRight, 0, 1, this.animationSpeed * 2);
-
-      // 4. Translate right child to position of left child
-      await translatePaperItem(
-        groupRight,
-        { x: rightChildX, y: rightChildY },
-        { x: leftChildX, y: leftChildY },
-        this.animationSpeed,
-        true,
-        100
-      );
-
-      return new Promise(resolve => setTimeout(resolve, this.animationSpeed * 2));
     },
 
     invertBinaryTree() {
@@ -836,7 +803,7 @@ export default defineComponent({
       this.drawBinaryTreeRoot(null, false, true);
     },
 
-    async runOnMount(newSelectionValue: { name: string; algos: string[] } | undefined) {
+    async runOnMount(newSelectionValue: selectedDsAlgoObjectType | undefined) {
       if (!newSelectionValue) newSelectionValue = this.selectedMainDsAlgo;
 
       this.clearCanvas();
@@ -871,7 +838,7 @@ export default defineComponent({
   },
 
   watch: {
-    selectedMainDsAlgo(newSelection: { name: string; algos: string[] }) {
+    selectedMainDsAlgo(newSelection: selectedDsAlgoObjectType) {
       this.runOnMount(newSelection);
     }
   },
