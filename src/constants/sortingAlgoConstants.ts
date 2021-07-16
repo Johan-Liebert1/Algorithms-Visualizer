@@ -3,6 +3,7 @@ export const swapBarColor = "#e74c3c";
 export const sortedBarColor = "#27ae60";
 export const iteratingBarColor = "#8e44ad";
 export const pivotBarColor = "#ff9f43";
+export const MAX_ARRAY_BAR_HEIGHT = 400;
 
 export const sortingAlgorithms = Object.freeze({
   BUBBLE_SORT: "Bubble Sort",
@@ -10,7 +11,8 @@ export const sortingAlgorithms = Object.freeze({
   SELECTION_SORT: "Selection Sort",
   MERGE_SORT: "Merge Sort",
   QUICK_SORT: "Quick Sort",
-  HEAP_SORT: "Heap Sort"
+  HEAP_SORT: "Heap Sort",
+  RADIX_SORT: "Radix Sort"
 });
 
 export const TOOLTIPS = Object.freeze({

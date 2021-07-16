@@ -15,17 +15,13 @@ export const swapHeapNodes = async (
     3. Swap the values of node's text for displaying as the state is not reactive
   */
 
-  // console.log("swapping");
-  // console.log(node1.node.text.content);
-  // console.log(node2.node.text.content);
-
   node1.node.rect.fillColor = pointerColor1.paperColor;
   node1.node.text.bringToFront();
 
   node2.node.rect.fillColor = pointerColor1.paperColor;
   node2.node.text.bringToFront();
 
-  await sleep(1000);
+  await sleep(500);
 
   node1.node.rect.fillColor = pointerColor2.paperColor;
   node1.node.text.bringToFront();

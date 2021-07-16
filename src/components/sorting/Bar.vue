@@ -4,7 +4,8 @@
     :style="{
       width: `${barWidth}px`,
       height: `${arrayElement.barHeight}px`,
-      backgroundColor: arrayElement.barColor
+      backgroundColor: arrayElement.barColor,
+      fontSize: '0.75rem'
     }"
   >
     {{ barWidth >= 20 ? arrayElement.number : "" }}

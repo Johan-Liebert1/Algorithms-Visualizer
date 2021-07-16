@@ -131,12 +131,14 @@ import quickSort from "@/algos/sorting/quickSort";
 import insertionSort from "@/algos/sorting/insertionSort";
 import selectionSort from "@/algos/sorting/selectionSort";
 import mergeSort from "@/algos/sorting/mergeSort";
+import radixSort from "@/algos/sorting/radixSort";
 import { swap } from "@/algos/sorting/swap";
 
 // constants
 import {
   baseBarColor,
   iteratingBarColor,
+  MAX_ARRAY_BAR_HEIGHT,
   pivotBarColor,
   sortedBarColor,
   sortingAlgorithms as allSortingAlgorithms,
@@ -157,7 +159,7 @@ export default defineComponent({
   setup() {
     // non-reactive properties
     const ALL_SORTING_ALGORITHM_NAMES = Object.values(allSortingAlgorithms);
-    const MAX_HEIGHT = 400;
+    const MAX_HEIGHT = MAX_ARRAY_BAR_HEIGHT;
 
     return {
       ALL_SORTING_ALGORITHM_NAMES,
@@ -279,6 +281,15 @@ export default defineComponent({
           );
           break;
 
+        case allSortingAlgorithms.RADIX_SORT:
+          radixSort(
+            this.array.map(e => e.number.toString()),
+            this.setArrayElement,
+            this.colorElement,
+            this.iteratingOverElements
+          );
+          break;
+
         default:
           console.log(this.chosenSortingAlgorithm, "not implemented yet");
           break;
@@ -297,14 +308,14 @@ export default defineComponent({
 
     setArrayElement(
       index: number,
-      index2: number,
+      index2?: number,
       element?: sortArrayElement
     ): Promise<void> {
       return new Promise(r =>
         setTimeout(() => {
-          if (!element) {
+          if (!element && index2) {
             this.array[index] = this.array[index2];
-          } else {
+          } else if (element) {
             this.array[index] = element;
           }
           r();
@@ -341,8 +352,8 @@ export default defineComponent({
      * Sets the color of a bar
      */
     colorElement(index: number, color: string = sortedBarColor): Promise<void> {
-      if (!this.array[index])
-        console.log("undefined = ", this.array[index], index, this.array.length, color);
+      // if (!this.array[index])
+      // console.log("undefined = ", this.array[index], index, this.array.length, color);
 
       if (this.array[index].barColor !== sortedBarColor)
         this.array[index].barColor = color;
@@ -378,8 +389,9 @@ export default defineComponent({
 
       const tempArr: sortArrayElement[] = [];
       let i = 0;
+
       for (; i < this.ARRAY_SIZE; ) {
-        const val = Math.floor(Math.random() * 90) + 10;
+        const val = Math.floor(Math.random() * 200) + 10;
 
         const element = { number: val, barColor: baseBarColor, barHeight: val };
 

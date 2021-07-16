@@ -274,16 +274,16 @@ const treeInversionOneChild = async (
 
   const xAdder = nodeToTranslate === "left" ? NODE_SIZE / 2 : -(NODE_SIZE / 2);
 
+  const parent = binaryTreeNodesList[parentNodeId];
+
   const array = [new paper.Group()];
   const group = groupAllNodes(
     binaryTreeNodesList,
     nodeId,
     array,
-    true,
+    <boolean>parent.treeNode?.isRoot(),
     pointerColor1.paperColor
   );
-
-  const parent = binaryTreeNodesList[parentNodeId];
 
   // move group to the position of this arrow
   const { x } = parent[arrowName].children[1].position;
@@ -314,7 +314,8 @@ export const animateBinaryTreeInversion = async (
   parentNodeId: string,
   animationSpeed: number
 ): Promise<binaryTreeNodesObject> => {
-  console.log({ id1, id2, parentNodeId });
+  // sure that this exists
+  const isParentRoot = <boolean>binaryTreeNodesList[parentNodeId].treeNode?.isRoot();
 
   if (!id1 || !id2) {
     // no right node in the binaryTreeNodesList, but left and right nodes
@@ -340,7 +341,7 @@ export const animateBinaryTreeInversion = async (
     binaryTreeNodesList,
     id1,
     array,
-    true,
+    isParentRoot,
     pointerColor2.paperColor
   );
 
@@ -349,7 +350,7 @@ export const animateBinaryTreeInversion = async (
     binaryTreeNodesList,
     id2,
     array,
-    true,
+    isParentRoot,
     pointerColor1.paperColor
   );
 
