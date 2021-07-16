@@ -40,15 +40,15 @@ export const allDsAlgosObject: allDsAlgosObjectType = Object.freeze({
         moreInfo: ""
       },
       PREORDER_TRAVERSAL: {
-        name: "Inorder Traversal",
+        name: "Preorder Traversal",
         moreInfo: ""
       },
       POSTORDER_TRAVERSAL: {
-        name: "Inorder Traversal",
+        name: "Postorder Traversal",
         moreInfo: ""
       },
       INVERSION_OF_BINARY_TREE: {
-        name: "Inorder Traversal",
+        name: "Invert Binary Tree",
         moreInfo: ""
       }
     }

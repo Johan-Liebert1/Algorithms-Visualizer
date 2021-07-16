@@ -701,11 +701,16 @@ export default defineComponent({
       );
     },
 
-    async animateBinaryTreeInversion(id1: string, id2: string): Promise<void> {
+    async animateBinaryTreeInversion(
+      id1: string,
+      id2: string,
+      parentNodeId: string
+    ): Promise<void> {
       this.binaryTreeNodesList = await animateBinaryTreeInversion(
         this.binaryTreeNodesList,
         id1,
         id2,
+        parentNodeId,
         this.animationSpeed
       );
     },
@@ -823,7 +828,7 @@ export default defineComponent({
           this.createNewBinaryTree();
           this.addNewNodeValue = "50";
           await this.addNodeToBinaryTree();
-          this.addNewNodeValue = "25,75,15,30,60,99";
+          this.addNewNodeValue = "25,75,15,30,60";
           this.addNodeToBinaryTree();
           break;
 

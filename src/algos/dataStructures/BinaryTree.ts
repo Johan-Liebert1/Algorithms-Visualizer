@@ -19,7 +19,11 @@ class BinaryTree {
   putTextOnCanvas: (text: string, x?: number, y?: number) => void;
   swapNodes: (id1: string, id2: string) => Promise<void>;
   deleteNodeFromBinaryTree: (nodeToDeleteId: string, parentUuid: string) => Promise<void>;
-  animateBinaryTreeInversion: (id1: string, id2: string) => Promise<void>;
+  animateBinaryTreeInversion: (
+    id1: string,
+    id2: string,
+    parentNodeId: string
+  ) => Promise<void>;
 
   constructor(
     highlightNode: (uuid: string) => Promise<void>,
@@ -35,7 +39,11 @@ class BinaryTree {
       nodeToDeleteId: string,
       parentUuid: string
     ) => Promise<void>,
-    animateBinaryTreeInversion: (id1: string, id2: string) => Promise<void>
+    animateBinaryTreeInversion: (
+      id1: string,
+      id2: string,
+      parentNodeId: string
+    ) => Promise<void>
   ) {
     this.root = null;
     this.highlightNode = highlightNode;
@@ -222,13 +230,13 @@ class BinaryTree {
   async invertBinaryTree(currentNode = this.root) {
     if (!currentNode || (!currentNode.leftChild && !currentNode.rightChild)) return;
 
-    if (currentNode.leftChild && !currentNode.rightChild) {
-      this.insert(currentNode.leftChild.value, currentNode, currentNode.depth + 1);
-    }
+    // if (currentNode.leftChild && !currentNode.rightChild) {
+    //   this.insert(currentNode.leftChild.value, currentNode, currentNode.depth + 1);
+    // }
 
-    if (currentNode.rightChild && !currentNode.leftChild) {
-      this.insert(currentNode.rightChild.value, currentNode, currentNode.depth + 1);
-    }
+    // if (currentNode.rightChild && !currentNode.leftChild) {
+    //   this.insert(currentNode.rightChild.value, currentNode, currentNode.depth + 1);
+    // }
 
     // swap nodes
     const temp = currentNode.leftChild;
@@ -237,7 +245,8 @@ class BinaryTree {
 
     await this.animateBinaryTreeInversion(
       <string>currentNode.leftChild?.uuid,
-      <string>currentNode.rightChild?.uuid
+      <string>currentNode.rightChild?.uuid,
+      currentNode.uuid
     );
 
     await this.invertBinaryTree(currentNode.leftChild);

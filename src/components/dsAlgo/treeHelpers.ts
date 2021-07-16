@@ -33,7 +33,8 @@ export const drawBinaryTreeNode = (
   parentNode: TreeNode | number,
   newNode: TreeNode | number,
   side: arrowName,
-  depth: number
+  depth: number,
+  show = true
 ) => {
   let x = 0;
   let y = 0;
@@ -50,18 +51,23 @@ export const drawBinaryTreeNode = (
     ].children[1].position;
     x = a;
     y = b;
-    // make parent's arrow visible
-    binaryTreeNodesList[parentNode.uuid][side].visible = true;
-    tweenOpacity(binaryTreeNodesList[parentNode.uuid][side], 0, 1, 300);
+
+    if (show) {
+      // make parent's arrow visible
+      binaryTreeNodesList[parentNode.uuid][side].visible = true;
+      tweenOpacity(binaryTreeNodesList[parentNode.uuid][side], 0, 1, 300);
+    }
   } else {
     // it's a heap node
     const { x: a, y: b } = heapNodesList[parentNode][side].children[1].position;
     x = a;
     y = b;
 
-    // make parent's arrow visible
-    heapNodesList[parentNode][side].visible = true;
-    tweenOpacity(heapNodesList[parentNode][side], 0, 1, 300);
+    if (show) {
+      // make parent's arrow visible
+      heapNodesList[parentNode][side].visible = true;
+      tweenOpacity(heapNodesList[parentNode][side], 0, 1, 300);
+    }
   }
 
   y += ARROW_TRIANGLE_RADIUS;
@@ -105,6 +111,11 @@ export const drawBinaryTreeNode = (
   // hide the arrows and only show them once a child is added
   leftArrow.visible = false;
   rightArrow.visible = false;
+
+  if (!show) {
+    drawnNode.rect.visible = false;
+    drawnNode.text.visible = false;
+  }
 
   return { binaryTreeNodesList, heapNodesList };
 };
@@ -251,12 +262,78 @@ export const groupAllNodes = (
   return array[0];
 };
 
+const treeInversionOneChild = async (
+  binaryTreeNodesList: binaryTreeNodesObject,
+  nodeId: string,
+  parentNodeId: string,
+  nodeToTranslate: "right" | "left",
+  animationSpeed: number
+) => {
+  const arrowName: arrowName = nodeToTranslate === "right" ? "leftArrow" : "rightArrow";
+  const oppArrowName: arrowName = arrowName === "rightArrow" ? "leftArrow" : "rightArrow";
+
+  const xAdder = nodeToTranslate === "left" ? NODE_SIZE / 2 : -(NODE_SIZE / 2);
+
+  const array = [new paper.Group()];
+  const group = groupAllNodes(
+    binaryTreeNodesList,
+    nodeId,
+    array,
+    true,
+    pointerColor1.paperColor
+  );
+
+  const parent = binaryTreeNodesList[parentNodeId];
+
+  // move group to the position of this arrow
+  const { x } = parent[arrowName].children[1].position;
+
+  // hide the arrow that the node was originally attached to
+  tweenOpacity(parent[oppArrowName], 1, 0, animationSpeed);
+
+  // show the opposite arrow
+  parent[arrowName].visible = true;
+  tweenOpacity(parent[arrowName], 0, 1, animationSpeed);
+
+  translatePaperItem(
+    group,
+    { x: group.position.x, y: group.position.y },
+    { x: x + xAdder, y: group.position.y },
+    animationSpeed,
+    true,
+    100
+  );
+
+  return new Promise(resolve => setTimeout(resolve, animationSpeed * 2));
+};
+
 export const animateBinaryTreeInversion = async (
   binaryTreeNodesList: binaryTreeNodesObject,
   id1: string,
   id2: string,
+  parentNodeId: string,
   animationSpeed: number
 ): Promise<binaryTreeNodesObject> => {
+  console.log({ id1, id2, parentNodeId });
+
+  if (!id1 || !id2) {
+    // no right node in the binaryTreeNodesList, but left and right nodes
+    // are swapped in the binary tree so binary tree does have a right node
+
+    const side = !id1 ? "left" : "right";
+    const nodeId = !id1 ? id2 : id1;
+
+    await treeInversionOneChild(
+      binaryTreeNodesList,
+      nodeId,
+      parentNodeId,
+      side,
+      animationSpeed
+    );
+
+    return binaryTreeNodesList;
+  }
+
   let array = [new paper.Group()];
 
   const groupLeft = groupAllNodes(
@@ -268,7 +345,6 @@ export const animateBinaryTreeInversion = async (
   );
 
   array = [new paper.Group()];
-
   const groupRight = groupAllNodes(
     binaryTreeNodesList,
     id2,
