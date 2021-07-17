@@ -23,7 +23,7 @@ export const turnAlternateCellsToWalls = (
 ): void => {
   for (let row = 0; row < matrix.length; row += 2) {
     for (let col = 0; col < matrix[0].length; col += 2) {
-      for (const cell of matrix[row][col].addNeighbors(matrix)) {
+      for (const cell of matrix[row][col].addNeighbors(matrix, true)) {
         if (cell !== startNode && cell !== endNode) makeWall(cell);
       }
     }

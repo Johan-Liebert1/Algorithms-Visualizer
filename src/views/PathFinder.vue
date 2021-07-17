@@ -303,6 +303,7 @@ export default defineComponent({
       switch (this.selectedPathFindingAlgorithm) {
         case pathFindingAlgorithms.A_STAR:
           aStarAlgo(
+            this.matrix,
             this.startNode,
             this.endNode,
             this.highlightGrid,
@@ -312,6 +313,7 @@ export default defineComponent({
 
         case pathFindingAlgorithms.BREADTH_FIRST_SEARCH:
           BreadthFirstSearch(
+            this.matrix,
             this.startNode,
             this.endNode,
             this.highlightGrid,
@@ -321,6 +323,7 @@ export default defineComponent({
 
         case pathFindingAlgorithms.DEPTH_FIRST_SEARCH:
           DepthFirstSearch(
+            this.matrix,
             this.startNode,
             this.endNode,
             this.highlightGrid,
@@ -330,6 +333,7 @@ export default defineComponent({
 
         case pathFindingAlgorithms.DIJKSTRA:
           dijkstrasAlgorithm(
+            this.matrix,
             this.startNode,
             this.endNode,
             this.highlightGrid,
@@ -413,15 +417,6 @@ export default defineComponent({
 
     setIsDiagonalMovementAllowed() {
       this.diagonalMovementAllowed = !this.diagonalMovementAllowed;
-      this.setCellNeighbors();
-    },
-
-    setCellNeighbors() {
-      for (let row of this.matrix) {
-        for (let cell of row) {
-          cell.addNeighbors(this.matrix, this.diagonalMovementAllowed);
-        }
-      }
     },
 
     clearBoard() {
@@ -460,8 +455,6 @@ export default defineComponent({
         this.startNode = this.matrix[prevStartNode.row][prevStartNode.col];
         this.endNode = this.matrix[prevEndNode.row][prevEndNode.col];
       }
-
-      this.setCellNeighbors();
     },
 
     cellClick(row: number, col: number) {

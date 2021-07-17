@@ -1,12 +1,13 @@
 import { CellClass } from "@/types/pathFinders";
 
 const BreadthFirstSearch = async (
+  matrix: CellClass[][],
+
   startNode: CellClass,
   endNode: CellClass,
   highlightPath: (openCells: CellClass[], closedCells: CellClass[]) => Promise<any>,
   colorFinalPath: () => void
 ) => {
-  console.log("calling bfs");
   const openSet: CellClass[] = [startNode];
   const closedSet: CellClass[] = [];
 
@@ -22,7 +23,7 @@ const BreadthFirstSearch = async (
 
     currentNode.isVisited = true;
 
-    for (const neighbor of currentNode.neighbors) {
+    for (const neighbor of currentNode.addNeighbors(matrix)) {
       if (neighbor.isVisited || neighbor.isWall) {
         continue;
       }

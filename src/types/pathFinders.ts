@@ -51,10 +51,11 @@ export class CellClass {
 
   addNeighbors(
     grid: CellClass[][],
-    diagonalAllowed = true,
+    diagonalAllowed = false,
     neighborDist = 1
   ): CellClass[] {
-    // if (this.neighbors.length > 0) return this.neighbors;
+    // reset the neighbors
+    this.neighbors = [];
 
     const rowAdders: number[] = [-neighborDist, 0, neighborDist];
 

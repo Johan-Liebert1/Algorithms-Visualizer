@@ -3,6 +3,7 @@ import { CellClass } from "@/types/pathFinders";
 import { getLowestScoreNode, heuristic } from "./helpers";
 
 const aStarAlgo = async (
+  matrix: CellClass[][],
   startNode: CellClass,
   endNode: CellClass,
   highlightGrid: (a: CellClass[], b: CellClass[]) => Promise<any>,
@@ -30,7 +31,7 @@ const aStarAlgo = async (
     openSet = openSet.slice(0, index).concat(openSet.slice(index + 1));
     closedSet.push(currentNode);
 
-    for (const neighbor of currentNode.neighbors) {
+    for (const neighbor of currentNode.addNeighbors(matrix)) {
       if (closedSet.includes(neighbor) || neighbor.isWall) continue;
 
       const tempG: number = neighbor.gScore + heuristic(currentNode, neighbor, algo);

@@ -3,6 +3,7 @@ import { CellClass } from "@/types/pathFinders";
 import { getLowestScoreNode, heuristic } from "./helpers";
 
 const dijkstarsAlgo = async (
+  matrix: CellClass[][],
   startNode: CellClass,
   endNode: CellClass,
   highlightGrid: (a: CellClass[], b: CellClass[]) => Promise<any>,
@@ -22,7 +23,7 @@ const dijkstarsAlgo = async (
     if (currentNode.isVisited) continue;
     if (currentNode === endNode) break;
 
-    for (const neighbor of currentNode.neighbors) {
+    for (const neighbor of currentNode.addNeighbors(matrix)) {
       if (neighbor.isVisited || neighbor.isWall) continue;
 
       const newScore =

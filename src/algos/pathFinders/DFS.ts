@@ -1,13 +1,12 @@
 import { CellClass } from "@/types/pathFinders";
 
 const DepthFirstSearch = async (
+  matrix: CellClass[][],
   startNode: CellClass,
   endNode: CellClass,
   highlightPath: (openCells: CellClass[], closedCells: CellClass[]) => Promise<any>,
   colorFinalPath: () => void
 ) => {
-  console.log("calling dfs");
-
   const openSet: CellClass[] = [startNode];
   const closedSet: CellClass[] = [];
 
@@ -22,7 +21,7 @@ const DepthFirstSearch = async (
 
     currentNode.isVisited = true;
 
-    for (const neighbor of currentNode.neighbors) {
+    for (const neighbor of currentNode.addNeighbors(matrix)) {
       if (neighbor.isVisited || neighbor.isWall) {
         continue;
       }
