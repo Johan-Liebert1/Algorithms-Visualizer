@@ -259,7 +259,7 @@ export default defineComponent({
 
   data() {
     return {
-      selectedMainDsAlgo: allDsAlgosObject.BINARY_TREES as selectedDsAlgoObjectType,
+      selectedMainDsAlgo: allDsAlgosObject.HEAP as selectedDsAlgoObjectType,
       addNewNodeValue: 0 as numStr,
       deleteNodeValue: 0 as numStr,
       searchNodeValue: 0 as numStr,
@@ -729,6 +729,14 @@ export default defineComponent({
     async swapHeapNodes(i: number, j: number): Promise<void> {
       i++; // heap index starts from 1, but we send the swap index by decrementing by 1
       j++; // heap index starts from 1, but we send the swap index by decrementing by 1
+
+      console.log("swap heap nodes", {
+        i,
+        j,
+        atI: this.heapNodesList[i],
+        atJ: this.heapNodesList[j]
+      });
+
       await swapHeapNodes(
         this.heapNodesList[i],
         this.heapNodesList[j],
@@ -826,14 +834,18 @@ export default defineComponent({
 
         case this.allDsAlgosObject.BINARY_TREES.name:
           this.createNewBinaryTree();
-          this.addNewNodeValue = "50";
-          await this.addNodeToBinaryTree();
-          this.addNewNodeValue = "25,75,15,30,60";
-          this.addNodeToBinaryTree();
+          // this.addNewNodeValue = "50";
+          // await this.addNodeToBinaryTree();
+          // this.addNewNodeValue = "25,75,15,30,60";
+          // this.addNodeToBinaryTree();
           break;
 
         case this.allDsAlgosObject.HEAP.name:
           this.createNewHeap();
+          this.addNewNodeValue = "50";
+          await this.addNodeToHeap();
+          this.addNewNodeValue = "25";
+          this.addNodeToHeap();
           break;
 
         default:

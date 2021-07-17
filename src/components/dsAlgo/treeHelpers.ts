@@ -138,7 +138,7 @@ export const drawTreeRoot = (
 
   const drawnNode = drawNode(root, x, y);
 
-  const arrow = drawArrow(
+  const rootArrow = drawArrow(
     drawnNode.rect.handleBounds.topRight.x + 10,
     drawnNode.rect.handleBounds.topRight.y + NODE_SIZE / 2,
     40,
@@ -181,14 +181,14 @@ export const drawTreeRoot = (
     arrow is drawn with head pointing downwards. Bring the head to the center
     of the node and rotate the whole thing about its head
   */
-  arrow.rotate(90, new paper.Point(arrow.position.x, arrow.position.y));
+  rootArrow.rotate(90, new paper.Point(rootArrow.position.x, rootArrow.position.y));
 
   // now the arrow is at the bottom of the node
-  arrow.position.y = drawnNode.rect.handleBounds.center.y;
-  arrow.position.x =
-    drawnNode.rect.handleBounds.center.x + 30 + arrow.handleBounds.width / 2;
+  rootArrow.position.y = drawnNode.rect.handleBounds.center.y;
+  rootArrow.position.x =
+    drawnNode.rect.handleBounds.center.x + 30 + rootArrow.handleBounds.width / 2;
 
-  arrow.children[2].rotate(90);
+  rootArrow.children[2].rotate(90);
 
   return { binaryTreeNodesList, heapNodesList };
 };
@@ -221,7 +221,11 @@ export const animateTreeNodeDeletion = async (
   const childGroup = new paper.Group([childNode.node.rect, childNode.node.text]);
 
   tweenOpacity(childGroup, 1, 0, animationSpeed);
-  tweenOpacity(parentNode[arrowToDelete], 1, 0, animationSpeed);
+
+  // parentNode won't exist if a root node is being deleted
+  if (parentNode) {
+    tweenOpacity(parentNode[arrowToDelete], 1, 0, animationSpeed);
+  }
 
   return new Promise(r => setTimeout(r, animationSpeed));
 };

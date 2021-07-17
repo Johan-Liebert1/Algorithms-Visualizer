@@ -313,7 +313,7 @@ export default defineComponent({
         barHeight: Math.floor(this.MAX_HEIGHT * (e / maxElement))
       }));
 
-      return new Promise(resolve => setTimeout(resolve, this.sortSpeed));
+      return new Promise(resolve => setTimeout(resolve, this.sortSpeed + 100));
     },
 
     setArrayElement(

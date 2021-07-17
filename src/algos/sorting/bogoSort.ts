@@ -1,5 +1,4 @@
 import { sortedBarColor } from "@/constants/sortingAlgoConstants";
-import { sleep } from "@/helpers/helper";
 
 class BogoSort {
   list: number[];
@@ -42,7 +41,7 @@ class BogoSort {
         elementsShuffled++;
       }
     }
-    this.list = Object.values(newList);
+    this.list = newList;
   };
 
   isArraySorted = (): boolean => {

@@ -59,9 +59,9 @@ class Heap {
 
   deleteFromHeap = async (heapEnd: number, heapSort = false): Promise<void> => {
     /*  
-    1. Swap the root with the last leaf
-    2. Bubble down to find the correct place for the new root
-  */
+      1. Swap the root with the last leaf
+      2. Bubble down to find the correct place for the new root
+    */
 
     swap(this.heap, 1, heapEnd);
     await this.swapElements(0, heapEnd - 1);
@@ -107,6 +107,12 @@ class Heap {
 
       index = childToTest;
     }
+
+    /*  
+      animation of deletion from heap relies on the length of heap, so we pop the 
+      last element from the array if we're not visualizing heap sort
+    */
+    if (!heapSort) this.heap.pop();
   };
 
   insert = async (value: number): Promise<Heap> => {
