@@ -627,6 +627,14 @@ export default defineComponent({
       else side = "rightArrow";
 
       await animateTreeNodeDeletion(child, parent, side, this.animationSpeed);
+
+      // delete the node from the binaryTreeNodesList
+      delete this.binaryTreeNodesList[nodeToDeleteId];
+
+      // if root is deleted create a new tree
+      if (Object.keys(this.binaryTreeNodesList).length === 0) {
+        this.createNewBinaryTree();
+      }
     },
 
     async highlightNode(
@@ -744,21 +752,28 @@ export default defineComponent({
       );
     },
 
+    async drawHeapRoot(value: number) {
+      await this.myHeap.insert(value);
+
+      this.clearCanvas();
+      this.drawBinaryTreeRoot(new TreeNode(value, 1), false, true);
+    },
+
     async addNodeToHeap() {
-      if (!this.heapNodesList[1]) {
-        this.myHeap.heap.push(Infinity, Number(this.addNewNodeValue));
-        this.clearCanvas();
-        this.drawBinaryTreeRoot(
-          new TreeNode(Number(this.addNewNodeValue), 1),
-          false,
-          true
-        );
-        return;
-      }
+      const rootExists = this.heapNodesList[1];
 
       // adding multiple heap nodes at once
       if (this.addNewNodeValue.toString().includes(",")) {
-        const nodesToBeAdded = this.addNewNodeValue.toString().split(",");
+        let nodesToBeAdded = this.addNewNodeValue
+          .toString()
+          .split(",")
+          .map(Number);
+
+        if (!rootExists) {
+          await this.drawHeapRoot(nodesToBeAdded[0]);
+        }
+
+        nodesToBeAdded = nodesToBeAdded.slice(1);
 
         for (let idx = 0; idx < nodesToBeAdded.length; idx++) {
           const value = nodesToBeAdded[idx];
@@ -771,18 +786,31 @@ export default defineComponent({
             ? "rightArrow"
             : "leftArrow";
 
-          this.drawBinaryTreeNode(parentNodeIndex, Number(value), side, 3);
+          const depth =
+            (this.heapNodesList[parentNodeIndex].treeNode as TreeNode).depth + 1;
 
-          await this.myHeap.insert(Number(value));
+          this.drawBinaryTreeNode(parentNodeIndex, value, side, depth);
+
+          await this.myHeap.insert(value);
         }
       } else {
+        const value = Number(this.addNewNodeValue);
+
+        if (!rootExists) {
+          await this.drawHeapRoot(value);
+          return;
+        }
+
         const end = Object.keys(this.heapNodesList).length + 1;
         const parentNodeIndex = Math.floor(end / 2);
         const side = this.heapNodesList[parentNodeIndex * 2] ? "rightArrow" : "leftArrow";
 
-        this.drawBinaryTreeNode(parentNodeIndex, Number(this.addNewNodeValue), side, 3);
+        const depth =
+          (this.heapNodesList[parentNodeIndex].treeNode as TreeNode).depth + 1;
 
-        await this.myHeap.insert(Number(this.addNewNodeValue));
+        this.drawBinaryTreeNode(parentNodeIndex, value, side, depth);
+
+        await this.myHeap.insert(value);
       }
     },
 
@@ -803,6 +831,11 @@ export default defineComponent({
       await animateTreeNodeDeletion(child, parent, side, this.animationSpeed);
 
       delete this.heapNodesList[nodes.length];
+
+      // if root is deleted, create a new heap
+      if (Object.keys(this.heapNodesList).length === 0) {
+        this.createNewHeap();
+      }
     },
 
     createNewHeap() {
@@ -842,10 +875,10 @@ export default defineComponent({
 
         case this.allDsAlgosObject.HEAP.name:
           this.createNewHeap();
-          this.addNewNodeValue = "50";
-          await this.addNodeToHeap();
-          this.addNewNodeValue = "25";
-          this.addNodeToHeap();
+          // this.addNewNodeValue = "50,25";
+          // await this.addNodeToHeap();
+          // this.addNewNodeValue = "25";
+          // this.addNodeToHeap();
           break;
 
         default:

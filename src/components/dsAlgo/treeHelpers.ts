@@ -104,7 +104,7 @@ export const drawBinaryTreeNode = (
       rightArrow
     };
   }
-
+  console.log({ depth });
   leftArrow.rotate(TREE_ARROW_ANGLE / (depth / 1.5), new paper.Point(lx, ly));
   rightArrow.rotate(-TREE_ARROW_ANGLE / (depth / 1.5), new paper.Point(rx, ry));
 

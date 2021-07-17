@@ -171,7 +171,8 @@ export const drawNode = (
   text.justification = "center";
   text.fillColor = textStrokeColor;
   text.content = textContent;
-  text.scale(1.2);
+
+  NODE_SIZE >= 50 ? text.scale(1.2) : text.scale(0.9);
 
   const temp = new paper.Rectangle(startingPoint, endingPoint);
 

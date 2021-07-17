@@ -9,6 +9,7 @@ import TreeNode from "./TreeNode";
 
 class BinaryTree {
   root: TreeNode | null;
+  nodesInsertionOrder: number[];
   highlightNode: (uuid: string) => Promise<void>;
   drawBinaryTreeNode: (
     parentNode: TreeNode,
@@ -46,6 +47,7 @@ class BinaryTree {
     ) => Promise<void>
   ) {
     this.root = null;
+    this.nodesInsertionOrder = [];
     this.highlightNode = highlightNode;
     this.drawBinaryTreeNode = drawBinaryTreeNode;
     this.putTextOnCanvas = putTextOnCanvas;
@@ -94,6 +96,8 @@ class BinaryTree {
   }
 
   async insert(value: number, currentNode = this.root, depth = 2): Promise<BinaryTree> {
+    this.nodesInsertionOrder.push(value);
+
     if (!this.root) {
       this.root = new TreeNode(value, 1);
       return this;
@@ -158,11 +162,11 @@ class BinaryTree {
       }
 
       // the node to delete is a leaf node now, so just delete it
+      const parent: TreeNode = childToReplaceWith.isRoot()
+        ? childToReplaceWith
+        : <TreeNode>childToReplaceWith.parent;
 
-      await this.deleteNodeFromBinaryTree(
-        childToReplaceWith.uuid,
-        (childToReplaceWith.parent as TreeNode).uuid
-      );
+      await this.deleteNodeFromBinaryTree(childToReplaceWith.uuid, parent.uuid);
 
       // break the connection between the largestLeftChild and it's parentNode
       if (childToReplaceWith.parent?.leftChild === childToReplaceWith) {

@@ -8,6 +8,7 @@ class Heap {
   heap: (number | TreeNode)[];
   list: (number | TreeNode)[];
   maxHeap: boolean;
+  nodeInsertionOrder: number[];
   swapElements: (idx1: number, idx2: number) => Promise<void>;
   colorElement: (idx: number, color?: string) => Promise<void>;
   drawNode?: (node: llNodeNull | TreeNode, x: number, y: number) => paperJsNode;
@@ -22,6 +23,7 @@ class Heap {
     this.list = list;
     this.heap = [];
     this.maxHeap = maxHeap;
+    this.nodeInsertionOrder = [];
     this.swapElements = swapElements;
     this.colorElement = colorElement;
     this.drawNode = drawNode;
@@ -117,6 +119,8 @@ class Heap {
 
   insert = async (value: number): Promise<Heap> => {
     if (this.heap.length === 0) this.heap = [0];
+
+    this.nodeInsertionOrder.push(value);
 
     this.heap.push(value);
 
