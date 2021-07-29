@@ -41,10 +41,6 @@ const primsMazeGenerator = async (
 
     const wallRemoved: CellClass = currentCell.removeWalls(neighbor, matrix);
 
-    // frontierCells = frontierCells.filter(
-    //   cell => !(csv(cell.row, cell.col) in partOfTheMaze)
-    // );
-
     currentCell = neighbor;
 
     await clearWall(wallRemoved);

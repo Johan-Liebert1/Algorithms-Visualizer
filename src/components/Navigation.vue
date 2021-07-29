@@ -27,13 +27,13 @@ export default defineComponent({
         // get gifs of the algos working and use them as image sources
         {
           name: "Sorting",
-          imageSrc: "/images/sortingSS.png",
+          imageSrc: "/images/sorting.gif",
           routePath: "/sorting-algos",
           description: "Visualization of some sorting Algorithms"
         },
         {
           name: "Path Finders and Maze Generators",
-          imageSrc: "/images/pathFindingSS.png",
+          imageSrc: "/images/pathfinding.gif",
           routePath: "/path-finding-algos",
           description: "Visualization of Path Finding and Maze Generating Algorithms"
         },
