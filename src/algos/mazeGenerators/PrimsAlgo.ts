@@ -1,6 +1,11 @@
 import { sleep } from "@/helpers/helper";
 import { CellClass } from "@/types/pathFinders";
-import { csv, setAllCellsAsWall, turnAlternateCellsToWalls } from "./mazeHelpers";
+import {
+  cellCsv,
+  csv,
+  setAllCellsAsWall,
+  turnAlternateCellsToWalls
+} from "./mazeHelpers";
 
 const primsMazeGenerator = async (
   matrix: CellClass[][],
@@ -17,19 +22,43 @@ const primsMazeGenerator = async (
 
   let currentCell: CellClass = matrix[0][0];
 
-  const frontierCells: CellClass[] = [];
+  let frontierCells: CellClass[] = [];
 
   const partOfTheMaze: { [key: string]: string } = {};
 
   while (Object.keys(partOfTheMaze).length < numberOfCells) {
+    // for (let i = 0; i < 3; i++) {
     currentCell.isVisited = true;
 
-    partOfTheMaze[csv(currentCell.row, currentCell.col)] = "";
+    partOfTheMaze[cellCsv(currentCell)] = "";
 
-    frontierCells.push(...currentCell.addNeighbors(matrix, false, 2));
+    const newFrontierCells = currentCell
+      .addNeighbors(matrix, false, 2)
+      .filter(c => !(cellCsv(c) in partOfTheMaze));
+
+    // frontierCells.push(...newFrontierCells);
+    frontierCells = newFrontierCells;
+
+    if (frontierCells.length === 0) {
+      const randKey = Object.keys(partOfTheMaze)[
+        Math.floor(Math.random() * Object.keys(partOfTheMaze).length)
+      ];
+
+      const [row, col] = randKey.split(",").map(Number);
+
+      currentCell = matrix[row][col];
+
+      continue;
+    }
 
     const neighbor: CellClass =
       frontierCells[Math.floor(Math.random() * frontierCells.length)];
+
+    // console.log({
+    //   currentCell: cellCsv(currentCell),
+    //   neighbor: cellCsv(neighbor),
+    //   frontierCells: frontierCells.map(cellCsv)
+    // });
 
     // we need a neighbor that is part of a maze
     // while (!(csv(neighbor.row, neighbor.col) in partOfTheMaze)) {
@@ -37,13 +66,15 @@ const primsMazeGenerator = async (
     // }
 
     neighbor.isVisited = true;
-    partOfTheMaze[csv(neighbor.row, neighbor.col)] = "";
+    partOfTheMaze[cellCsv(neighbor)] = "";
 
-    const wallRemoved: CellClass = currentCell.removeWalls(neighbor, matrix);
+    if (neighbor !== currentCell) {
+      const wallRemoved: CellClass = currentCell.removeWalls(neighbor, matrix);
 
-    currentCell = neighbor;
+      currentCell = neighbor;
 
-    await clearWall(wallRemoved);
+      await clearWall(wallRemoved);
+    }
   }
 };
 

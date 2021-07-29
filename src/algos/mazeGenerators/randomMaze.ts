@@ -12,7 +12,7 @@ const randomMaze = async (
 
       if (cell === startNode || cell === endNode) continue;
 
-      if (Math.random() < 0.2) {
+      if (Math.random() < 0.3) {
         await makeWall(cell);
       }
     }

@@ -31,3 +31,5 @@ export const turnAlternateCellsToWalls = (
 };
 
 export const csv = (r: number, c: number): string => `${r},${c}`;
+
+export const cellCsv = (cell: CellClass): string => csv(cell.row, cell.col);

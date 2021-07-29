@@ -239,7 +239,6 @@ export default defineComponent({
 
     setNewMazeGenAlgo(value: string) {
       this.selectedMazeGenerationAlgorithm = value;
-      console.log({ value });
       this.generateMaze();
     },
 
@@ -274,15 +273,15 @@ export default defineComponent({
           );
           break;
 
-        case mazeGenerationAlgorithms.PRIMS_ALGORITHM:
-          primsMazeGenerator(
-            this.matrix,
-            this.startNode,
-            this.endNode,
-            this.makeWall,
-            this.clearWall
-          );
-          break;
+        // case mazeGenerationAlgorithms.PRIMS_ALGORITHM:
+        //   primsMazeGenerator(
+        //     this.matrix,
+        //     this.startNode,
+        //     this.endNode,
+        //     this.makeWall,
+        //     this.clearWall
+        //   );
+        //   break;
 
         case mazeGenerationAlgorithms.ELLERS_ALGORITHM:
           ellersMaze(
