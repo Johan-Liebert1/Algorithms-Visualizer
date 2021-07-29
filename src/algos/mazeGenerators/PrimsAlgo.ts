@@ -1,43 +1,53 @@
+import { sleep } from "@/helpers/helper";
 import { CellClass } from "@/types/pathFinders";
-import { setAllCellsAsWall } from "./mazeHelpers";
+import { csv, setAllCellsAsWall, turnAlternateCellsToWalls } from "./mazeHelpers";
 
 const primsMazeGenerator = async (
   matrix: CellClass[][],
   startNode: CellClass,
   endNode: CellClass,
-  makeWall: (a: CellClass) => void,
+  makeWall: (a: CellClass) => Promise<void>,
   clearWall: (a: CellClass) => Promise<any>
 ) => {
-  setAllCellsAsWall(matrix, startNode, endNode, makeWall);
+  turnAlternateCellsToWalls(matrix, startNode, endNode, makeWall);
 
-  const numberOfCells = matrix.length * matrix[0].length;
-  const visitedVertices: CellClass[] = [];
+  await sleep(1000);
+
+  const numberOfCells = Math.floor((matrix.length / 2) * (matrix[0].length / 2));
 
   let currentCell: CellClass = matrix[0][0];
-  let previousCell: CellClass = currentCell;
 
-  while (visitedVertices.length < numberOfCells) {
-    currentCell.addNeighbors(matrix, false, 2);
+  const frontierCells: CellClass[] = [];
 
-    const randNeighbor =
-      currentCell.neighbors[Math.floor(Math.random() * currentCell.neighbors.length)];
+  const partOfTheMaze: { [key: string]: string } = {};
 
-    if (!randNeighbor.hasUnvisitedNeighbors()) {
-      currentCell = previousCell;
-      continue;
-    }
-
-    const cellInBetween = currentCell.getCellInBetween(matrix, randNeighbor);
-
-    if (cellInBetween) {
-      await clearWall(cellInBetween);
-    }
-
+  while (Object.keys(partOfTheMaze).length < numberOfCells) {
     currentCell.isVisited = true;
-    visitedVertices.push(currentCell);
 
-    previousCell = currentCell;
-    currentCell = randNeighbor;
+    partOfTheMaze[csv(currentCell.row, currentCell.col)] = "";
+
+    frontierCells.push(...currentCell.addNeighbors(matrix, false, 2));
+
+    const neighbor: CellClass =
+      frontierCells[Math.floor(Math.random() * frontierCells.length)];
+
+    // we need a neighbor that is part of a maze
+    // while (!(csv(neighbor.row, neighbor.col) in partOfTheMaze)) {
+    //   neighbor = frontierCells[Math.floor(Math.random() * frontierCells.length)];
+    // }
+
+    neighbor.isVisited = true;
+    partOfTheMaze[csv(neighbor.row, neighbor.col)] = "";
+
+    const wallRemoved: CellClass = currentCell.removeWalls(neighbor, matrix);
+
+    // frontierCells = frontierCells.filter(
+    //   cell => !(csv(cell.row, cell.col) in partOfTheMaze)
+    // );
+
+    currentCell = neighbor;
+
+    await clearWall(wallRemoved);
   }
 };
 

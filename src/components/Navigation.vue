@@ -7,6 +7,7 @@
         :imageSrc="card.imageSrc"
         :name="card.name"
         :routePath="card.routePath"
+        :description="card.description"
         :key="card.routePath"
       />
     </div>
@@ -27,17 +28,20 @@ export default defineComponent({
         {
           name: "Sorting",
           imageSrc: "/images/sortingSS.png",
-          routePath: "/sorting-algos"
+          routePath: "/sorting-algos",
+          description: "Visualization of some sorting Algorithms"
         },
         {
           name: "Path Finders and Maze Generators",
           imageSrc: "/images/pathFindingSS.png",
-          routePath: "/path-finding-algos"
+          routePath: "/path-finding-algos",
+          description: "Visualization of Path Finding and Maze Generating Algorithms"
         },
         {
-          name: "Some ds algo",
-          imageSrc: "",
-          routePath: "/common-ds-algo"
+          name: "Data Structures' Algorithms",
+          imageSrc: "/images/DsSS.png",
+          routePath: "/common-ds-algo",
+          description: "Visualization of Algorithms related to Data Structures"
         }
       ]
     };

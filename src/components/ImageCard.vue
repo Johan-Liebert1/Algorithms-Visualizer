@@ -8,13 +8,13 @@
       </div>
       <div class="card-content">
         <div class="media">
-          <div class="media-content">
-            <p class="title is-4">{{ name }}</p>
+          <div class="media-content has-text-centered">
+            <p class="title is-4  has-text-centered">{{ name }}</p>
           </div>
         </div>
 
-        <div class="content">
-          Some awesome sorting algos
+        <div class="content has-text-centered">
+          {{ description }}
         </div>
       </div>
     </div>
@@ -35,6 +35,10 @@ export default defineComponent({
       required: true
     },
     routePath: {
+      type: String,
+      required: true
+    },
+    description: {
       type: String,
       required: true
     }
