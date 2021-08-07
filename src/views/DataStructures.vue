@@ -130,7 +130,12 @@
           </div>
         </div>
       </div>
-      <canvas id="canvas"></canvas>
+      <div class="canvas-container">
+        <canvas id="canvas"></canvas>
+        <div v-if="treeTraversalOutput.show" class="traversal-output">
+          {{ treeTraversalOutput.output }}
+        </div>
+      </div>
     </div>
     <Modal
       v-if="showAlgoDescriptionModal"
@@ -266,6 +271,10 @@ export default defineComponent({
       animationSpeed: 500,
       typeOfHeap: "Maximum" as "Minimum" | "Maximum",
       showAlgoDescriptionModal: false,
+      treeTraversalOutput: {
+        show: false,
+        output: ""
+      },
       navbarButtons: {
         [allDsAlgosObject.LINKED_LIST.name]: [
           {
@@ -309,6 +318,8 @@ export default defineComponent({
     },
 
     algorithmChanged(value: string) {
+      this.treeTraversalOutput.show = false;
+
       switch (value) {
         case allDsAlgosObject.LINKED_LIST.name:
           this.selectedMainDsAlgo = allDsAlgosObject.LINKED_LIST;
@@ -577,6 +588,7 @@ export default defineComponent({
 
     traverseBinaryTree(traversalType: treeTraversalTypes) {
       const list: number[] = [];
+      this.treeTraversalOutput.show = true;
       this.myBinaryTree.treeTraversal(list, traversalType);
     },
 
@@ -584,8 +596,8 @@ export default defineComponent({
       this.myBinaryTree = new BinaryTree(
         this.highlightNode,
         this.drawBinaryTreeNode,
-        (text: string, x?: number, y?: number) => {
-          this.canvasText = putTextOnCanvas(this.canvas, this.canvasText, text, x, y);
+        (text: string) => {
+          this.treeTraversalOutput.output = text;
         },
         this.swapTreeNodes,
         this.deleteNodeFromBinaryTree,
@@ -724,6 +736,7 @@ export default defineComponent({
     },
 
     invertBinaryTree() {
+      this.treeTraversalOutput.show = false;
       this.myBinaryTree.invertBinaryTree();
     },
 
@@ -931,6 +944,26 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.traversal-output {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  font-size: 1.3rem;
+  padding: 0.15rem;
+  word-wrap: break-word;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  background-color: #2c3e50;
+  color: #4eb380;
+  height: 5rem;
+  min-width: 100%;
+}
+
+.canvas-container {
+  position: relative;
+}
+
 #canvas {
   height: 93vh !important;
   width: 80vw;

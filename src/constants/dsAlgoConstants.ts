@@ -66,7 +66,7 @@ export const allDsAlgosObject: allDsAlgosObjectType = Object.freeze({
 
 export type treeTraversalTypes = "inorder" | "preorder" | "postorder";
 
-export const NODE_SIZE = 25;
+export const NODE_SIZE = 35;
 export const ARROW_LENGTH = 40;
 export const ARROW_NODE_MARGIN = 10;
 export const ARROW_TRIANGLE_RADIUS = 7;

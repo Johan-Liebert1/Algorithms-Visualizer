@@ -17,7 +17,7 @@ class BinaryTree {
     side: arrowName,
     depth: number
   ) => void;
-  putTextOnCanvas: (text: string, x?: number, y?: number) => void;
+  putTextOnCanvas: (text: string) => void;
   swapNodes: (id1: string, id2: string) => Promise<void>;
   deleteNodeFromBinaryTree: (nodeToDeleteId: string, parentUuid: string) => Promise<void>;
   animateBinaryTreeInversion: (
@@ -34,7 +34,7 @@ class BinaryTree {
       side: arrowName,
       depth: number
     ) => void,
-    putTextOnCanvas: (text: string, x?: number, y?: number) => void,
+    putTextOnCanvas: (text: string) => void,
     swapNodes: (id1: string, id2: string) => Promise<void>,
     deleteNodeFromBinaryTree: (
       nodeToDeleteId: string,
