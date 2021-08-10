@@ -17,7 +17,7 @@ export const sortingAlgorithms = Object.freeze({
 });
 
 export const TOOLTIPS = Object.freeze({
-  VISUALIZING: "The algorithm to visualize (click for more info)",
+  VISUALIZING: "The algorithm to visualize", // (click for more info)
   SPEED: "Speed of the animation in milliseconds",
   INITIAL_ELEMENT: "Element that is not moved from it's original position",
   SORTED_ELEMENT: "Element that has been moved to it's sorted location in the array",

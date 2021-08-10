@@ -16,7 +16,7 @@ export const pathFindingAlgorithms = Object.freeze({
 });
 
 export const TOOLTIPS = Object.freeze({
-  VISUALIZING: "The algorithm to visualize (click for more info)",
+  VISUALIZING: "The algorithm to visualize", //(click for more info)
   SPEED: "Speed of the animation in milliseconds",
   UNVISITED_NODE: "Nodes that have not been visited by the algorithm",
   WALL_NODE: "Nodes that are walls and cannot be passed through",

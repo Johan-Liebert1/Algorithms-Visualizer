@@ -6,6 +6,7 @@ import LinkedListNode, { llNodeNull } from "./LinkedListNode";
 class LinkedList {
   start: llNodeNull;
   length: number;
+  elements: numStr[];
   drawPointerOnNode: (
     index: number,
     color?: paper.Color,
@@ -18,7 +19,7 @@ class LinkedList {
     toIdx: number,
     startPointer?: boolean
   ) => Promise<void>;
-  rotateArrow: (index: number, animate?: boolean) => Promise<void>;
+  rotateArrow: (index: number, angle?: number, animate?: boolean) => Promise<void>;
   toggleArrowVisibility: (index: number, show?: boolean) => void;
   animateLinkedListNodeDeletion: (indexToDelet: number) => void;
 
@@ -35,12 +36,13 @@ class LinkedList {
       toIdx: number,
       startPointer?: boolean
     ) => Promise<void>,
-    rotateArrow: (index: number, animate?: boolean) => Promise<void>,
+    rotateArrow: (index: number, angle?: number, animate?: boolean) => Promise<void>,
     toggleArrowVisibility: (index: number, show?: boolean) => void,
     animateLinkedListNodeDeletion: (indexToDelet: number) => void
   ) {
     this.start = null;
     this.length = 0;
+    this.elements = [];
     this.drawPointerOnNode = drawPointerOnNode;
     this.translatePointer = translatePointer;
     this.rotateArrow = rotateArrow;
@@ -64,6 +66,8 @@ class LinkedList {
     this.length++;
 
     const newNode = new LinkedListNode(value);
+
+    this.elements.push(value);
 
     if (!this.start) {
       newNode.index = 0;
@@ -101,8 +105,6 @@ class LinkedList {
       return this;
     }
 
-    let ptr3: llNodeNull;
-
     while (ptr2 && ptr1) {
       if (ptr2.value == value) {
         // found the node to delete
@@ -123,13 +125,11 @@ class LinkedList {
       ptr1 = ptr1.next;
       // decrease all the indices of all the nodes to the right of ptr2, including ptr2
       while (ptr1) {
-        console.log(ptr1.value, ptr1.index);
         ptr1.index -= 1;
         ptr1 = ptr1.next;
       }
     }
 
-    console.log(this.traverse());
     return this;
   }
 
@@ -149,12 +149,14 @@ class LinkedList {
 
     await sleep(1000);
 
+    this.toggleArrowVisibility(p1.index, false);
+
     for (;;) {
       p2.next = p1;
 
-      this.toggleArrowVisibility(p2.index, false);
-      await this.rotateArrow(p1.index, true);
-      this.toggleArrowVisibility(p1.index, true);
+      this.toggleArrowVisibility(p2.index, true);
+      await this.rotateArrow(p2.index, 180, true);
+      // this.toggleArrowVisibility(p1.index, true);
 
       if (p3) await this.translatePointer(p1.index, p1.index + nextNodeAdder);
 

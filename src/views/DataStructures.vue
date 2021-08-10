@@ -13,9 +13,9 @@
           <div style="margin: 1rem 0; text-align: center">
             <h1 class="is-size-3">{{ selectedMainDsAlgo.name }} Algorithms</h1>
 
-            <p style="font-size: 0.7rem">
+            <!-- <p style="font-size: 0.7rem">
               Right Click on Algorithm name to get more info
-            </p>
+            </p> -->
           </div>
 
           <div
@@ -264,7 +264,7 @@ export default defineComponent({
 
   data() {
     return {
-      selectedMainDsAlgo: allDsAlgosObject.HEAP as selectedDsAlgoObjectType,
+      selectedMainDsAlgo: allDsAlgosObject.LINKED_LIST as selectedDsAlgoObjectType,
       addNewNodeValue: 0 as numStr,
       deleteNodeValue: 0 as numStr,
       searchNodeValue: 0 as numStr,
@@ -481,8 +481,8 @@ export default defineComponent({
       this.nullNode = nullNode;
     },
 
-    addNodeToLinkedList() {
-      let array;
+    addNodeToLinkedList(array: numStr[] = []) {
+      this.clearCanvas();
 
       if (
         typeof this.addNewNodeValue === "string" &&
@@ -514,6 +514,13 @@ export default defineComponent({
     async reverseLinkedList() {
       if (this.myLinkedList.length < 2) return;
       this.deleteAllLinkedListNodePointers();
+
+      const llElements = this.myLinkedList.elements;
+      this.myLinkedList.elements = [];
+      this.myLinkedList.start = null;
+
+      this.addNodeToLinkedList(llElements);
+
       this.myLinkedList.reverse();
     },
 
@@ -524,27 +531,28 @@ export default defineComponent({
       } else this.linkedListNodes[index].arrowNext.visible = show;
     },
 
-    rotateArrow(index: number, animate = true): Promise<void> {
+    rotateArrow(index: number, angle = 180, animate = true): Promise<void> {
       if (index >= this.linkedListNodes.length) return new Promise(r => r());
 
       let dTheta = 1;
-      const arrow = this.linkedListNodes[index].arrowNext;
+      const node = this.linkedListNodes[index];
+      const arrow = node.arrowNext;
       let i = 0;
 
       if (animate) {
         const time = this.animationSpeed / 50;
 
         const interval = setInterval(() => {
-          if (i >= 180) clearInterval(interval);
+          if (i >= angle) clearInterval(interval);
 
-          arrow.rotate(dTheta);
+          arrow.rotate(dTheta, node.node.rect.handleBounds.center);
 
           i++;
         }, time);
 
-        return new Promise(r => setTimeout(r, time * 2 * 180));
+        return new Promise(r => setTimeout(r, time * 2 * angle));
       } else {
-        arrow.rotate(180);
+        arrow.rotate(angle);
       }
       return new Promise(r => r());
     },
@@ -611,6 +619,7 @@ export default defineComponent({
         let nodesToBeInserted = this.addNewNodeValue.toString().split(",");
 
         if (!this.myBinaryTree.root) {
+          this.clearCanvas();
           await this.myBinaryTree.insert(Number(nodesToBeInserted[0]));
           this.drawBinaryTreeRoot(this.myBinaryTree.root);
           nodesToBeInserted = nodesToBeInserted.slice(1);
