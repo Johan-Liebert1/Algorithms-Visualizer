@@ -1,9 +1,7 @@
 <template>
   <div class="nav-container">
     <div class="home">
-      <RouterLink to="/">
-        <SVG :name="svgNames.home" />
-      </RouterLink>
+      <SVG :name="svgNames.home" @click="sendUserHome" />
     </div>
 
     <div class="options-container">
@@ -193,6 +191,13 @@ export default defineComponent({
     mazeGenerationAlgoSelected(value: string) {
       this.$emit("mazeGenerationAlgoSelected", value);
       this.mazeDropdownVisible = false;
+    },
+    sendUserHome() {
+      this.$router.push("/");
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 0);
     }
   }
 });
@@ -211,6 +216,11 @@ export default defineComponent({
 .home {
   width: 3%;
   text-align: center;
+}
+
+.home:hover {
+  cursor: pointer;
+  opacity: 0.8;
 }
 
 .options-container {

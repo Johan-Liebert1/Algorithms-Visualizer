@@ -307,13 +307,17 @@ export default defineComponent({
     },
 
     setArray(newArray: number[], maxElement: number): Promise<void> {
-      this.array = newArray.map(e => ({
-        number: e,
-        barColor: baseBarColor,
-        barHeight: Math.floor(this.MAX_HEIGHT * (e / maxElement))
-      }));
+      return new Promise(resolve =>
+        setTimeout(() => {
+          this.array = newArray.map(e => ({
+            number: e,
+            barColor: baseBarColor,
+            barHeight: Math.floor(this.MAX_HEIGHT * (e / maxElement))
+          }));
 
-      return new Promise(resolve => setTimeout(resolve, this.sortSpeed + 100));
+          resolve();
+        }, this.sortSpeed + 100)
+      );
     },
 
     setArrayElement(

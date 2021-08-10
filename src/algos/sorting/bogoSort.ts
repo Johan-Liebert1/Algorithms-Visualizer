@@ -12,6 +12,7 @@ class BogoSort {
 
   constructor(
     list: number[],
+    maxElement: number,
     setArray: (newArray: number[], maxElement: number) => Promise<void>,
     iteratingOverElements: (
       index1: number,
@@ -20,28 +21,29 @@ class BogoSort {
     ) => Promise<void>
   ) {
     this.list = list;
-    this.maxElement = -Infinity;
+    this.maxElement = maxElement;
     this.setArray = setArray;
     this.iteratingOverElements = iteratingOverElements;
   }
 
   shuffleArray = () => {
-    const newList: number[] = [];
-    let elementsShuffled = 0;
-
-    while (elementsShuffled < this.list.length) {
-      const randIndex = Math.floor(Math.random() * this.list.length);
-      const element = this.list[randIndex];
-
-      if (!newList.includes(element)) {
-        newList.push(element);
-        if (element > this.maxElement) {
-          this.maxElement = element;
-        }
-        elementsShuffled++;
-      }
+    for (let i = this.list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [this.list[i], this.list[j]] = [this.list[j], this.list[i]];
     }
-    this.list = newList;
+
+    // while (elementsShuffled < this.list.length) {
+    //   const randIndex = Math.floor(Math.random() * this.list.length);
+    //   const element = this.list[randIndex];
+
+    //   if (!newList.includes(element)) {
+    //     newList.push(element);
+    //     if (element > this.maxElement) {
+    //       this.maxElement = element;
+    //     }
+    //     elementsShuffled++;
+    //   }
+    // }
   };
 
   isArraySorted = (): boolean => {
@@ -76,13 +78,18 @@ class BogoSort {
   };
 }
 
-const bogoSort = (
+const bogoSort = async (
   array: number[],
   setArray: (newArray: number[], maxElement: number) => Promise<void>,
   iteratingOverElements: (index1: number, index2: number, color?: string) => Promise<void>
 ) => {
-  const sorter = new BogoSort(array, setArray, iteratingOverElements);
-  sorter.bogoSort();
+  let max = -Infinity;
+
+  for (const a of array) max = a > max ? a : max;
+
+  const sorter = new BogoSort(array, max, setArray, iteratingOverElements);
+
+  await sorter.bogoSort();
 };
 
 export default bogoSort;
