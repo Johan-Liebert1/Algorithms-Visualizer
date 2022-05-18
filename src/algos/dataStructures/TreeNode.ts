@@ -1,33 +1,33 @@
 import { randomId } from "@/helpers/helper";
 
 class TreeNode {
-  value: number;
-  leftChild: TreeNode | null;
-  rightChild: TreeNode | null;
-  parent: TreeNode | null;
-  uuid: string;
-  depth: number;
+    value: number;
+    leftChild: TreeNode | null;
+    rightChild: TreeNode | null;
+    parent: TreeNode | null;
+    uuid: string;
+    depth: number;
 
-  constructor(value: number, depth: number) {
-    this.value = value;
-    this.leftChild = null;
-    this.rightChild = null;
-    this.parent = null;
-    this.depth = depth;
-    this.uuid = randomId();
-  }
+    constructor(value: number, depth: number) {
+        this.value = value;
+        this.leftChild = null;
+        this.rightChild = null;
+        this.parent = null;
+        this.depth = depth;
+        this.uuid = randomId();
+    }
 
-  isLeaf() {
-    return !this.leftChild && !this.rightChild;
-  }
+    isLeaf() {
+        return !this.leftChild && !this.rightChild;
+    }
 
-  isRoot() {
-    return !this.parent;
-  }
+    isRoot() {
+        return !this.parent;
+    }
 
-  repr(): string {
-    return this.value.toString();
-  }
+    repr(): string {
+        return this.value.toString();
+    }
 }
 
 export default TreeNode;
